@@ -19,7 +19,8 @@ const ACTIONS = [
   { label: 'Other', icon: '✦' },
 ] as const;
 
-const LogUrge = ({ onLog, onBack, onRideUrge }: LogUrgeProps) => {
+const LogUrge = ({ onBack, onRideUrge }: LogUrgeProps) => {
+  const logUrge = useAppStore((s) => s.logUrge);
   const [strength, setStrength] = useState<string | null>(null);
   const [triggers, setTriggers] = useState<string[]>([]);
   const [actions, setActions] = useState<string[]>([]);

@@ -15,7 +15,7 @@ const Index = () => {
   const [screen, setScreen] = useState<Screen>('dashboard');
   const [actionHubOpen, setActionHubOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const { streak, resistUrge, logUrge } = useAppStore();
+  const { streak, resistUrge } = useAppStore();
 
   const handleResisted = () => {
     resistUrge();

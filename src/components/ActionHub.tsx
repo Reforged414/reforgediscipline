@@ -4,6 +4,7 @@ interface ActionHubProps {
   open: boolean;
   onClose: () => void;
   onRideUrge: () => void;
+  onLogUrge: () => void;
 }
 
 const actions = [

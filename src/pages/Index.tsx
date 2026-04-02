@@ -1,16 +1,67 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import Dashboard from '@/components/Dashboard';
+import BottomNav from '@/components/BottomNav';
+import ActionHub from '@/components/ActionHub';
+import RideTheUrge from '@/components/RideTheUrge';
+import RewardScreen from '@/components/RewardScreen';
+import ProfilePlaceholder from '@/components/ProfilePlaceholder';
+import { useAppStore } from '@/store/useAppStore';
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+type Screen = 'dashboard' | 'profile' | 'ride' | 'reward';
+
+const Index = () => {
+  const [screen, setScreen] = useState<Screen>('dashboard');
+  const [actionHubOpen, setActionHubOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const { streak, resistUrge } = useAppStore();
+
+  const handleResisted = () => {
+    resistUrge();
+    setScreen('reward');
+  };
+
+  const handleContinue = () => {
+    setScreen('dashboard');
+    setActiveTab('dashboard');
+  };
+
+  if (screen === 'ride') {
+    return (
+      <RideTheUrge
+        onResisted={handleResisted}
+        onBack={() => setScreen('dashboard')}
+      />
+    );
+  }
+
+  if (screen === 'reward') {
+    return <RewardScreen streak={streak} onContinue={handleContinue} />;
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="max-w-md mx-auto relative">
+      {activeTab === 'dashboard' && <Dashboard />}
+      {activeTab === 'profile' && <ProfilePlaceholder />}
+
+      <ActionHub
+        open={actionHubOpen}
+        onClose={() => setActionHubOpen(false)}
+        onRideUrge={() => {
+          setActionHubOpen(false);
+          setScreen('ride');
+        }}
+      />
+
+      <BottomNav
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          setScreen(tab as Screen);
+        }}
+        onPlusPress={() => setActionHubOpen(true)}
+      />
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;

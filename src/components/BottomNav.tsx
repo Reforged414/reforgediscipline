@@ -31,7 +31,27 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
             <span className="text-[10px] uppercase tracking-widest">Dashboard</span>
           </button>
 
+          <button
+            onClick={() => onTabChange('progress')}
+            className={`flex flex-col items-center gap-1 transition-colors ${
+              activeTab === 'progress' ? 'text-primary' : 'text-muted-foreground'
+            }`}
+          >
+            <TrendingUp size={20} />
+            <span className="text-[10px] uppercase tracking-widest">Progress</span>
+          </button>
+
           <div className="w-14" /> {/* spacer for plus button */}
+
+          <button
+            onClick={() => onTabChange('community')}
+            className={`flex flex-col items-center gap-1 transition-colors ${
+              activeTab === 'community' ? 'text-primary' : 'text-muted-foreground'
+            }`}
+          >
+            <Users size={20} />
+            <span className="text-[10px] uppercase tracking-widest">Community</span>
+          </button>
 
           <button
             onClick={() => onTabChange('profile')}

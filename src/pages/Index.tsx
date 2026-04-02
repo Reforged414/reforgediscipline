@@ -5,6 +5,7 @@ import ActionHub from '@/components/ActionHub';
 import RideTheUrge from '@/components/RideTheUrge';
 import RewardScreen from '@/components/RewardScreen';
 import ProfilePlaceholder from '@/components/ProfilePlaceholder';
+import ComingSoonPlaceholder from '@/components/ComingSoonPlaceholder';
 import { useAppStore } from '@/store/useAppStore';
 
 type Screen = 'dashboard' | 'profile' | 'ride' | 'reward';
@@ -41,6 +42,8 @@ const Index = () => {
   return (
     <div className="max-w-md mx-auto relative">
       {activeTab === 'dashboard' && <Dashboard />}
+      {activeTab === 'progress' && <ComingSoonPlaceholder title="Progress" />}
+      {activeTab === 'community' && <ComingSoonPlaceholder title="Community" />}
       {activeTab === 'profile' && <ProfilePlaceholder />}
 
       <ActionHub

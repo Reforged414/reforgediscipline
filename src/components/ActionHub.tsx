@@ -1,0 +1,70 @@
+import { Flame, FileText, BookOpen, AlertTriangle, Phone, ChevronRight } from 'lucide-react';
+
+interface ActionHubProps {
+  open: boolean;
+  onClose: () => void;
+  onRideUrge: () => void;
+}
+
+const actions = [
+  { icon: Flame, label: 'RIDE THE URGE', sub: 'Overcome Urge', key: 'ride' },
+  { icon: FileText, label: 'LOG URGE', sub: 'Track Urges', key: 'log' },
+  { icon: BookOpen, label: 'JOURNAL ENTRY', sub: 'Write Thoughts', key: 'journal' },
+  { icon: AlertTriangle, label: 'LOG RELAPSE', sub: 'Reflect And Learn', key: 'relapse' },
+  { icon: Phone, label: 'EMERGENCY HELP', sub: 'Get Support', key: 'emergency' },
+];
+
+const ActionHub = ({ open, onClose, onRideUrge }: ActionHubProps) => {
+  if (!open) return null;
+
+  const handleAction = (key: string) => {
+    if (key === 'ride') {
+      onRideUrge();
+    }
+  };
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/70 z-50 animate-fade-in"
+        onClick={onClose}
+      />
+
+      {/* Sheet */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 animate-slide-up">
+        <div className="bg-card rounded-t-3xl px-5 pt-6 pb-8 max-w-md mx-auto">
+          <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-6" />
+
+          <h2 className="font-display text-2xl tracking-wider text-center text-foreground">
+            TAKE ACTION
+          </h2>
+          <p className="text-muted-foreground text-xs tracking-widest text-center mt-1 mb-6 uppercase">
+            Strengthen your discipline. Take action now.
+          </p>
+
+          <div className="space-y-3">
+            {actions.map(({ icon: Icon, label, sub, key }) => (
+              <button
+                key={key}
+                onClick={() => handleAction(key)}
+                className="w-full flex items-center gap-4 bg-secondary rounded-xl px-4 py-4 active:scale-[0.98] transition-transform"
+              >
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Icon size={20} className="text-primary" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-display text-sm tracking-wider text-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground">{sub}</p>
+                </div>
+                <ChevronRight size={16} className="text-muted-foreground" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default ActionHub;

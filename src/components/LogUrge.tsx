@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ArrowLeft, Zap, Target, Circle } from 'lucide-react';
+import { useAppStore } from '@/store/useAppStore';
 
 interface LogUrgeProps {
-  onLog: () => void;
   onBack: () => void;
   onRideUrge: () => void;
 }

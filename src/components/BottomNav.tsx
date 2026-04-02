@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, User } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, Users, User } from 'lucide-react';
 
 interface BottomNavProps {
   activeTab: string;

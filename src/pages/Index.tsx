@@ -64,6 +64,10 @@ const Index = () => {
           setActionHubOpen(false);
           setScreen('ride');
         }}
+        onLogUrge={() => {
+          setActionHubOpen(false);
+          setScreen('log');
+        }}
       />
 
       <BottomNav

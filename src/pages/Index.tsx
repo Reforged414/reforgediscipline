@@ -31,7 +31,6 @@ const Index = () => {
     return (
       <LogUrge
         onBack={() => { setScreen('dashboard'); setActiveTab('dashboard'); }}
-        onBack={() => { setScreen('dashboard'); setActiveTab('dashboard'); }}
         onRideUrge={() => setScreen('ride')}
       />
     );

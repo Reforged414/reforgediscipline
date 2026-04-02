@@ -4,6 +4,7 @@ interface ActionHubProps {
   open: boolean;
   onClose: () => void;
   onRideUrge: () => void;
+  onLogUrge: () => void;
 }
 
 const actions = [
@@ -14,13 +15,12 @@ const actions = [
   { icon: Phone, label: 'EMERGENCY HELP', sub: 'Get Support', key: 'emergency' },
 ];
 
-const ActionHub = ({ open, onClose, onRideUrge }: ActionHubProps) => {
+const ActionHub = ({ open, onClose, onRideUrge, onLogUrge }: ActionHubProps) => {
   if (!open) return null;
 
   const handleAction = (key: string) => {
-    if (key === 'ride') {
-      onRideUrge();
-    }
+    if (key === 'ride') onRideUrge();
+    if (key === 'log') onLogUrge();
   };
 
   return (

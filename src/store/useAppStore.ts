@@ -1,12 +1,21 @@
 import { create } from 'zustand';
 
+interface UrgeLog {
+  strength: string;
+  triggers: string[];
+  actions: string[];
+  timestamp: Date;
+}
+
 interface AppState {
   streak: number;
   xp: number;
   level: number;
   levelName: string;
   xpForNextLevel: number;
+  urgeLogs: UrgeLog[];
   resistUrge: () => void;
+  logUrge: (log: Omit<UrgeLog, 'timestamp'>) => void;
   resetStreak: () => void;
 }
 
@@ -46,12 +55,25 @@ export const useAppStore = create<AppState>((set) => ({
   level: 8,
   levelName: 'Vanguard',
   xpForNextLevel: 1000,
+  urgeLogs: [],
   resistUrge: () =>
     set((state) => {
       const newXp = state.xp + 10;
       const newStreak = state.streak + 1;
       const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
       return { xp: newXp, streak: newStreak, level, levelName, xpForNextLevel };
+    }),
+  logUrge: (log) =>
+    set((state) => {
+      const newXp = state.xp + 2;
+      const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
+      return {
+        xp: newXp,
+        level,
+        levelName,
+        xpForNextLevel,
+        urgeLogs: [...state.urgeLogs, { ...log, timestamp: new Date() }],
+      };
     }),
   resetStreak: () =>
     set(() => ({ streak: 0 })),

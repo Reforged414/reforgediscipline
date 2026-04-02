@@ -1,12 +1,21 @@
 import { create } from 'zustand';
 
+interface UrgeLog {
+  strength: string;
+  triggers: string[];
+  actions: string[];
+  timestamp: Date;
+}
+
 interface AppState {
   streak: number;
   xp: number;
   level: number;
   levelName: string;
   xpForNextLevel: number;
+  urgeLogs: UrgeLog[];
   resistUrge: () => void;
+  logUrge: (log: Omit<UrgeLog, 'timestamp'>) => void;
   resetStreak: () => void;
 }
 

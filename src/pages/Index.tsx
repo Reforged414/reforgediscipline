@@ -42,6 +42,8 @@ const Index = () => {
   return (
     <div className="max-w-md mx-auto relative">
       {activeTab === 'dashboard' && <Dashboard />}
+      {activeTab === 'progress' && <ComingSoonPlaceholder title="Progress" />}
+      {activeTab === 'community' && <ComingSoonPlaceholder title="Community" />}
       {activeTab === 'profile' && <ProfilePlaceholder />}
 
       <ActionHub

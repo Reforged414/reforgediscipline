@@ -34,7 +34,7 @@ const LogUrge = ({ onBack, onRideUrge }: LogUrgeProps) => {
     setActions((prev) => (prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]));
 
   const handleLog = () => {
-    onLog();
+    logUrge({ strength: strength || '', triggers, actions: actions });
 
     if (strength === 'Strong' || strength === 'Overwhelming') {
       setShowSuggestion(true);

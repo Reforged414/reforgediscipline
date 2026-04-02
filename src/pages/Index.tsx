@@ -30,7 +30,7 @@ const Index = () => {
   if (screen === 'log') {
     return (
       <LogUrge
-        onLog={() => logUrge({ strength: '', triggers: [], actions: [] })}
+        onBack={() => { setScreen('dashboard'); setActiveTab('dashboard'); }}
         onBack={() => { setScreen('dashboard'); setActiveTab('dashboard'); }}
         onRideUrge={() => setScreen('ride')}
       />

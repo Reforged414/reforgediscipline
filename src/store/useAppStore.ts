@@ -59,9 +59,8 @@ export const useAppStore = create<AppState>((set) => ({
   resistUrge: () =>
     set((state) => {
       const newXp = state.xp + 10;
-      const newStreak = state.streak + 1;
       const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
-      return { xp: newXp, streak: newStreak, level, levelName, xpForNextLevel };
+      return { xp: newXp, level, levelName, xpForNextLevel };
     }),
   logUrge: (log) =>
     set((state) => {

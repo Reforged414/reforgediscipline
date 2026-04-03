@@ -5,6 +5,7 @@ interface ActionHubProps {
   onClose: () => void;
   onRideUrge: () => void;
   onLogUrge: () => void;
+  onLogRelapse: () => void;
 }
 
 const actions = [

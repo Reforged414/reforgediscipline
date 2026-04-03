@@ -7,6 +7,14 @@ interface UrgeLog {
   timestamp: Date;
 }
 
+interface RelapseLog {
+  triggers: string[];
+  mood: string;
+  location: string;
+  reflection: string;
+  timestamp: Date;
+}
+
 interface AppState {
   streak: number;
   xp: number;
@@ -14,8 +22,10 @@ interface AppState {
   levelName: string;
   xpForNextLevel: number;
   urgeLogs: UrgeLog[];
+  relapseLogs: RelapseLog[];
   resistUrge: () => void;
   logUrge: (log: Omit<UrgeLog, 'timestamp'>) => void;
+  logRelapse: (log: Omit<RelapseLog, 'timestamp'>) => void;
   resetStreak: () => void;
 }
 
@@ -56,6 +66,7 @@ export const useAppStore = create<AppState>((set) => ({
   levelName: 'Vanguard',
   xpForNextLevel: 1000,
   urgeLogs: [],
+  relapseLogs: [],
   resistUrge: () =>
     set((state) => {
       const newXp = state.xp + 10;
@@ -72,6 +83,19 @@ export const useAppStore = create<AppState>((set) => ({
         levelName,
         xpForNextLevel,
         urgeLogs: [...state.urgeLogs, { ...log, timestamp: new Date() }],
+      };
+    }),
+  logRelapse: (log) =>
+    set((state) => {
+      const newXp = state.xp + 2;
+      const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
+      return {
+        streak: 0,
+        xp: newXp,
+        level,
+        levelName,
+        xpForNextLevel,
+        relapseLogs: [...state.relapseLogs, { ...log, timestamp: new Date() }],
       };
     }),
   resetStreak: () =>

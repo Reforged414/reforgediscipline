@@ -66,6 +66,7 @@ export const useAppStore = create<AppState>((set) => ({
   levelName: 'Vanguard',
   xpForNextLevel: 1000,
   urgeLogs: [],
+  relapseLogs: [],
   resistUrge: () =>
     set((state) => {
       const newXp = state.xp + 10;

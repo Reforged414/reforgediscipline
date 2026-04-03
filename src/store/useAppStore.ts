@@ -7,6 +7,14 @@ interface UrgeLog {
   timestamp: Date;
 }
 
+interface RelapseLog {
+  triggers: string[];
+  mood: string;
+  location: string;
+  reflection: string;
+  timestamp: Date;
+}
+
 interface AppState {
   streak: number;
   xp: number;
@@ -14,8 +22,10 @@ interface AppState {
   levelName: string;
   xpForNextLevel: number;
   urgeLogs: UrgeLog[];
+  relapseLogs: RelapseLog[];
   resistUrge: () => void;
   logUrge: (log: Omit<UrgeLog, 'timestamp'>) => void;
+  logRelapse: (log: Omit<RelapseLog, 'timestamp'>) => void;
   resetStreak: () => void;
 }
 

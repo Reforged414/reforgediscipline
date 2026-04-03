@@ -29,6 +29,19 @@ const Index = () => {
     setActiveTab('dashboard');
   };
 
+  if (screen === 'relapse') {
+    return (
+      <LogRelapse
+        onBack={() => { setScreen('dashboard'); setActiveTab('dashboard'); }}
+        onLogged={() => setScreen('recovery')}
+      />
+    );
+  }
+
+  if (screen === 'recovery') {
+    return <RecoveryScreen onContinue={handleContinue} />;
+  }
+
   if (screen === 'log') {
     return (
       <LogUrge

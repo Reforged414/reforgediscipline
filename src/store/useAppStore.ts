@@ -85,6 +85,19 @@ export const useAppStore = create<AppState>((set) => ({
         urgeLogs: [...state.urgeLogs, { ...log, timestamp: new Date() }],
       };
     }),
+  logRelapse: (log) =>
+    set((state) => {
+      const newXp = state.xp + 2;
+      const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
+      return {
+        streak: 0,
+        xp: newXp,
+        level,
+        levelName,
+        xpForNextLevel,
+        relapseLogs: [...state.relapseLogs, { ...log, timestamp: new Date() }],
+      };
+    }),
   resetStreak: () =>
     set(() => ({ streak: 0 })),
 }));

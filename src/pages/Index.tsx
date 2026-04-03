@@ -82,6 +82,10 @@ const Index = () => {
           setActionHubOpen(false);
           setScreen('log');
         }}
+        onLogRelapse={() => {
+          setActionHubOpen(false);
+          setScreen('relapse');
+        }}
       />
 
       <BottomNav

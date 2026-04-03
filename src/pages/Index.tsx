@@ -5,11 +5,13 @@ import ActionHub from '@/components/ActionHub';
 import RideTheUrge from '@/components/RideTheUrge';
 import RewardScreen from '@/components/RewardScreen';
 import LogUrge from '@/components/LogUrge';
+import LogRelapse from '@/components/LogRelapse';
+import RecoveryScreen from '@/components/RecoveryScreen';
 import ProfilePlaceholder from '@/components/ProfilePlaceholder';
 import ComingSoonPlaceholder from '@/components/ComingSoonPlaceholder';
 import { useAppStore } from '@/store/useAppStore';
 
-type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log';
+type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery';
 
 const Index = () => {
   const [screen, setScreen] = useState<Screen>('dashboard');

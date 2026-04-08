@@ -24,6 +24,7 @@ interface AppState {
   xpForNextLevel: number;
   urgeLogs: UrgeLog[];
   relapseLogs: RelapseLog[];
+  resistedTimestamps: Date[];
   completeOnboarding: (lastRelapse: string) => void;
   resistUrge: () => void;
   logUrge: (log: Omit<UrgeLog, 'timestamp'>) => void;
@@ -80,6 +81,7 @@ export const useAppStore = create<AppState>((set) => ({
   levelName: 'Initiate',
   xpForNextLevel: 100,
   urgeLogs: [],
+  resistedTimestamps: [],
   relapseLogs: [],
   completeOnboarding: (lastRelapse) =>
     set(() => ({
@@ -94,7 +96,10 @@ export const useAppStore = create<AppState>((set) => ({
     set((state) => {
       const newXp = state.xp + 10;
       const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
-      return { xp: newXp, level, levelName, xpForNextLevel };
+      return {
+        xp: newXp, level, levelName, xpForNextLevel,
+        resistedTimestamps: [...state.resistedTimestamps, new Date()],
+      };
     }),
   logUrge: (log) =>
     set((state) => {

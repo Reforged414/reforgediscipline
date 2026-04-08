@@ -76,7 +76,12 @@ const Index = () => {
 
   return (
     <div className="max-w-md mx-auto relative">
-      {activeTab === 'dashboard' && <Dashboard />}
+      {activeTab === 'dashboard' && (
+        <Dashboard
+          onRideUrge={() => { setActionHubOpen(false); setScreen('ride'); }}
+          onLogUrge={() => { setActionHubOpen(false); setScreen('log'); }}
+        />
+      )}
       {activeTab === 'insights' && <InsightsScreen />}
       {activeTab === 'community' && <ComingSoonPlaceholder title="Community" />}
       {activeTab === 'profile' && <ProfilePlaceholder />}

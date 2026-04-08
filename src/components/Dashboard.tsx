@@ -1,8 +1,17 @@
 import { Settings } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
-const Dashboard = () => {
-  const { streak, xp, level, levelName, xpForNextLevel } = useAppStore();
+interface DashboardProps {
+  onRideUrge?: () => void;
+  onLogUrge?: () => void;
+}
+
+
+const Dashboard = ({ onRideUrge, onLogUrge }: DashboardProps) => {
+  const { streak, xp, level, levelName, xpForNextLevel, resistedTimestamps } = useAppStore();
+  const hasResistedToday = resistedTimestamps.some(
+    (t) => new Date(t).toDateString() === new Date().toDateString()
+  );
   const prevLevelXp = xpForNextLevel - 1000; // rough approximation
   const xpProgress = Math.min(((xp - Math.max(prevLevelXp, 0)) / (xpForNextLevel - Math.max(prevLevelXp, 0))) * 100, 100);
 
@@ -52,14 +61,14 @@ const Dashboard = () => {
 
       {/* CTA Buttons */}
       <div className="space-y-3 mb-10">
-        <div className="w-full py-4 rounded-xl bg-primary text-center">
+        <button onClick={onRideUrge} className="w-full py-4 rounded-xl bg-primary text-center active:scale-[0.98] transition-transform">
           <span className="font-display text-lg tracking-wider text-primary-foreground">
             RIDE THE URGE
           </span>
-        </div>
-        <div className="w-full py-4 rounded-xl border border-border text-center">
+        </button>
+        <button onClick={onLogUrge} className="w-full py-4 rounded-xl border border-border text-center active:scale-[0.98] transition-transform">
           <span className="font-display text-sm tracking-wider text-foreground">LOG URGE</span>
-        </div>
+        </button>
       </div>
 
       {/* Daily Discipline */}
@@ -70,7 +79,7 @@ const Dashboard = () => {
         <div className="space-y-3">
           {[
             { label: 'Daily check-in', xp: '+15 XP', done: false },
-            { label: 'Resist one urge', xp: '+10 XP', done: true },
+            { label: 'Resist one urge', xp: '+10 XP', done: hasResistedToday },
             { label: 'Write a reflection', xp: '+15 XP', done: false },
           ].map((task) => (
             <div key={task.label} className="flex items-center gap-3 bg-secondary rounded-xl px-4 py-3">

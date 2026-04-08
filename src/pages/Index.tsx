@@ -9,6 +9,7 @@ import LogRelapse from '@/components/LogRelapse';
 import RecoveryScreen from '@/components/RecoveryScreen';
 import ProfilePlaceholder from '@/components/ProfilePlaceholder';
 import ComingSoonPlaceholder from '@/components/ComingSoonPlaceholder';
+import InsightsScreen from '@/components/InsightsScreen';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -75,8 +76,13 @@ const Index = () => {
 
   return (
     <div className="max-w-md mx-auto relative">
-      {activeTab === 'dashboard' && <Dashboard />}
-      {activeTab === 'progress' && <ComingSoonPlaceholder title="Progress" />}
+      {activeTab === 'dashboard' && (
+        <Dashboard
+          onRideUrge={() => { setActionHubOpen(false); setScreen('ride'); }}
+          onLogUrge={() => { setActionHubOpen(false); setScreen('log'); }}
+        />
+      )}
+      {activeTab === 'insights' && <InsightsScreen />}
       {activeTab === 'community' && <ComingSoonPlaceholder title="Community" />}
       {activeTab === 'profile' && <ProfilePlaceholder />}
 

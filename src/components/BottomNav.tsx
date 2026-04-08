@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, Users, User } from 'lucide-react';
+import { LayoutDashboard, Shield, MessageCircle, User } from 'lucide-react';
 
 interface BottomNavProps {
   activeTab: string;
@@ -32,13 +32,13 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
           </button>
 
           <button
-            onClick={() => onTabChange('progress')}
+            onClick={() => onTabChange('insights')}
             className={`flex flex-col items-center gap-1 transition-colors ${
-              activeTab === 'progress' ? 'text-primary' : 'text-muted-foreground'
+              activeTab === 'insights' ? 'text-primary' : 'text-muted-foreground'
             }`}
           >
-            <TrendingUp size={20} />
-            <span className="text-[10px] uppercase tracking-widest">Progress</span>
+            <Shield size={20} />
+            <span className="text-[10px] uppercase tracking-widest">Insights</span>
           </button>
 
           <div className="w-14" /> {/* spacer for plus button */}
@@ -49,7 +49,7 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
               activeTab === 'community' ? 'text-primary' : 'text-muted-foreground'
             }`}
           >
-            <Users size={20} />
+            <MessageCircle size={20} />
             <span className="text-[10px] uppercase tracking-widest">Community</span>
           </button>
 

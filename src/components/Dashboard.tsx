@@ -8,9 +8,9 @@ interface DashboardProps {
 
 
 const Dashboard = ({ onRideUrge, onLogUrge }: DashboardProps) => {
-  const { streak, xp, level, levelName, xpForNextLevel, urgeLogs } = useAppStore();
-  const hasResistedToday = urgeLogs.some(
-    (l) => l.actions.length > 0 && new Date(l.timestamp).toDateString() === new Date().toDateString()
+  const { streak, xp, level, levelName, xpForNextLevel, resistedTimestamps } = useAppStore();
+  const hasResistedToday = resistedTimestamps.some(
+    (t) => new Date(t).toDateString() === new Date().toDateString()
   );
   const prevLevelXp = xpForNextLevel - 1000; // rough approximation
   const xpProgress = Math.min(((xp - Math.max(prevLevelXp, 0)) / (xpForNextLevel - Math.max(prevLevelXp, 0))) * 100, 100);

@@ -9,6 +9,7 @@ import LogRelapse from '@/components/LogRelapse';
 import RecoveryScreen from '@/components/RecoveryScreen';
 import ProfilePlaceholder from '@/components/ProfilePlaceholder';
 import ComingSoonPlaceholder from '@/components/ComingSoonPlaceholder';
+import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import { useAppStore } from '@/store/useAppStore';
 
 type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery';
@@ -17,7 +18,15 @@ const Index = () => {
   const [screen, setScreen] = useState<Screen>('dashboard');
   const [actionHubOpen, setActionHubOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const { streak, resistUrge } = useAppStore();
+  const { streak, resistUrge, onboardingComplete, completeOnboarding } = useAppStore();
+
+  if (!onboardingComplete) {
+    return (
+      <OnboardingFlow
+        onComplete={(data) => completeOnboarding(data.lastRelapse)}
+      />
+    );
+  }
 
   const handleResisted = () => {
     resistUrge();

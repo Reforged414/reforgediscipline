@@ -16,6 +16,7 @@ interface RelapseLog {
 }
 
 interface AppState {
+  onboardingComplete: boolean;
   streak: number;
   xp: number;
   level: number;
@@ -23,6 +24,7 @@ interface AppState {
   xpForNextLevel: number;
   urgeLogs: UrgeLog[];
   relapseLogs: RelapseLog[];
+  completeOnboarding: (lastRelapse: string) => void;
   resistUrge: () => void;
   logUrge: (log: Omit<UrgeLog, 'timestamp'>) => void;
   logRelapse: (log: Omit<RelapseLog, 'timestamp'>) => void;
@@ -59,14 +61,35 @@ function getLevelInfo(xp: number) {
   return { level, levelName, xpForNextLevel };
 }
 
+function getInitialStreak(lastRelapse: string): number {
+  switch (lastRelapse) {
+    case 'today': return 0;
+    case 'yesterday': return 1;
+    case '3-4-days': return 2;
+    case 'week+': return 7;
+    case 'not-sure':
+    default: return 0;
+  }
+}
+
 export const useAppStore = create<AppState>((set) => ({
-  streak: 30,
-  xp: 840,
-  level: 8,
-  levelName: 'Vanguard',
-  xpForNextLevel: 1000,
+  onboardingComplete: false,
+  streak: 0,
+  xp: 0,
+  level: 1,
+  levelName: 'Initiate',
+  xpForNextLevel: 100,
   urgeLogs: [],
   relapseLogs: [],
+  completeOnboarding: (lastRelapse) =>
+    set(() => ({
+      onboardingComplete: true,
+      streak: getInitialStreak(lastRelapse),
+      xp: 0,
+      level: 1,
+      levelName: 'Initiate',
+      xpForNextLevel: 100,
+    })),
   resistUrge: () =>
     set((state) => {
       const newXp = state.xp + 10;

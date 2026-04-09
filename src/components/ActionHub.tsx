@@ -8,6 +8,7 @@ interface ActionHubProps {
   onLogUrge: () => void;
   onLogRelapse: () => void;
   onEmergencyHelp: () => void;
+  onJournal: () => void;
 }
 
 const actions = [
@@ -18,7 +19,7 @@ const actions = [
   { icon: Phone, label: 'EMERGENCY HELP', sub: 'Get Support', key: 'emergency' },
 ];
 
-const ActionHub = ({ open, onClose, onRideUrge, onLogUrge, onLogRelapse, onEmergencyHelp }: ActionHubProps) => {
+const ActionHub = ({ open, onClose, onRideUrge, onLogUrge, onLogRelapse, onEmergencyHelp, onJournal }: ActionHubProps) => {
   const [dragY, setDragY] = useState(0);
   const [dragging, setDragging] = useState(false);
   const startY = useRef(0);
@@ -48,6 +49,7 @@ const ActionHub = ({ open, onClose, onRideUrge, onLogUrge, onLogRelapse, onEmerg
   const handleAction = (key: string) => {
     if (key === 'ride') onRideUrge();
     if (key === 'log') onLogUrge();
+    if (key === 'journal') onJournal();
     if (key === 'relapse') onLogRelapse();
     if (key === 'emergency') onEmergencyHelp();
   };

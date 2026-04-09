@@ -7,9 +7,10 @@ interface DashboardProps {
   onRideUrge?: () => void;
   onLogUrge?: () => void;
   onDailyCheckIn?: () => void;
+  onJournal?: () => void;
 }
 
-const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn }: DashboardProps) => {
+const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: DashboardProps) => {
   const { streak, xp, level, levelName, xpForNextLevel, dailyDiscipline, checkNewDay } = useAppStore();
 
   React.useEffect(() => {
@@ -74,7 +75,7 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn }: DashboardProps) =>
           {[
             { label: 'Daily check-in', xp: '+15 XP', done: dailyDiscipline.checkedIn, action: onDailyCheckIn },
             { label: 'Resist one urge', xp: '+10 XP', done: dailyDiscipline.resistedUrge },
-            { label: 'Write a reflection', xp: '+15 XP', done: dailyDiscipline.wroteReflection },
+            { label: 'Write a reflection', xp: '+10 XP', done: dailyDiscipline.wroteReflection, action: onJournal },
           ].map((task) => (
             <div
               key={task.label}

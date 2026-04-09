@@ -10,10 +10,12 @@ import RecoveryScreen from '@/components/RecoveryScreen';
 import ProfilePlaceholder from '@/components/ProfilePlaceholder';
 import ComingSoonPlaceholder from '@/components/ComingSoonPlaceholder';
 import InsightsScreen from '@/components/InsightsScreen';
+import DailyCheckIn from '@/components/DailyCheckIn';
+import EmergencyHelp from '@/components/EmergencyHelp';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import { useAppStore } from '@/store/useAppStore';
 
-type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery';
+type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency';
 
 const Index = () => {
   const [screen, setScreen] = useState<Screen>('dashboard');
@@ -22,11 +24,7 @@ const Index = () => {
   const { streak, resistUrge, onboardingComplete, completeOnboarding } = useAppStore();
 
   if (!onboardingComplete) {
-    return (
-      <OnboardingFlow
-        onComplete={(data) => completeOnboarding(data.lastRelapse)}
-      />
-    );
+    return <OnboardingFlow onComplete={(data) => completeOnboarding(data.lastRelapse)} />;
   }
 
   const handleResisted = () => {
@@ -38,6 +36,20 @@ const Index = () => {
     setScreen('dashboard');
     setActiveTab('dashboard');
   };
+
+  if (screen === 'checkin') {
+    return <DailyCheckIn onBack={handleContinue} onComplete={handleContinue} />;
+  }
+
+  if (screen === 'emergency') {
+    return (
+      <EmergencyHelp
+        onBack={() => setScreen('ride')}
+        onRideUrge={() => setScreen('ride')}
+        onDashboard={handleContinue}
+      />
+    );
+  }
 
   if (screen === 'relapse') {
     return (
@@ -66,6 +78,7 @@ const Index = () => {
       <RideTheUrge
         onResisted={handleResisted}
         onBack={() => setScreen('dashboard')}
+        onStillStruggling={() => setScreen('emergency')}
       />
     );
   }
@@ -80,6 +93,7 @@ const Index = () => {
         <Dashboard
           onRideUrge={() => { setActionHubOpen(false); setScreen('ride'); }}
           onLogUrge={() => { setActionHubOpen(false); setScreen('log'); }}
+          onDailyCheckIn={() => { setScreen('checkin'); }}
         />
       )}
       {activeTab === 'insights' && <InsightsScreen />}
@@ -89,26 +103,15 @@ const Index = () => {
       <ActionHub
         open={actionHubOpen}
         onClose={() => setActionHubOpen(false)}
-        onRideUrge={() => {
-          setActionHubOpen(false);
-          setScreen('ride');
-        }}
-        onLogUrge={() => {
-          setActionHubOpen(false);
-          setScreen('log');
-        }}
-        onLogRelapse={() => {
-          setActionHubOpen(false);
-          setScreen('relapse');
-        }}
+        onRideUrge={() => { setActionHubOpen(false); setScreen('ride'); }}
+        onLogUrge={() => { setActionHubOpen(false); setScreen('log'); }}
+        onLogRelapse={() => { setActionHubOpen(false); setScreen('relapse'); }}
+        onEmergencyHelp={() => { setActionHubOpen(false); setScreen('emergency'); }}
       />
 
       <BottomNav
         activeTab={activeTab}
-        onTabChange={(tab) => {
-          setActiveTab(tab);
-          setScreen(tab as Screen);
-        }}
+        onTabChange={(tab) => { setActiveTab(tab); setScreen(tab as Screen); }}
         onPlusPress={() => setActionHubOpen(true)}
       />
     </div>

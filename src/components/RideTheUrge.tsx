@@ -4,11 +4,12 @@ import { ArrowLeft, Eye, Footprints, RotateCcw } from 'lucide-react';
 interface RideTheUrgeProps {
   onResisted: () => void;
   onBack: () => void;
+  onStillStruggling?: () => void;
 }
 
 const TOTAL_SECONDS = 90;
 
-const RideTheUrge = ({ onResisted, onBack }: RideTheUrgeProps) => {
+const RideTheUrge = ({ onResisted, onBack, onStillStruggling }: RideTheUrgeProps) => {
   const [seconds, setSeconds] = useState(TOTAL_SECONDS);
   const [running, setRunning] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -132,7 +133,7 @@ const RideTheUrge = ({ onResisted, onBack }: RideTheUrgeProps) => {
         I RESISTED
       </button>
       <button
-        onClick={onBack}
+        onClick={onStillStruggling || onBack}
         className="w-full py-4 rounded-xl border border-border text-foreground font-display text-lg tracking-wider active:scale-[0.98] transition-transform"
       >
         STILL STRUGGLING

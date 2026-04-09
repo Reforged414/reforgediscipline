@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Settings } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import RetentionBanner from '@/components/RetentionBanner';
@@ -11,11 +11,20 @@ interface DashboardProps {
 }
 
 const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: DashboardProps) => {
-  const { streak, xp, level, levelName, xpForNextLevel, dailyDiscipline, checkNewDay } = useAppStore();
+  const { streak, xp, level, levelName, xpForNextLevel, dailyDiscipline, checkNewDay, urgeLogs } = useAppStore();
 
   React.useEffect(() => {
     checkNewDay();
   }, [checkNewDay]);
+
+  const todayUrgeCount = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return urgeLogs.filter((u) => u.timestamp.split('T')[0] === today).length;
+  }, [urgeLogs]);
+
+  const insightMessage = todayUrgeCount > 0
+    ? `You've had ${todayUrgeCount} urge${todayUrgeCount > 1 ? 's' : ''} today. Stay focused.`
+    : 'Strong day. Stay consistent.';
 
   const prevLevelXp = xpForNextLevel - 1000;
   const xpProgress = Math.min(((xp - Math.max(prevLevelXp, 0)) / (xpForNextLevel - Math.max(prevLevelXp, 0))) * 100, 100);
@@ -57,6 +66,9 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
           />
         </div>
       </div>
+
+      {/* Dynamic Insight */}
+      <p className="text-center text-sm text-muted-foreground italic mb-10">{insightMessage}</p>
 
       {/* CTA Buttons */}
       <div className="space-y-3 mb-10">

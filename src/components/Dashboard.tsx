@@ -86,7 +86,7 @@ const Dashboard = ({ onRideUrge, onLogUrge }: DashboardProps) => {
             { label: 'Resist one urge', xp: '+10 XP', done: dailyDiscipline.resistedUrge },
             { label: 'Write a reflection', xp: '+15 XP', done: dailyDiscipline.wroteReflection },
           ].map((task) => (
-            <div key={task.label} className="flex items-center gap-3 bg-secondary rounded-xl px-4 py-3">
+            <div key={task.label} onClick={'action' in task && task.action ? task.action : undefined} className={`flex items-center gap-3 bg-secondary rounded-xl px-4 py-3 ${'action' in task && task.action && !task.done ? 'cursor-pointer active:scale-[0.98] transition-transform' : ''}`}>
               <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
                 task.done ? 'bg-primary border-primary' : 'border-muted-foreground/40'
               }`}>

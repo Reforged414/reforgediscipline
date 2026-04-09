@@ -18,27 +18,29 @@ import { useAppStore } from '@/store/useAppStore';
 
 type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency';
 
-const slideRight = {
+type Variant = { initial: Record<string, any>; animate: Record<string, any>; exit: Record<string, any> };
+
+const slideRight: Variant = {
   initial: { x: '100%', opacity: 0 },
   animate: { x: 0, opacity: 1 },
   exit: { x: '-30%', opacity: 0 },
 };
 
-const slideLeft = {
+const slideLeft: Variant = {
   initial: { x: '-100%', opacity: 0 },
   animate: { x: 0, opacity: 1 },
   exit: { x: '30%', opacity: 0 },
 };
 
-const fade = {
+const fade: Variant = {
   initial: { opacity: 0, scale: 0.97 },
   animate: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.97 },
 };
 
-const transition = { type: 'tween', duration: 0.3, ease: [0.4, 0, 0.2, 1] };
+const transition = { type: 'tween' as const, duration: 0.3, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] };
 
-const PageWrap = ({ children, variant, screenKey }: { children: React.ReactNode; variant: typeof slideRight; screenKey: string }) => (
+const PageWrap = ({ children, variant, screenKey }: { children: React.ReactNode; variant: Variant; screenKey: string }) => (
   <motion.div
     key={screenKey}
     initial={variant.initial}

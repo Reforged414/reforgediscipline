@@ -1,0 +1,135 @@
+import { useState } from 'react';
+import { ArrowLeft, Zap, Target, Smile, AlertTriangle } from 'lucide-react';
+import { useAppStore } from '@/store/useAppStore';
+
+interface DailyCheckInProps {
+  onBack: () => void;
+  onComplete: () => void;
+}
+
+const moods = [
+  { label: 'Empowered', icon: Zap },
+  { label: 'Focused', icon: Target },
+  { label: 'Neutral', icon: Smile },
+  { label: 'Struggling', icon: AlertTriangle },
+];
+
+const urgeOptions = ['None', 'Mild', 'Strong'];
+
+const DailyCheckIn = ({ onBack, onComplete }: DailyCheckInProps) => {
+  const [mood, setMood] = useState('');
+  const [urgeLevel, setUrgeLevel] = useState('');
+  const [reflection, setReflection] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const { completeDailyCheckIn, dailyDiscipline } = useAppStore();
+
+  const canSubmit = mood && urgeLevel && !dailyDiscipline.checkedIn;
+
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+    completeDailyCheckIn();
+    setSubmitted(true);
+    setTimeout(() => {
+      onComplete();
+    }, 1500);
+  };
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-8 animate-fade-in">
+        <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-6">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M5 13l4 4L19 7" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+        <p className="text-foreground text-lg font-medium mb-1">Check-in complete.</p>
+        <p className="text-muted-foreground text-sm mb-2">Stay consistent.</p>
+        <p className="text-primary font-display text-xl tracking-wider">+15 XP</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background px-5 pt-10 pb-10 max-w-md mx-auto">
+      {/* Header */}
+      <button onClick={onBack} className="text-foreground mb-6">
+        <ArrowLeft size={24} />
+      </button>
+
+      <h2 className="text-3xl font-display tracking-wider text-center mb-1">
+        <span className="text-primary italic">Daily</span> Check-In
+      </h2>
+
+      {/* Mood */}
+      <div className="mt-8">
+        <h3 className="text-foreground font-semibold text-center mb-4">How Are You Feeling Today?</h3>
+        <div className="grid grid-cols-2 gap-3">
+          {moods.map(({ label, icon: Icon }) => (
+            <button
+              key={label}
+              onClick={() => setMood(label)}
+              className={`flex flex-col items-center gap-2 py-5 rounded-xl border-2 transition-all active:scale-[0.97] ${
+                mood === label
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border bg-secondary'
+              }`}
+            >
+              <Icon size={28} className={mood === label ? 'text-primary' : 'text-primary/60'} />
+              <span className={`text-sm ${mood === label ? 'text-primary font-medium' : 'text-foreground'}`}>
+                {label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Urges */}
+      <div className="mt-8">
+        <h3 className="text-foreground font-semibold text-center mb-4">Did you experience urges today?</h3>
+        <div className="flex gap-2">
+          {urgeOptions.map((opt) => (
+            <button
+              key={opt}
+              onClick={() => setUrgeLevel(opt)}
+              className={`flex-1 py-3 rounded-xl font-display tracking-wider text-sm transition-all active:scale-[0.97] ${
+                urgeLevel === opt
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-foreground border border-border'
+              }`}
+            >
+              {opt.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Reflection */}
+      <div className="mt-8">
+        <h3 className="text-foreground font-display tracking-wider text-xs uppercase mb-3">
+          Reflection - (Optional)
+        </h3>
+        <textarea
+          value={reflection}
+          onChange={(e) => setReflection(e.target.value)}
+          placeholder="What did you learn today? What will you do differently tomorrow?"
+          className="w-full h-28 bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary"
+        />
+      </div>
+
+      {/* Submit */}
+      <button
+        onClick={handleSubmit}
+        disabled={!canSubmit}
+        className={`w-full mt-8 py-4 rounded-xl font-display text-lg tracking-wider transition-all active:scale-[0.97] ${
+          canSubmit
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-muted text-muted-foreground cursor-not-allowed'
+        }`}
+      >
+        COMPLETE CHECK-IN
+      </button>
+    </div>
+  );
+};
+
+export default DailyCheckIn;

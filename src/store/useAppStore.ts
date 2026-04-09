@@ -127,6 +127,7 @@ export const useAppStore = create<AppState>()(
       urgeLogs: [],
       resistedTimestamps: [],
       relapseLogs: [],
+      journalLogs: [],
       dailyDiscipline: freshDailyDiscipline(),
 
       completeOnboarding: (lastRelapse, data) =>
@@ -200,6 +201,19 @@ export const useAppStore = create<AppState>()(
           return {
             xp: newXp, level, levelName, xpForNextLevel,
             dailyDiscipline: { ...state.dailyDiscipline, checkedIn: true },
+          };
+        }),
+
+      saveJournalEntry: (entry) =>
+        set((state) => {
+          const newXp = state.xp + 10;
+          const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
+          return {
+            xp: newXp, level, levelName, xpForNextLevel,
+            journalLogs: [...state.journalLogs, { ...entry, timestamp: new Date().toISOString() }],
+            dailyDiscipline: state.dailyDiscipline.wroteReflection
+              ? state.dailyDiscipline
+              : { ...state.dailyDiscipline, wroteReflection: true },
           };
         }),
     }),

@@ -11,11 +11,20 @@ interface DashboardProps {
 }
 
 const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: DashboardProps) => {
-  const { streak, xp, level, levelName, xpForNextLevel, dailyDiscipline, checkNewDay } = useAppStore();
+  const { streak, xp, level, levelName, xpForNextLevel, dailyDiscipline, checkNewDay, urgeLogs } = useAppStore();
 
   React.useEffect(() => {
     checkNewDay();
   }, [checkNewDay]);
+
+  const todayUrgeCount = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return urgeLogs.filter((u) => u.timestamp.split('T')[0] === today).length;
+  }, [urgeLogs]);
+
+  const insightMessage = todayUrgeCount > 0
+    ? `You've had ${todayUrgeCount} urge${todayUrgeCount > 1 ? 's' : ''} today. Stay focused.`
+    : 'Strong day. Stay consistent.';
 
   const prevLevelXp = xpForNextLevel - 1000;
   const xpProgress = Math.min(((xp - Math.max(prevLevelXp, 0)) / (xpForNextLevel - Math.max(prevLevelXp, 0))) * 100, 100);

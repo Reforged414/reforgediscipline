@@ -48,7 +48,7 @@ const PageWrap = ({ children, variant, screenKey }: { children: React.ReactNode;
     animate={variant.animate}
     exit={variant.exit}
     transition={transition}
-    className="absolute inset-0"
+    className="min-h-screen"
   >
     {children}
   </motion.div>
@@ -176,7 +176,7 @@ const Index = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto relative overflow-hidden" style={{ minHeight: '100dvh' }}>
+    <div className="max-w-md mx-auto relative" style={{ minHeight: '100dvh' }}>
       <AnimatePresence mode="wait">
         {renderScreen()}
       </AnimatePresence>

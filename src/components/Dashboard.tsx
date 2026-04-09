@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Settings } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import RetentionBanner from '@/components/RetentionBanner';

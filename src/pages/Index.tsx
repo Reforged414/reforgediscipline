@@ -13,10 +13,11 @@ import ComingSoonPlaceholder from '@/components/ComingSoonPlaceholder';
 import InsightsScreen from '@/components/InsightsScreen';
 import DailyCheckIn from '@/components/DailyCheckIn';
 import EmergencyHelp from '@/components/EmergencyHelp';
+import JournalEntry from '@/components/JournalEntry';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import { useAppStore } from '@/store/useAppStore';
 
-type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency';
+type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'journal';
 
 type Variant = { initial: Record<string, any>; animate: Record<string, any>; exit: Record<string, any> };
 
@@ -91,6 +92,12 @@ const Index = () => {
 
   const renderScreen = () => {
     switch (screen) {
+      case 'journal':
+        return (
+          <PageWrap variant={slideRight} screenKey="journal">
+            <JournalEntry onBack={handleContinue} />
+          </PageWrap>
+        );
       case 'checkin':
         return (
           <PageWrap variant={slideRight} screenKey="checkin">
@@ -156,6 +163,7 @@ const Index = () => {
                   onRideUrge={() => { setActionHubOpen(false); navigateTo('ride'); }}
                   onLogUrge={() => { setActionHubOpen(false); navigateTo('log'); }}
                   onDailyCheckIn={() => navigateTo('checkin')}
+                  onJournal={() => navigateTo('journal')}
                 />
               )}
               {activeTab === 'insights' && <InsightsScreen />}
@@ -182,6 +190,7 @@ const Index = () => {
             onLogUrge={() => { setActionHubOpen(false); navigateTo('log'); }}
             onLogRelapse={() => { setActionHubOpen(false); navigateTo('relapse'); }}
             onEmergencyHelp={() => { setActionHubOpen(false); navigateTo('emergency'); }}
+            onJournal={() => { setActionHubOpen(false); navigateTo('journal'); }}
           />
           <BottomNav
             activeTab={activeTab}

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Settings } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -8,10 +9,13 @@ interface DashboardProps {
 
 
 const Dashboard = ({ onRideUrge, onLogUrge }: DashboardProps) => {
-  const { streak, xp, level, levelName, xpForNextLevel, resistedTimestamps } = useAppStore();
-  const hasResistedToday = resistedTimestamps.some(
-    (t) => new Date(t).toDateString() === new Date().toDateString()
-  );
+  const { streak, xp, level, levelName, xpForNextLevel, dailyDiscipline, checkNewDay, completeDailyCheckIn } = useAppStore();
+
+  // Check for new day on render
+  React.useEffect(() => {
+    checkNewDay();
+  }, [checkNewDay]);
+
   const prevLevelXp = xpForNextLevel - 1000; // rough approximation
   const xpProgress = Math.min(((xp - Math.max(prevLevelXp, 0)) / (xpForNextLevel - Math.max(prevLevelXp, 0))) * 100, 100);
 
@@ -78,9 +82,9 @@ const Dashboard = ({ onRideUrge, onLogUrge }: DashboardProps) => {
         </p>
         <div className="space-y-3">
           {[
-            { label: 'Daily check-in', xp: '+15 XP', done: false },
-            { label: 'Resist one urge', xp: '+10 XP', done: hasResistedToday },
-            { label: 'Write a reflection', xp: '+15 XP', done: false },
+            { label: 'Daily check-in', xp: '+15 XP', done: dailyDiscipline.checkedIn, action: () => completeDailyCheckIn() },
+            { label: 'Resist one urge', xp: '+10 XP', done: dailyDiscipline.resistedUrge },
+            { label: 'Write a reflection', xp: '+15 XP', done: dailyDiscipline.wroteReflection },
           ].map((task) => (
             <div key={task.label} className="flex items-center gap-3 bg-secondary rounded-xl px-4 py-3">
               <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${

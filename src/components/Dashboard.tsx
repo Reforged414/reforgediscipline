@@ -67,6 +67,9 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
         </div>
       </div>
 
+      {/* Dynamic Insight */}
+      <p className="text-center text-sm text-muted-foreground italic mb-10">{insightMessage}</p>
+
       {/* CTA Buttons */}
       <div className="space-y-3 mb-10">
         <button onClick={onRideUrge} className="w-full py-4 rounded-xl bg-primary text-center active:scale-[0.97] transition-transform">

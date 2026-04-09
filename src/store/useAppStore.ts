@@ -1,10 +1,11 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface UrgeLog {
   strength: string;
   triggers: string[];
   actions: string[];
-  timestamp: Date;
+  timestamp: string;
 }
 
 interface RelapseLog {
@@ -12,11 +13,27 @@ interface RelapseLog {
   mood: string;
   location: string;
   reflection: string;
-  timestamp: Date;
+  timestamp: string;
+}
+
+interface OnboardingData {
+  goals: string[];
+  identity: string[];
+  lastRelapse: string;
+  triggers: string[];
+  severity: string;
+}
+
+interface DailyDiscipline {
+  date: string; // YYYY-MM-DD
+  checkedIn: boolean;
+  resistedUrge: boolean;
+  wroteReflection: boolean;
 }
 
 interface AppState {
   onboardingComplete: boolean;
+  onboardingData: OnboardingData | null;
   streak: number;
   xp: number;
   level: number;
@@ -24,12 +41,15 @@ interface AppState {
   xpForNextLevel: number;
   urgeLogs: UrgeLog[];
   relapseLogs: RelapseLog[];
-  resistedTimestamps: Date[];
-  completeOnboarding: (lastRelapse: string) => void;
+  resistedTimestamps: string[];
+  dailyDiscipline: DailyDiscipline;
+  completeOnboarding: (lastRelapse: string, data?: Partial<OnboardingData>) => void;
   resistUrge: () => void;
   logUrge: (log: Omit<UrgeLog, 'timestamp'>) => void;
   logRelapse: (log: Omit<RelapseLog, 'timestamp'>) => void;
   resetStreak: () => void;
+  checkNewDay: () => void;
+  completeDailyCheckIn: () => void;
 }
 
 const LEVELS = [
@@ -73,59 +93,110 @@ function getInitialStreak(lastRelapse: string): number {
   }
 }
 
-export const useAppStore = create<AppState>((set) => ({
-  onboardingComplete: false,
-  streak: 0,
-  xp: 0,
-  level: 1,
-  levelName: 'Initiate',
-  xpForNextLevel: 100,
-  urgeLogs: [],
-  resistedTimestamps: [],
-  relapseLogs: [],
-  completeOnboarding: (lastRelapse) =>
-    set(() => ({
-      onboardingComplete: true,
-      streak: getInitialStreak(lastRelapse),
+function getTodayString(): string {
+  return new Date().toISOString().split('T')[0];
+}
+
+function freshDailyDiscipline(): DailyDiscipline {
+  return {
+    date: getTodayString(),
+    checkedIn: false,
+    resistedUrge: false,
+    wroteReflection: false,
+  };
+}
+
+export const useAppStore = create<AppState>()(
+  persist(
+    (set, get) => ({
+      onboardingComplete: false,
+      onboardingData: null,
+      streak: 0,
       xp: 0,
       level: 1,
       levelName: 'Initiate',
       xpForNextLevel: 100,
-    })),
-  resistUrge: () =>
-    set((state) => {
-      const newXp = state.xp + 10;
-      const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
-      return {
-        xp: newXp, level, levelName, xpForNextLevel,
-        resistedTimestamps: [...state.resistedTimestamps, new Date()],
-      };
+      urgeLogs: [],
+      resistedTimestamps: [],
+      relapseLogs: [],
+      dailyDiscipline: freshDailyDiscipline(),
+
+      completeOnboarding: (lastRelapse, data) =>
+        set(() => ({
+          onboardingComplete: true,
+          onboardingData: data ? { ...data, lastRelapse } as OnboardingData : { goals: [], identity: [], lastRelapse, triggers: [], severity: '' },
+          streak: getInitialStreak(lastRelapse),
+          xp: 0,
+          level: 1,
+          levelName: 'Initiate',
+          xpForNextLevel: 100,
+          dailyDiscipline: freshDailyDiscipline(),
+        })),
+
+      resistUrge: () =>
+        set((state) => {
+          const newXp = state.xp + 10;
+          const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
+          const now = new Date().toISOString();
+          return {
+            xp: newXp, level, levelName, xpForNextLevel,
+            resistedTimestamps: [...state.resistedTimestamps, now],
+            dailyDiscipline: { ...state.dailyDiscipline, resistedUrge: true },
+          };
+        }),
+
+      logUrge: (log) =>
+        set((state) => {
+          const newXp = state.xp + 2;
+          const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
+          return {
+            xp: newXp, level, levelName, xpForNextLevel,
+            urgeLogs: [...state.urgeLogs, { ...log, timestamp: new Date().toISOString() }],
+          };
+        }),
+
+      logRelapse: (log) =>
+        set((state) => {
+          const newXp = state.xp + 2;
+          const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
+          return {
+            streak: 0,
+            xp: newXp, level, levelName, xpForNextLevel,
+            relapseLogs: [...state.relapseLogs, { ...log, timestamp: new Date().toISOString() }],
+          };
+        }),
+
+      resetStreak: () =>
+        set(() => ({ streak: 0 })),
+
+      checkNewDay: () => {
+        const state = get();
+        const today = getTodayString();
+        if (state.dailyDiscipline.date !== today) {
+          // New day: increment streak if no relapse yesterday, reset daily tasks
+          const lastRelapseToday = state.relapseLogs.some(
+            (r) => r.timestamp.split('T')[0] === state.dailyDiscipline.date
+          );
+          set({
+            streak: lastRelapseToday ? 0 : state.streak + 1,
+            dailyDiscipline: freshDailyDiscipline(),
+          });
+        }
+      },
+
+      completeDailyCheckIn: () =>
+        set((state) => {
+          if (state.dailyDiscipline.checkedIn) return {};
+          const newXp = state.xp + 15;
+          const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
+          return {
+            xp: newXp, level, levelName, xpForNextLevel,
+            dailyDiscipline: { ...state.dailyDiscipline, checkedIn: true },
+          };
+        }),
     }),
-  logUrge: (log) =>
-    set((state) => {
-      const newXp = state.xp + 2;
-      const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
-      return {
-        xp: newXp,
-        level,
-        levelName,
-        xpForNextLevel,
-        urgeLogs: [...state.urgeLogs, { ...log, timestamp: new Date() }],
-      };
-    }),
-  logRelapse: (log) =>
-    set((state) => {
-      const newXp = state.xp + 2;
-      const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
-      return {
-        streak: 0,
-        xp: newXp,
-        level,
-        levelName,
-        xpForNextLevel,
-        relapseLogs: [...state.relapseLogs, { ...log, timestamp: new Date() }],
-      };
-    }),
-  resetStreak: () =>
-    set(() => ({ streak: 0 })),
-}));
+    {
+      name: 'reforged-app-storage',
+    }
+  )
+);

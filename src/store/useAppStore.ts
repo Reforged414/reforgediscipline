@@ -31,6 +31,12 @@ interface DailyDiscipline {
   wroteReflection: boolean;
 }
 
+interface JournalLog {
+  text: string;
+  tag: string | null;
+  timestamp: string;
+}
+
 interface AppState {
   onboardingComplete: boolean;
   onboardingData: OnboardingData | null;
@@ -42,6 +48,7 @@ interface AppState {
   urgeLogs: UrgeLog[];
   relapseLogs: RelapseLog[];
   resistedTimestamps: string[];
+  journalLogs: JournalLog[];
   dailyDiscipline: DailyDiscipline;
   completeOnboarding: (lastRelapse: string, data?: Partial<OnboardingData>) => void;
   resistUrge: () => void;
@@ -50,6 +57,7 @@ interface AppState {
   resetStreak: () => void;
   checkNewDay: () => void;
   completeDailyCheckIn: () => void;
+  saveJournalEntry: (entry: Omit<JournalLog, 'timestamp'>) => void;
 }
 
 const LEVELS = [
@@ -119,6 +127,7 @@ export const useAppStore = create<AppState>()(
       urgeLogs: [],
       resistedTimestamps: [],
       relapseLogs: [],
+      journalLogs: [],
       dailyDiscipline: freshDailyDiscipline(),
 
       completeOnboarding: (lastRelapse, data) =>
@@ -192,6 +201,19 @@ export const useAppStore = create<AppState>()(
           return {
             xp: newXp, level, levelName, xpForNextLevel,
             dailyDiscipline: { ...state.dailyDiscipline, checkedIn: true },
+          };
+        }),
+
+      saveJournalEntry: (entry) =>
+        set((state) => {
+          const newXp = state.xp + 10;
+          const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
+          return {
+            xp: newXp, level, levelName, xpForNextLevel,
+            journalLogs: [...state.journalLogs, { ...entry, timestamp: new Date().toISOString() }],
+            dailyDiscipline: state.dailyDiscipline.wroteReflection
+              ? state.dailyDiscipline
+              : { ...state.dailyDiscipline, wroteReflection: true },
           };
         }),
     }),

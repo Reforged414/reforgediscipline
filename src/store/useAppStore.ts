@@ -31,6 +31,12 @@ interface DailyDiscipline {
   wroteReflection: boolean;
 }
 
+interface JournalLog {
+  text: string;
+  tag: string | null;
+  timestamp: string;
+}
+
 interface AppState {
   onboardingComplete: boolean;
   onboardingData: OnboardingData | null;
@@ -42,6 +48,7 @@ interface AppState {
   urgeLogs: UrgeLog[];
   relapseLogs: RelapseLog[];
   resistedTimestamps: string[];
+  journalLogs: JournalLog[];
   dailyDiscipline: DailyDiscipline;
   completeOnboarding: (lastRelapse: string, data?: Partial<OnboardingData>) => void;
   resistUrge: () => void;
@@ -50,6 +57,7 @@ interface AppState {
   resetStreak: () => void;
   checkNewDay: () => void;
   completeDailyCheckIn: () => void;
+  saveJournalEntry: (entry: Omit<JournalLog, 'timestamp'>) => void;
 }
 
 const LEVELS = [

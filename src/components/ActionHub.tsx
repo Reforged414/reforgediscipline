@@ -1,3 +1,4 @@
+import { useState, useRef, useCallback } from 'react';
 import { Flame, FileText, BookOpen, AlertTriangle, Phone, ChevronRight } from 'lucide-react';
 
 interface ActionHubProps {
@@ -18,6 +19,30 @@ const actions = [
 ];
 
 const ActionHub = ({ open, onClose, onRideUrge, onLogUrge, onLogRelapse, onEmergencyHelp }: ActionHubProps) => {
+  const [dragY, setDragY] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const startY = useRef(0);
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    startY.current = e.touches[0].clientY;
+    setDragging(true);
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!dragging) return;
+    const delta = e.touches[0].clientY - startY.current;
+    if (delta > 0) setDragY(delta);
+  }, [dragging]);
+
+  const handleTouchEnd = useCallback(() => {
+    setDragging(false);
+    if (dragY > 100) {
+      onClose();
+    }
+    setDragY(0);
+  }, [dragY, onClose]);
+
   if (!open) return null;
 
   const handleAction = (key: string) => {
@@ -36,9 +61,20 @@ const ActionHub = ({ open, onClose, onRideUrge, onLogUrge, onLogRelapse, onEmerg
       />
 
       {/* Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 animate-slide-up">
+      <div
+        ref={sheetRef}
+        className="fixed bottom-0 left-0 right-0 z-50 animate-slide-up"
+        style={{
+          transform: `translateY(${dragY}px)`,
+          transition: dragging ? 'none' : 'transform 0.3s ease-out',
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className="bg-card rounded-t-3xl px-5 pt-6 pb-8 max-w-md mx-auto">
-          <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-6" />
+          {/* Drag handle */}
+          <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-6 cursor-grab" />
 
           <h2 className="font-display text-2xl tracking-wider text-center text-foreground">
             TAKE ACTION
@@ -52,7 +88,7 @@ const ActionHub = ({ open, onClose, onRideUrge, onLogUrge, onLogRelapse, onEmerg
               <button
                 key={key}
                 onClick={() => handleAction(key)}
-                className="w-full flex items-center gap-4 bg-secondary rounded-xl px-4 py-4 active:scale-[0.98] transition-transform"
+                className="w-full flex items-center gap-4 bg-secondary rounded-xl px-4 py-4 active:scale-[0.97] transition-transform"
               >
                 <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                   <Icon size={20} className="text-primary" />

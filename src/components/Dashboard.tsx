@@ -84,10 +84,10 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn }: DashboardProps) =>
               }`}
             >
               <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                task.done ? 'bg-primary border-primary scale-110' : 'border-muted-foreground/40'
+                task.done ? 'bg-primary border-primary animate-glow-once' : 'border-muted-foreground/40'
               }`}>
                 {task.done && (
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="animate-check-pop">
                     <path d="M2 6L5 9L10 3" stroke="hsl(var(--primary-foreground))" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 )}

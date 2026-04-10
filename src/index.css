@@ -66,3 +66,9 @@
     font-family: 'Bebas Neue', cursive;
   }
 }
+
+/* Button press glow for primary buttons */
+button.bg-primary:active,
+.bg-primary:active {
+  box-shadow: 0 0 20px hsl(25 95% 53% / 0.5);
+}

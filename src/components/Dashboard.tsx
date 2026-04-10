@@ -1,7 +1,17 @@
 import React, { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Settings } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import RetentionBanner from '@/components/RetentionBanner';
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } },
+};
+const fadeUp = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] } },
+};
 
 interface DashboardProps {
   onRideUrge?: () => void;

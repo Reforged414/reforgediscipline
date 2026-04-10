@@ -75,7 +75,12 @@ const Index = () => {
     }
   }, [pendingMilestone]);
 
-  // Show loading while checking auth
+  // Show onboarding FIRST for new users (before any auth check)
+  if (!onboardingComplete) {
+    return <OnboardingFlow onComplete={(data) => completeOnboarding(data.lastRelapse)} />;
+  }
+
+  // Show loading while checking auth (only after onboarding is done)
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -84,13 +89,9 @@ const Index = () => {
     );
   }
 
-  // Show login if not authenticated and not guest
+  // Show login if not authenticated and not guest (only after onboarding)
   if (!session && !isGuest) {
     return <LoginScreen />;
-  }
-
-  if (!onboardingComplete) {
-    return <OnboardingFlow onComplete={(data) => completeOnboarding(data.lastRelapse)} />;
   }
 
   const navigateTo = (next: Screen) => {

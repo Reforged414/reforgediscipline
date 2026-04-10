@@ -119,11 +119,12 @@ function freshDailyDiscipline(): DailyDiscipline {
 
 const MILESTONES = [3, 7, 14, 30];
 
-function checkMilestone(newStreak: number, shownMilestones: number[]): number | null {
-  for (const m of MILESTONES) {
-    if (newStreak >= m && !shownMilestones.includes(m)) return m;
-  }
-  return null;
+function checkMilestone(newStreak: number, shownMilestones: number[]): { pending: number | null; toMark: number[] } {
+  // Find all milestones the user has reached but not yet been shown
+  const unshown = MILESTONES.filter(m => newStreak >= m && !shownMilestones.includes(m));
+  if (unshown.length === 0) return { pending: null, toMark: [] };
+  // Show the highest one, mark all as shown
+  return { pending: unshown[unshown.length - 1], toMark: unshown };
 }
 
 export const useAppStore = create<AppState>()(

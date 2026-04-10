@@ -119,11 +119,12 @@ function freshDailyDiscipline(): DailyDiscipline {
 
 const MILESTONES = [3, 7, 14, 30];
 
-function checkMilestone(newStreak: number, shownMilestones: number[]): number | null {
-  for (const m of MILESTONES) {
-    if (newStreak >= m && !shownMilestones.includes(m)) return m;
-  }
-  return null;
+function checkMilestone(newStreak: number, shownMilestones: number[]): { pending: number | null; toMark: number[] } {
+  // Find all milestones the user has reached but not yet been shown
+  const unshown = MILESTONES.filter(m => newStreak >= m && !shownMilestones.includes(m));
+  if (unshown.length === 0) return { pending: null, toMark: [] };
+  // Show the highest one, mark all as shown
+  return { pending: unshown[unshown.length - 1], toMark: unshown };
 }
 
 export const useAppStore = create<AppState>()(
@@ -146,7 +147,7 @@ export const useAppStore = create<AppState>()(
 
       completeOnboarding: (lastRelapse, data) => {
         const initialStreak = getInitialStreak(lastRelapse);
-        const milestone = checkMilestone(initialStreak, []);
+        const { pending, toMark } = checkMilestone(initialStreak, []);
         set(() => ({
           onboardingComplete: true,
           onboardingData: data ? { ...data, lastRelapse } as OnboardingData : { goals: [], identity: [], lastRelapse, triggers: [], severity: '' },
@@ -156,8 +157,8 @@ export const useAppStore = create<AppState>()(
           levelName: 'Initiate',
           xpForNextLevel: 100,
           dailyDiscipline: freshDailyDiscipline(),
-          shownMilestones: milestone ? [milestone] : [],
-          pendingMilestone: milestone,
+          shownMilestones: toMark,
+          pendingMilestone: pending,
         }));
       },
 
@@ -205,12 +206,12 @@ export const useAppStore = create<AppState>()(
             (r) => r.timestamp.split('T')[0] === state.dailyDiscipline.date
           );
           const newStreak = lastRelapseToday ? 0 : state.streak + 1;
-          const milestone = checkMilestone(newStreak, state.shownMilestones);
+          const { pending, toMark } = checkMilestone(newStreak, state.shownMilestones);
           set({
             streak: newStreak,
             dailyDiscipline: freshDailyDiscipline(),
-            pendingMilestone: milestone,
-            shownMilestones: milestone ? [...state.shownMilestones, milestone] : state.shownMilestones,
+            pendingMilestone: pending,
+            shownMilestones: toMark.length > 0 ? [...state.shownMilestones, ...toMark] : state.shownMilestones,
           });
         }
       },

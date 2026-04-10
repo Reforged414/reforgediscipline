@@ -60,7 +60,14 @@ const Index = () => {
   const [actionHubOpen, setActionHubOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const prevScreen = useRef<Screen>('dashboard');
-  const { streak, resistUrge, onboardingComplete, completeOnboarding } = useAppStore();
+  const { streak, resistUrge, onboardingComplete, completeOnboarding, pendingMilestone, dismissMilestone } = useAppStore();
+
+  // Auto-navigate to milestone screen when a pending milestone exists
+  useEffect(() => {
+    if (pendingMilestone && screen === 'dashboard') {
+      navigateTo('milestone');
+    }
+  }, [pendingMilestone]);
 
   if (!onboardingComplete) {
     return <OnboardingFlow onComplete={(data) => completeOnboarding(data.lastRelapse)} />;

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Dashboard from '@/components/Dashboard';
 import BottomNav from '@/components/BottomNav';
@@ -14,10 +14,11 @@ import InsightsScreen from '@/components/InsightsScreen';
 import DailyCheckIn from '@/components/DailyCheckIn';
 import EmergencyHelp from '@/components/EmergencyHelp';
 import JournalEntry from '@/components/JournalEntry';
+import MilestoneScreen from '@/components/MilestoneScreen';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import { useAppStore } from '@/store/useAppStore';
 
-type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'journal';
+type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'journal' | 'milestone';
 
 type Variant = { initial: Record<string, any>; animate: Record<string, any>; exit: Record<string, any> };
 
@@ -59,7 +60,14 @@ const Index = () => {
   const [actionHubOpen, setActionHubOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const prevScreen = useRef<Screen>('dashboard');
-  const { streak, resistUrge, onboardingComplete, completeOnboarding } = useAppStore();
+  const { streak, resistUrge, onboardingComplete, completeOnboarding, pendingMilestone, dismissMilestone } = useAppStore();
+
+  // Auto-navigate to milestone screen when a pending milestone exists
+  useEffect(() => {
+    if (pendingMilestone && screen === 'dashboard') {
+      navigateTo('milestone');
+    }
+  }, [pendingMilestone]);
 
   if (!onboardingComplete) {
     return <OnboardingFlow onComplete={(data) => completeOnboarding(data.lastRelapse)} />;
@@ -145,6 +153,15 @@ const Index = () => {
               onResisted={handleResisted}
               onBack={() => goBack('dashboard')}
               onStillStruggling={() => navigateTo('emergency')}
+            />
+          </PageWrap>
+        );
+      case 'milestone':
+        return (
+          <PageWrap variant={fade} screenKey="milestone">
+            <MilestoneScreen
+              milestone={pendingMilestone ?? streak}
+              onContinue={() => { dismissMilestone(); goBack('dashboard'); }}
             />
           </PageWrap>
         );

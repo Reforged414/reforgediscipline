@@ -50,6 +50,8 @@ interface AppState {
   resistedTimestamps: string[];
   journalLogs: JournalLog[];
   dailyDiscipline: DailyDiscipline;
+  shownMilestones: number[];
+  pendingMilestone: number | null;
   completeOnboarding: (lastRelapse: string, data?: Partial<OnboardingData>) => void;
   resistUrge: () => void;
   logUrge: (log: Omit<UrgeLog, 'timestamp'>) => void;
@@ -58,6 +60,7 @@ interface AppState {
   checkNewDay: () => void;
   completeDailyCheckIn: () => void;
   saveJournalEntry: (entry: Omit<JournalLog, 'timestamp'>) => void;
+  dismissMilestone: () => void;
 }
 
 const LEVELS = [
@@ -114,6 +117,15 @@ function freshDailyDiscipline(): DailyDiscipline {
   };
 }
 
+const MILESTONES = [3, 7, 14, 30];
+
+function checkMilestone(newStreak: number, shownMilestones: number[]): number | null {
+  for (const m of MILESTONES) {
+    if (newStreak >= m && !shownMilestones.includes(m)) return m;
+  }
+  return null;
+}
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -129,18 +141,25 @@ export const useAppStore = create<AppState>()(
       relapseLogs: [],
       journalLogs: [],
       dailyDiscipline: freshDailyDiscipline(),
+      shownMilestones: [],
+      pendingMilestone: null,
 
-      completeOnboarding: (lastRelapse, data) =>
+      completeOnboarding: (lastRelapse, data) => {
+        const initialStreak = getInitialStreak(lastRelapse);
+        const milestone = checkMilestone(initialStreak, []);
         set(() => ({
           onboardingComplete: true,
           onboardingData: data ? { ...data, lastRelapse } as OnboardingData : { goals: [], identity: [], lastRelapse, triggers: [], severity: '' },
-          streak: getInitialStreak(lastRelapse),
+          streak: initialStreak,
           xp: 0,
           level: 1,
           levelName: 'Initiate',
           xpForNextLevel: 100,
           dailyDiscipline: freshDailyDiscipline(),
-        })),
+          shownMilestones: milestone ? [milestone] : [],
+          pendingMilestone: milestone,
+        }));
+      },
 
       resistUrge: () =>
         set((state) => {
@@ -182,16 +201,21 @@ export const useAppStore = create<AppState>()(
         const state = get();
         const today = getTodayString();
         if (state.dailyDiscipline.date !== today) {
-          // New day: increment streak if no relapse yesterday, reset daily tasks
           const lastRelapseToday = state.relapseLogs.some(
             (r) => r.timestamp.split('T')[0] === state.dailyDiscipline.date
           );
+          const newStreak = lastRelapseToday ? 0 : state.streak + 1;
+          const milestone = checkMilestone(newStreak, state.shownMilestones);
           set({
-            streak: lastRelapseToday ? 0 : state.streak + 1,
+            streak: newStreak,
             dailyDiscipline: freshDailyDiscipline(),
+            pendingMilestone: milestone,
+            shownMilestones: milestone ? [...state.shownMilestones, milestone] : state.shownMilestones,
           });
         }
       },
+
+      dismissMilestone: () => set({ pendingMilestone: null }),
 
       completeDailyCheckIn: () =>
         set((state) => {

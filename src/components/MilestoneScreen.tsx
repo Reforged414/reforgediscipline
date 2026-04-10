@@ -1,0 +1,142 @@
+import { motion } from 'framer-motion';
+import { X, Share2, Flame } from 'lucide-react';
+import { useAppStore } from '@/store/useAppStore';
+
+interface MilestoneScreenProps {
+  milestone: number;
+  onContinue: () => void;
+}
+
+const MilestoneScreen = ({ milestone, onContinue }: MilestoneScreenProps) => {
+  const { streak, resistedTimestamps } = useAppStore();
+  const totalUrgesDefeated = resistedTimestamps.length;
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Reforged – Milestone Reached',
+        text: `I just hit ${milestone} days clean on Reforged! 🔥`,
+      }).catch(() => {});
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col items-center px-6 pt-6 pb-10">
+      {/* Top bar */}
+      <div className="w-full flex items-center justify-between mb-6">
+        <button onClick={onContinue} className="p-2 -ml-2 active:scale-90 transition-transform">
+          <X size={22} className="text-muted-foreground" />
+        </button>
+        <button onClick={handleShare} className="p-2 -mr-2 active:scale-90 transition-transform">
+          <Share2 size={20} className="text-muted-foreground" />
+        </button>
+      </div>
+
+      {/* Title */}
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.5 }}
+        className="font-display text-xl tracking-wider text-primary italic mb-6"
+      >
+        Milestone Reached
+      </motion.p>
+
+      {/* Big number */}
+      <motion.p
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: [0.9, 1.05, 1], opacity: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="text-8xl font-light text-primary leading-none mb-2"
+      >
+        {milestone}
+      </motion.p>
+
+      {/* Days Clean */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="font-display text-2xl tracking-wider text-foreground mb-1"
+      >
+        Days Clean
+      </motion.p>
+
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        className="text-sm text-muted-foreground mb-8"
+      >
+        You're building momentum.
+      </motion.p>
+
+      {/* Glowing badge */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        className="relative w-44 h-44 mb-10 flex items-center justify-center"
+      >
+        {/* Outer pulsing ring */}
+        <motion.div
+          className="absolute inset-0 rounded-full border-2 border-primary/30"
+          animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.7, 0.4] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        {/* Middle ring */}
+        <div className="absolute inset-3 rounded-full border-2 border-primary/50" />
+        {/* Inner filled circle */}
+        <div
+          className="absolute inset-6 rounded-full bg-primary flex items-center justify-center"
+          style={{ boxShadow: '0 0 40px hsl(25 95% 53% / 0.5), 0 0 80px hsl(25 95% 53% / 0.2)' }}
+        >
+          <Flame size={40} className="text-primary-foreground" />
+        </div>
+      </motion.div>
+
+      {/* Stats */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.4 }}
+        className="w-full space-y-3 mb-10"
+      >
+        <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-2">Progress:</p>
+        <div className="bg-secondary rounded-xl px-5 py-4 text-center">
+          <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-1">Current Streak</p>
+          <p className="text-lg text-foreground font-light">{streak} days</p>
+        </div>
+        <div className="bg-secondary rounded-xl px-5 py-4 text-center">
+          <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-1">Total Urges Defeated</p>
+          <p className="text-lg text-foreground font-light">{totalUrgesDefeated}</p>
+        </div>
+      </motion.div>
+
+      {/* Continue button */}
+      <motion.button
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        onClick={onContinue}
+        className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-display text-lg tracking-wider active:scale-[0.97] transition-transform mb-4"
+      >
+        CONTINUE →
+      </motion.button>
+
+      {/* Share */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.7 }}
+        onClick={handleShare}
+        className="flex items-center gap-2 text-muted-foreground text-sm active:scale-95 transition-transform"
+      >
+        <Share2 size={14} />
+        <span className="tracking-widest uppercase text-xs">Share Achievement</span>
+      </motion.button>
+    </div>
+  );
+};
+
+export default MilestoneScreen;

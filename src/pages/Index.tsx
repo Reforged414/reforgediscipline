@@ -16,7 +16,10 @@ import EmergencyHelp from '@/components/EmergencyHelp';
 import JournalEntry from '@/components/JournalEntry';
 import MilestoneScreen from '@/components/MilestoneScreen';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
+import LoginScreen from '@/components/LoginScreen';
 import { useAppStore } from '@/store/useAppStore';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCloudSync } from '@/hooks/useCloudSync';
 
 type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'journal' | 'milestone';
 

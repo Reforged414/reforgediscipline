@@ -1,7 +1,17 @@
 import React, { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Settings } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import RetentionBanner from '@/components/RetentionBanner';
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } },
+};
+const fadeUp = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] } },
+};
 
 interface DashboardProps {
   onRideUrge?: () => void;
@@ -30,18 +40,25 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
   const xpProgress = Math.min(((xp - Math.max(prevLevelXp, 0)) / (xpForNextLevel - Math.max(prevLevelXp, 0))) * 100, 100);
 
   return (
-    <div className="min-h-screen bg-background px-5 pt-12 pb-32">
+    <motion.div
+      className="min-h-screen bg-background px-5 pt-12 pb-32"
+      variants={stagger}
+      initial="hidden"
+      animate="show"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between mb-10">
+      <motion.div variants={fadeUp} className="flex items-center justify-between mb-10">
         <h1 className="font-display text-xl tracking-widest text-primary">REFORGED</h1>
         <Settings size={20} className="text-muted-foreground" />
-      </div>
+      </motion.div>
 
       {/* Retention Banner */}
-      <RetentionBanner />
+      <motion.div variants={fadeUp}>
+        <RetentionBanner />
+      </motion.div>
 
       {/* Streak */}
-      <div className="text-center mb-10">
+      <motion.div variants={fadeUp} className="text-center mb-10">
         <p className="text-muted-foreground text-[10px] tracking-[0.3em] uppercase mb-2">Current Streak</p>
         <div className="flex items-baseline justify-center gap-2">
           <span className="text-7xl font-light text-foreground">{streak}</span>
@@ -49,10 +66,10 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
         </div>
         <p className="text-4xl font-light text-foreground -mt-1">Clean</p>
         <p className="text-muted-foreground text-[10px] tracking-[0.3em] uppercase mt-3">Your discipline is growing.</p>
-      </div>
+      </motion.div>
 
       {/* Level */}
-      <div className="mb-10">
+      <motion.div variants={fadeUp} className="mb-10">
         <div className="flex items-baseline justify-between mb-2">
           <p className="text-lg italic text-foreground">
             <span className="font-semibold">Level {level}</span> – {levelName}
@@ -60,28 +77,39 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
           <p className="text-[10px] text-muted-foreground tracking-wider">{xp} / {xpForNextLevel} XP</p>
         </div>
         <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary rounded-full transition-all duration-700"
-            style={{ width: `${xpProgress}%`, boxShadow: '0 0 10px hsl(25 95% 53% / 0.5)' }}
+          <motion.div
+            className="h-full bg-primary rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${xpProgress}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
+            style={{ boxShadow: '0 0 10px hsl(25 95% 53% / 0.5)' }}
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Dynamic Insight */}
-      <p className="text-center text-sm text-muted-foreground italic mb-10">{insightMessage}</p>
+      <motion.p variants={fadeUp} className="text-center text-sm text-muted-foreground italic mb-10">{insightMessage}</motion.p>
 
       {/* CTA Buttons */}
-      <div className="space-y-3 mb-10">
-        <button onClick={onRideUrge} className="w-full py-4 rounded-xl bg-primary text-center active:scale-[0.97] transition-transform">
+      <motion.div variants={fadeUp} className="space-y-3 mb-10">
+        <motion.button
+          onClick={onRideUrge}
+          className="w-full py-4 rounded-xl bg-primary text-center"
+          whileTap={{ scale: 0.97 }}
+        >
           <span className="font-display text-lg tracking-wider text-primary-foreground">RIDE THE URGE</span>
-        </button>
-        <button onClick={onLogUrge} className="w-full py-4 rounded-xl border border-border text-center active:scale-[0.97] transition-transform">
+        </motion.button>
+        <motion.button
+          onClick={onLogUrge}
+          className="w-full py-4 rounded-xl border border-border text-center"
+          whileTap={{ scale: 0.97 }}
+        >
           <span className="font-display text-sm tracking-wider text-foreground">LOG URGE</span>
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       {/* Daily Discipline */}
-      <div className="mb-8">
+      <motion.div variants={fadeUp} className="mb-8">
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-4">Daily Discipline</p>
         <div className="space-y-3">
           {[
@@ -112,10 +140,10 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
             </div>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Next Milestone */}
-      <div className="bg-secondary rounded-xl p-5">
+      <motion.div variants={fadeUp} className="bg-secondary rounded-xl p-5">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs text-muted-foreground tracking-widest uppercase">Next Milestone</p>
           <p className="text-lg italic text-foreground font-semibold">
@@ -123,13 +151,15 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
           </p>
         </div>
         <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary rounded-full transition-all duration-700"
-            style={{ width: `${Math.min((streak / (streak < 21 ? 21 : streak < 60 ? 60 : 90)) * 100, 100)}%` }}
+          <motion.div
+            className="h-full bg-primary rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min((streak / (streak < 21 ? 21 : streak < 60 ? 60 : 90)) * 100, 100)}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.5 }}
           />
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

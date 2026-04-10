@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowLeft, Eye, Footprints, RotateCcw, X } from 'lucide-react';
 
 interface RideTheUrgeProps {
@@ -88,31 +89,51 @@ const RideTheUrge = ({ onResisted, onBack, onStillStruggling }: RideTheUrgeProps
         </p>
       </div>
 
-      {/* Timer ring */}
+      {/* Timer ring with breathing animation */}
       <div className="flex-1 flex items-center justify-center">
-        <div className="relative w-64 h-64">
-          <svg className="w-full h-full -rotate-90" viewBox="0 0 260 260">
-            <circle
-              cx="130" cy="130" r="120"
-              fill="none"
-              stroke="hsl(var(--secondary))"
-              strokeWidth="6"
-            />
-            <circle
-              cx="130" cy="130" r="120"
-              fill="none"
-              stroke="hsl(var(--primary))"
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              className="transition-all duration-1000 ease-linear"
-              style={{ filter: 'drop-shadow(0 0 8px hsl(25 95% 53% / 0.5))' }}
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-5xl font-light text-foreground tracking-wider">{timeStr}</span>
-            <span className="text-xs text-primary tracking-widest uppercase mt-1">Remaining</span>
+        <div className="relative w-64 h-264">
+          {/* Breathing glow circle behind timer */}
+          <motion.div
+            className="absolute inset-0 rounded-full"
+            animate={{
+              scale: [1, 1.06, 1],
+              opacity: [0.15, 0.35, 0.15],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+            style={{
+              background: 'radial-gradient(circle, hsl(25 95% 53% / 0.2) 0%, transparent 70%)',
+            }}
+          />
+          <div className="relative w-64 h-64">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 260 260">
+              <circle
+                cx="130" cy="130" r="120"
+                fill="none"
+                stroke="hsl(var(--secondary))"
+                strokeWidth="6"
+              />
+              <circle
+                cx="130" cy="130" r="120"
+                fill="none"
+                stroke="hsl(var(--primary))"
+                strokeWidth="6"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                className="transition-all duration-1000 ease-linear"
+                style={{ filter: 'drop-shadow(0 0 8px hsl(25 95% 53% / 0.5))' }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-5xl font-light text-foreground tracking-wider">{timeStr}</span>
+              <span className="text-xs text-primary tracking-widest uppercase mt-1">
+                {running ? 'Breathe' : 'Remaining'}
+              </span>
+            </div>
           </div>
         </div>
       </div>

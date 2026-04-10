@@ -14,7 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_data: {
+        Row: {
+          created_at: string
+          daily_discipline: Json | null
+          id: string
+          journal_logs: Json | null
+          last_check_date: string | null
+          level: number
+          level_name: string
+          onboarding_complete: boolean
+          onboarding_data: Json | null
+          pending_milestone: number | null
+          relapse_logs: Json | null
+          resisted_timestamps: Json | null
+          shown_milestones: Json | null
+          streak: number
+          streak_start_date: string | null
+          updated_at: string
+          urge_logs: Json | null
+          user_id: string
+          xp: number
+          xp_for_next_level: number
+        }
+        Insert: {
+          created_at?: string
+          daily_discipline?: Json | null
+          id?: string
+          journal_logs?: Json | null
+          last_check_date?: string | null
+          level?: number
+          level_name?: string
+          onboarding_complete?: boolean
+          onboarding_data?: Json | null
+          pending_milestone?: number | null
+          relapse_logs?: Json | null
+          resisted_timestamps?: Json | null
+          shown_milestones?: Json | null
+          streak?: number
+          streak_start_date?: string | null
+          updated_at?: string
+          urge_logs?: Json | null
+          user_id: string
+          xp?: number
+          xp_for_next_level?: number
+        }
+        Update: {
+          created_at?: string
+          daily_discipline?: Json | null
+          id?: string
+          journal_logs?: Json | null
+          last_check_date?: string | null
+          level?: number
+          level_name?: string
+          onboarding_complete?: boolean
+          onboarding_data?: Json | null
+          pending_milestone?: number | null
+          relapse_logs?: Json | null
+          resisted_timestamps?: Json | null
+          shown_milestones?: Json | null
+          streak?: number
+          streak_start_date?: string | null
+          updated_at?: string
+          urge_logs?: Json | null
+          user_id?: string
+          xp?: number
+          xp_for_next_level?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

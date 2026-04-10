@@ -206,12 +206,12 @@ export const useAppStore = create<AppState>()(
             (r) => r.timestamp.split('T')[0] === state.dailyDiscipline.date
           );
           const newStreak = lastRelapseToday ? 0 : state.streak + 1;
-          const milestone = checkMilestone(newStreak, state.shownMilestones);
+          const { pending, toMark } = checkMilestone(newStreak, state.shownMilestones);
           set({
             streak: newStreak,
             dailyDiscipline: freshDailyDiscipline(),
-            pendingMilestone: milestone,
-            shownMilestones: milestone ? [...state.shownMilestones, milestone] : state.shownMilestones,
+            pendingMilestone: pending,
+            shownMilestones: toMark.length > 0 ? [...state.shownMilestones, ...toMark] : state.shownMilestones,
           });
         }
       },

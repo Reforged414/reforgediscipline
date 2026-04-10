@@ -156,6 +156,15 @@ const Index = () => {
             />
           </PageWrap>
         );
+      case 'milestone':
+        return (
+          <PageWrap variant={fade} screenKey="milestone">
+            <MilestoneScreen
+              milestone={pendingMilestone ?? streak}
+              onContinue={() => { dismissMilestone(); goBack('dashboard'); }}
+            />
+          </PageWrap>
+        );
       case 'reward':
         return (
           <PageWrap variant={fade} screenKey="reward">

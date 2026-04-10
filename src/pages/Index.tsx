@@ -16,7 +16,10 @@ import EmergencyHelp from '@/components/EmergencyHelp';
 import JournalEntry from '@/components/JournalEntry';
 import MilestoneScreen from '@/components/MilestoneScreen';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
+import LoginScreen from '@/components/LoginScreen';
 import { useAppStore } from '@/store/useAppStore';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCloudSync } from '@/hooks/useCloudSync';
 
 type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'journal' | 'milestone';
 
@@ -56,6 +59,9 @@ const PageWrap = ({ children, variant, screenKey }: { children: React.ReactNode;
 );
 
 const Index = () => {
+  const { session, user, isGuest, loading } = useAuth();
+  useCloudSync();
+
   const [screen, setScreen] = useState<Screen>('dashboard');
   const [actionHubOpen, setActionHubOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -68,6 +74,20 @@ const Index = () => {
       navigateTo('milestone');
     }
   }, [pendingMilestone]);
+
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  // Show login if not authenticated and not guest
+  if (!session && !isGuest) {
+    return <LoginScreen />;
+  }
 
   if (!onboardingComplete) {
     return <OnboardingFlow onComplete={(data) => completeOnboarding(data.lastRelapse)} />;

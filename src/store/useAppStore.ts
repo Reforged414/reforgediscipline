@@ -117,6 +117,15 @@ function freshDailyDiscipline(): DailyDiscipline {
   };
 }
 
+const MILESTONES = [3, 7, 14, 30];
+
+function checkMilestone(newStreak: number, shownMilestones: number[]): number | null {
+  for (const m of MILESTONES) {
+    if (newStreak >= m && !shownMilestones.includes(m)) return m;
+  }
+  return null;
+}
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -132,18 +141,25 @@ export const useAppStore = create<AppState>()(
       relapseLogs: [],
       journalLogs: [],
       dailyDiscipline: freshDailyDiscipline(),
+      shownMilestones: [],
+      pendingMilestone: null,
 
-      completeOnboarding: (lastRelapse, data) =>
+      completeOnboarding: (lastRelapse, data) => {
+        const initialStreak = getInitialStreak(lastRelapse);
+        const milestone = checkMilestone(initialStreak, []);
         set(() => ({
           onboardingComplete: true,
           onboardingData: data ? { ...data, lastRelapse } as OnboardingData : { goals: [], identity: [], lastRelapse, triggers: [], severity: '' },
-          streak: getInitialStreak(lastRelapse),
+          streak: initialStreak,
           xp: 0,
           level: 1,
           levelName: 'Initiate',
           xpForNextLevel: 100,
           dailyDiscipline: freshDailyDiscipline(),
-        })),
+          shownMilestones: milestone ? [milestone] : [],
+          pendingMilestone: milestone,
+        }));
+      },
 
       resistUrge: () =>
         set((state) => {

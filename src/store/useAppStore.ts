@@ -117,7 +117,7 @@ function freshDailyDiscipline(): DailyDiscipline {
   };
 }
 
-const MILESTONES = [3, 7, 14, 30];
+const MILESTONES = [3, 7, 14, 30, 45, 60, 90, 120, 180, 365];
 
 function checkMilestone(newStreak: number, shownMilestones: number[]): { pending: number | null; toMark: number[] } {
   // Find all milestones the user has reached but not yet been shown

@@ -147,7 +147,7 @@ export const useAppStore = create<AppState>()(
 
       completeOnboarding: (lastRelapse, data) => {
         const initialStreak = getInitialStreak(lastRelapse);
-        const milestone = checkMilestone(initialStreak, []);
+        const { pending, toMark } = checkMilestone(initialStreak, []);
         set(() => ({
           onboardingComplete: true,
           onboardingData: data ? { ...data, lastRelapse } as OnboardingData : { goals: [], identity: [], lastRelapse, triggers: [], severity: '' },
@@ -157,8 +157,8 @@ export const useAppStore = create<AppState>()(
           levelName: 'Initiate',
           xpForNextLevel: 100,
           dailyDiscipline: freshDailyDiscipline(),
-          shownMilestones: milestone ? [milestone] : [],
-          pendingMilestone: milestone,
+          shownMilestones: toMark,
+          pendingMilestone: pending,
         }));
       },
 

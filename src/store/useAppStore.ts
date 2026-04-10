@@ -201,16 +201,21 @@ export const useAppStore = create<AppState>()(
         const state = get();
         const today = getTodayString();
         if (state.dailyDiscipline.date !== today) {
-          // New day: increment streak if no relapse yesterday, reset daily tasks
           const lastRelapseToday = state.relapseLogs.some(
             (r) => r.timestamp.split('T')[0] === state.dailyDiscipline.date
           );
+          const newStreak = lastRelapseToday ? 0 : state.streak + 1;
+          const milestone = checkMilestone(newStreak, state.shownMilestones);
           set({
-            streak: lastRelapseToday ? 0 : state.streak + 1,
+            streak: newStreak,
             dailyDiscipline: freshDailyDiscipline(),
+            pendingMilestone: milestone,
+            shownMilestones: milestone ? [...state.shownMilestones, milestone] : state.shownMilestones,
           });
         }
       },
+
+      dismissMilestone: () => set({ pendingMilestone: null }),
 
       completeDailyCheckIn: () =>
         set((state) => {

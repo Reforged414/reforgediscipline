@@ -21,7 +21,7 @@ interface DashboardProps {
 }
 
 const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: DashboardProps) => {
-  const { streak, xp, level, levelName, xpForNextLevel, dailyDiscipline, checkNewDay, urgeLogs } = useAppStore();
+  const { streak, xp, level, levelName, xpForNextLevel, dailyDiscipline, checkNewDay, urgeLogs, relapseLogs } = useAppStore();
 
   React.useEffect(() => {
     checkNewDay();

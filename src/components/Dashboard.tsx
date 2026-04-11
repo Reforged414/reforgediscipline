@@ -27,14 +27,18 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
     checkNewDay();
   }, [checkNewDay]);
 
-  const todayUrgeCount = useMemo(() => {
+  const insightMessage = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
-    return urgeLogs.filter((u) => u.timestamp.split('T')[0] === today).length;
-  }, [urgeLogs]);
-
-  const insightMessage = todayUrgeCount > 0
-    ? `You've had ${todayUrgeCount} urge${todayUrgeCount > 1 ? 's' : ''} today. Stay focused.`
-    : 'Strong day. Stay consistent.';
+    const hadRelapseToday = relapseLogs.some((r) => r.timestamp.split('T')[0] === today);
+    if (hadRelapseToday) {
+      return "Slip-ups happen. Day 1 starts now.";
+    }
+    const todayUrgeCount = urgeLogs.filter((u) => u.timestamp.split('T')[0] === today).length;
+    if (todayUrgeCount > 0) {
+      return `You've had ${todayUrgeCount} urge${todayUrgeCount > 1 ? 's' : ''} today. Stay focused.`;
+    }
+    return 'Strong day. Stay consistent.';
+  }, [urgeLogs, relapseLogs]);
 
   const prevLevelXp = xpForNextLevel - 1000;
   const xpProgress = Math.min(((xp - Math.max(prevLevelXp, 0)) / (xpForNextLevel - Math.max(prevLevelXp, 0))) * 100, 100);

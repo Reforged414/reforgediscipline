@@ -53,6 +53,7 @@ interface AppState {
   shownMilestones: number[];
   pendingMilestone: number | null;
   hasSeenTutorial: boolean;
+  hasCompletedTutorial: boolean;
   lastStreakIncrementDate: string | null;
   completeOnboarding: (lastRelapse: string, data?: Partial<OnboardingData>) => void;
   resistUrge: () => void;

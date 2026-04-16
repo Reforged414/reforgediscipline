@@ -53,6 +53,8 @@ export function useCloudSync() {
           journalLogs: (data.journal_logs as any) ?? [],
           shownMilestones: (data.shown_milestones as any) ?? [],
           pendingMilestone: data.pending_milestone,
+          hasCompletedTutorial: (data as any).has_completed_tutorial ?? false,
+          hasSeenTutorial: (data as any).has_completed_tutorial ?? false,
         });
       } catch (err) {
         console.error('Failed to load cloud data:', err);
@@ -92,7 +94,8 @@ export function useCloudSync() {
               journal_logs: state.journalLogs as any,
               shown_milestones: state.shownMilestones as any,
               pending_milestone: state.pendingMilestone,
-            })
+              has_completed_tutorial: state.hasCompletedTutorial,
+            } as any)
             .eq('user_id', user.id);
         } catch (err) {
           console.error('Failed to sync to cloud:', err);

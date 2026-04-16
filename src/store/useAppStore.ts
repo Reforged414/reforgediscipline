@@ -53,6 +53,7 @@ interface AppState {
   shownMilestones: number[];
   pendingMilestone: number | null;
   hasSeenTutorial: boolean;
+  hasCompletedTutorial: boolean;
   lastStreakIncrementDate: string | null;
   completeOnboarding: (lastRelapse: string, data?: Partial<OnboardingData>) => void;
   resistUrge: () => void;
@@ -148,9 +149,10 @@ export const useAppStore = create<AppState>()(
       shownMilestones: [],
       pendingMilestone: null,
       hasSeenTutorial: false,
+      hasCompletedTutorial: false,
       lastStreakIncrementDate: null,
 
-      markTutorialSeen: () => set({ hasSeenTutorial: true }),
+      markTutorialSeen: () => set({ hasSeenTutorial: true, hasCompletedTutorial: true }),
 
       completeOnboarding: (lastRelapse, data) => {
         const initialStreak = getInitialStreak(lastRelapse);

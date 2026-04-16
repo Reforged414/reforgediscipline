@@ -45,6 +45,7 @@ export type Database = {
         Row: {
           created_at: string
           daily_discipline: Json | null
+          has_completed_tutorial: boolean
           id: string
           journal_logs: Json | null
           last_check_date: string | null
@@ -67,6 +68,7 @@ export type Database = {
         Insert: {
           created_at?: string
           daily_discipline?: Json | null
+          has_completed_tutorial?: boolean
           id?: string
           journal_logs?: Json | null
           last_check_date?: string | null
@@ -89,6 +91,7 @@ export type Database = {
         Update: {
           created_at?: string
           daily_discipline?: Json | null
+          has_completed_tutorial?: boolean
           id?: string
           journal_logs?: Json | null
           last_check_date?: string | null

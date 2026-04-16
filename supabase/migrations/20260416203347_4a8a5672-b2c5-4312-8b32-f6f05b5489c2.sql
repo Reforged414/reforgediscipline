@@ -1,0 +1,1 @@
+ALTER TABLE public.user_data ADD COLUMN IF NOT EXISTS has_completed_tutorial boolean NOT NULL DEFAULT false;

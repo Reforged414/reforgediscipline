@@ -94,7 +94,8 @@ export function useCloudSync() {
               journal_logs: state.journalLogs as any,
               shown_milestones: state.shownMilestones as any,
               pending_milestone: state.pendingMilestone,
-            })
+              has_completed_tutorial: state.hasCompletedTutorial,
+            } as any)
             .eq('user_id', user.id);
         } catch (err) {
           console.error('Failed to sync to cloud:', err);

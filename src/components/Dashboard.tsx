@@ -40,6 +40,16 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
     return 'Strong day. Stay consistent.';
   }, [urgeLogs, relapseLogs]);
 
+  const streakStatusMessage = useMemo(() => {
+    if (streak === 0 && !dailyDiscipline.checkedIn) {
+      return "Complete today's check-in to start your streak";
+    }
+    if (!dailyDiscipline.checkedIn) {
+      return 'Complete your check-in to keep your streak alive';
+    }
+    return `Day ${streak} — streak locked in. Come back tomorrow.`;
+  }, [streak, dailyDiscipline.checkedIn]);
+
   const prevLevelXp = xpForNextLevel - 1000;
   const xpProgress = Math.min(((xp - Math.max(prevLevelXp, 0)) / (xpForNextLevel - Math.max(prevLevelXp, 0))) * 100, 100);
 
@@ -91,6 +101,14 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
         </div>
       </motion.div>
 
+      {/* Streak Status (subtle text below XP bar) */}
+      <motion.p
+        variants={fadeUp}
+        className="text-center text-[11px] tracking-wide text-primary/80 -mt-6 mb-8"
+      >
+        {streakStatusMessage}
+      </motion.p>
+
       {/* Dynamic Insight */}
       <motion.p variants={fadeUp} className="text-center text-sm text-muted-foreground italic mb-10">{insightMessage}</motion.p>
 
@@ -104,6 +122,7 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
           <span className="font-display text-lg tracking-wider text-primary-foreground">RIDE THE URGE</span>
         </motion.button>
         <motion.button
+          data-tutorial="log-urge"
           onClick={onLogUrge}
           className="w-full py-4 rounded-xl border border-border text-center"
           whileTap={{ scale: 0.97 }}
@@ -113,7 +132,7 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
       </motion.div>
 
       {/* Daily Discipline */}
-      <motion.div variants={fadeUp} className="mb-8">
+      <motion.div variants={fadeUp} className="mb-8" data-tutorial="daily-checkin">
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-4">Daily Discipline</p>
         <div className="space-y-3">
           {[

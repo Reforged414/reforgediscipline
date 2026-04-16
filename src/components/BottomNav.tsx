@@ -32,6 +32,7 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
           </button>
 
           <button
+            data-tutorial="insights-tab"
             onClick={() => onTabChange('insights')}
             className={`flex flex-col items-center gap-1 transition-colors ${
               activeTab === 'insights' ? 'text-primary' : 'text-muted-foreground'
@@ -54,6 +55,7 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
           </button>
 
           <button
+            data-tutorial="profile-tab"
             onClick={() => onTabChange('profile')}
             className={`flex flex-col items-center gap-1 transition-colors ${
               activeTab === 'profile' ? 'text-primary' : 'text-muted-foreground'

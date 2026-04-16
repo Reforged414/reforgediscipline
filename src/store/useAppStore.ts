@@ -52,6 +52,8 @@ interface AppState {
   dailyDiscipline: DailyDiscipline;
   shownMilestones: number[];
   pendingMilestone: number | null;
+  hasSeenTutorial: boolean;
+  lastStreakIncrementDate: string | null;
   completeOnboarding: (lastRelapse: string, data?: Partial<OnboardingData>) => void;
   resistUrge: () => void;
   logUrge: (log: Omit<UrgeLog, 'timestamp'>) => void;
@@ -61,6 +63,7 @@ interface AppState {
   completeDailyCheckIn: () => void;
   saveJournalEntry: (entry: Omit<JournalLog, 'timestamp'>) => void;
   dismissMilestone: () => void;
+  markTutorialSeen: () => void;
 }
 
 const LEVELS = [
@@ -144,6 +147,10 @@ export const useAppStore = create<AppState>()(
       dailyDiscipline: freshDailyDiscipline(),
       shownMilestones: [],
       pendingMilestone: null,
+      hasSeenTutorial: false,
+      lastStreakIncrementDate: null,
+
+      markTutorialSeen: () => set({ hasSeenTutorial: true }),
 
       completeOnboarding: (lastRelapse, data) => {
         const initialStreak = getInitialStreak(lastRelapse);
@@ -202,16 +209,10 @@ export const useAppStore = create<AppState>()(
         const state = get();
         const today = getTodayString();
         if (state.dailyDiscipline.date !== today) {
-          const lastRelapseToday = state.relapseLogs.some(
-            (r) => r.timestamp.split('T')[0] === state.dailyDiscipline.date
-          );
-          const newStreak = lastRelapseToday ? 0 : state.streak + 1;
-          const { pending, toMark } = checkMilestone(newStreak, state.shownMilestones);
+          // New day: reset daily discipline (unchecked). Streak is NOT auto-incremented;
+          // it advances only when the user completes today's check-in.
           set({
-            streak: newStreak,
             dailyDiscipline: freshDailyDiscipline(),
-            pendingMilestone: pending,
-            shownMilestones: toMark.length > 0 ? [...state.shownMilestones, ...toMark] : state.shownMilestones,
           });
         }
       },
@@ -221,11 +222,35 @@ export const useAppStore = create<AppState>()(
       completeDailyCheckIn: () =>
         set((state) => {
           if (state.dailyDiscipline.checkedIn) return {};
+          const today = getTodayString();
           const newXp = state.xp + 15;
           const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
+
+          // Increment streak only once per day, and only if no relapse today.
+          const hadRelapseToday = state.relapseLogs.some(
+            (r) => r.timestamp.split('T')[0] === today
+          );
+          let newStreak = state.streak;
+          let newLastIncrement = state.lastStreakIncrementDate;
+          let pending = state.pendingMilestone;
+          let shown = state.shownMilestones;
+          if (!hadRelapseToday && state.lastStreakIncrementDate !== today) {
+            newStreak = state.streak + 1;
+            newLastIncrement = today;
+            const milestoneCheck = checkMilestone(newStreak, state.shownMilestones);
+            if (milestoneCheck.toMark.length > 0) {
+              pending = milestoneCheck.pending;
+              shown = [...state.shownMilestones, ...milestoneCheck.toMark];
+            }
+          }
+
           return {
             xp: newXp, level, levelName, xpForNextLevel,
-            dailyDiscipline: { ...state.dailyDiscipline, checkedIn: true },
+            streak: newStreak,
+            lastStreakIncrementDate: newLastIncrement,
+            pendingMilestone: pending,
+            shownMilestones: shown,
+            dailyDiscipline: { ...state.dailyDiscipline, date: today, checkedIn: true },
           };
         }),
 

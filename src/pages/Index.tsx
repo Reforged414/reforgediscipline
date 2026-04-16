@@ -17,6 +17,7 @@ import JournalEntry from '@/components/JournalEntry';
 import MilestoneScreen from '@/components/MilestoneScreen';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import LoginScreen from '@/components/LoginScreen';
+import TutorialOverlay from '@/components/TutorialOverlay';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCloudSync } from '@/hooks/useCloudSync';
@@ -237,6 +238,8 @@ const Index = () => {
           />
         </>
       )}
+
+      {screen === 'dashboard' && activeTab === 'dashboard' && <TutorialOverlay />}
     </div>
   );
 };

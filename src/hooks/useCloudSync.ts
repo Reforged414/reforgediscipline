@@ -53,6 +53,8 @@ export function useCloudSync() {
           journalLogs: (data.journal_logs as any) ?? [],
           shownMilestones: (data.shown_milestones as any) ?? [],
           pendingMilestone: data.pending_milestone,
+          hasCompletedTutorial: (data as any).has_completed_tutorial ?? false,
+          hasSeenTutorial: (data as any).has_completed_tutorial ?? false,
         });
       } catch (err) {
         console.error('Failed to load cloud data:', err);

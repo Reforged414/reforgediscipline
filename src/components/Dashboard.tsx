@@ -40,6 +40,16 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
     return 'Strong day. Stay consistent.';
   }, [urgeLogs, relapseLogs]);
 
+  const streakStatusMessage = useMemo(() => {
+    if (streak === 0 && !dailyDiscipline.checkedIn) {
+      return "Complete today's check-in to start your streak";
+    }
+    if (!dailyDiscipline.checkedIn) {
+      return 'Complete your check-in to keep your streak alive';
+    }
+    return `Day ${streak} — streak locked in. Come back tomorrow.`;
+  }, [streak, dailyDiscipline.checkedIn]);
+
   const prevLevelXp = xpForNextLevel - 1000;
   const xpProgress = Math.min(((xp - Math.max(prevLevelXp, 0)) / (xpForNextLevel - Math.max(prevLevelXp, 0))) * 100, 100);
 

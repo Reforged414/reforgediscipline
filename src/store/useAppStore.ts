@@ -149,9 +149,10 @@ export const useAppStore = create<AppState>()(
       shownMilestones: [],
       pendingMilestone: null,
       hasSeenTutorial: false,
+      hasCompletedTutorial: false,
       lastStreakIncrementDate: null,
 
-      markTutorialSeen: () => set({ hasSeenTutorial: true }),
+      markTutorialSeen: () => set({ hasSeenTutorial: true, hasCompletedTutorial: true }),
 
       completeOnboarding: (lastRelapse, data) => {
         const initialStreak = getInitialStreak(lastRelapse);

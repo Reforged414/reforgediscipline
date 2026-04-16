@@ -43,17 +43,17 @@ interface Rect {
 const PADDING = 8;
 
 const TutorialOverlay = () => {
-  const { hasSeenTutorial, onboardingComplete, markTutorialSeen } = useAppStore();
+  const { hasSeenTutorial, hasCompletedTutorial, onboardingComplete, markTutorialSeen } = useAppStore();
   const [stepIdx, setStepIdx] = useState(0);
   const [rect, setRect] = useState<Rect | null>(null);
   const [active, setActive] = useState(false);
 
   // Activate after onboarding, slight delay so layout is ready
   useEffect(() => {
-    if (!onboardingComplete || hasSeenTutorial) return;
+    if (!onboardingComplete || hasSeenTutorial || hasCompletedTutorial) return;
     const t = setTimeout(() => setActive(true), 600);
     return () => clearTimeout(t);
-  }, [onboardingComplete, hasSeenTutorial]);
+  }, [onboardingComplete, hasSeenTutorial, hasCompletedTutorial]);
 
   useLayoutEffect(() => {
     if (!active) return;

@@ -101,6 +101,14 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
         </div>
       </motion.div>
 
+      {/* Streak Status (subtle text below XP bar) */}
+      <motion.p
+        variants={fadeUp}
+        className="text-center text-[11px] tracking-wide text-primary/80 -mt-6 mb-8"
+      >
+        {streakStatusMessage}
+      </motion.p>
+
       {/* Dynamic Insight */}
       <motion.p variants={fadeUp} className="text-center text-sm text-muted-foreground italic mb-10">{insightMessage}</motion.p>
 
@@ -114,6 +122,7 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
           <span className="font-display text-lg tracking-wider text-primary-foreground">RIDE THE URGE</span>
         </motion.button>
         <motion.button
+          data-tutorial="log-urge"
           onClick={onLogUrge}
           className="w-full py-4 rounded-xl border border-border text-center"
           whileTap={{ scale: 0.97 }}
@@ -123,7 +132,7 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
       </motion.div>
 
       {/* Daily Discipline */}
-      <motion.div variants={fadeUp} className="mb-8">
+      <motion.div variants={fadeUp} className="mb-8" data-tutorial="daily-checkin">
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-4">Daily Discipline</p>
         <div className="space-y-3">
           {[

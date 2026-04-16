@@ -52,6 +52,8 @@ interface AppState {
   dailyDiscipline: DailyDiscipline;
   shownMilestones: number[];
   pendingMilestone: number | null;
+  hasSeenTutorial: boolean;
+  lastStreakIncrementDate: string | null;
   completeOnboarding: (lastRelapse: string, data?: Partial<OnboardingData>) => void;
   resistUrge: () => void;
   logUrge: (log: Omit<UrgeLog, 'timestamp'>) => void;
@@ -61,6 +63,7 @@ interface AppState {
   completeDailyCheckIn: () => void;
   saveJournalEntry: (entry: Omit<JournalLog, 'timestamp'>) => void;
   dismissMilestone: () => void;
+  markTutorialSeen: () => void;
 }
 
 const LEVELS = [

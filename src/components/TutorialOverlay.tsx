@@ -82,7 +82,7 @@ const TutorialOverlay = () => {
     };
   }, [active, stepIdx]);
 
-  if (!active || hasSeenTutorial || !onboardingComplete) return null;
+  if (!active || hasSeenTutorial || hasCompletedTutorial || !onboardingComplete) return null;
 
   const step = STEPS[stepIdx];
   const isLast = stepIdx === STEPS.length - 1;

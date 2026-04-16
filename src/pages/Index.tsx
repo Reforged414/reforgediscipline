@@ -238,6 +238,8 @@ const Index = () => {
           />
         </>
       )}
+
+      {screen === 'dashboard' && activeTab === 'dashboard' && <TutorialOverlay />}
     </div>
   );
 };

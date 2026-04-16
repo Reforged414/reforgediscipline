@@ -37,7 +37,7 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
     if (todayUrgeCount > 0) {
       return `You've had ${todayUrgeCount} urge${todayUrgeCount > 1 ? 's' : ''} today. Stay focused.`;
     }
-    return 'Strong day. Stay consistent.';
+    return null;
   }, [urgeLogs, relapseLogs]);
 
   const streakStatusMessage = useMemo(() => {
@@ -110,7 +110,9 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
       </motion.p>
 
       {/* Dynamic Insight */}
-      <motion.p variants={fadeUp} className="text-center text-sm text-muted-foreground italic mb-10">{insightMessage}</motion.p>
+      {insightMessage && (
+        <motion.p variants={fadeUp} className="text-center text-sm text-muted-foreground italic mb-10">{insightMessage}</motion.p>
+      )}
 
       {/* CTA Buttons */}
       <motion.div variants={fadeUp} className="space-y-3 mb-10">

@@ -1,5 +1,15 @@
 import { X, Moon, Sun, Cloud } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } },
+};
+const fadeUp = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] } },
+};
 
 const InsightsScreen = () => {
   const { streak, urgeLogs, relapseLogs, resistedTimestamps } = useAppStore();
@@ -56,25 +66,30 @@ const InsightsScreen = () => {
     : { text: 'Afternoons are your weak spot.', tip: 'Fill your afternoons with productive activities.' };
 
   return (
-    <div className="min-h-screen bg-background px-5 pt-10 pb-32 max-w-md mx-auto">
-      <div className="flex items-center justify-between mb-2">
+    <motion.div
+      className="min-h-screen bg-background px-5 pt-10 pb-32 max-w-md mx-auto"
+      variants={stagger}
+      initial="hidden"
+      animate="show"
+    >
+      <motion.div variants={fadeUp} className="flex items-center justify-between mb-2">
         <button className="text-muted-foreground"><X size={20} /></button>
         <h1 className="font-display text-sm tracking-widest text-primary">REFORGED</h1>
         <div className="w-5" />
-      </div>
+      </motion.div>
 
-      <h2 className="text-3xl font-display tracking-wider text-foreground text-center mb-1">Recovery</h2>
-      <h2 className="text-3xl font-display tracking-wider text-foreground text-center mb-8">Insights</h2>
+      <motion.h2 variants={fadeUp} className="text-3xl font-display tracking-wider text-foreground text-center mb-1">Recovery</motion.h2>
+      <motion.h2 variants={fadeUp} className="text-3xl font-display tracking-wider text-foreground text-center mb-8">Insights</motion.h2>
 
       {/* Peak Insight */}
-      <div className="bg-secondary rounded-2xl p-5 mb-5 relative overflow-hidden">
+      <motion.div variants={fadeUp} className="bg-secondary rounded-2xl p-5 mb-5 relative overflow-hidden">
         <p className="text-[10px] tracking-[0.3em] uppercase text-primary mb-2 font-semibold">Peak Insight</p>
         <p className="text-foreground text-lg font-medium leading-snug">{peakInsight}</p>
         <div className="absolute right-4 top-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-primary/5 blur-sm" />
-      </div>
+      </motion.div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 mb-8">
+      <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3 mb-8">
         <div className="bg-secondary rounded-xl p-3 text-center">
           <p className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground mb-1">Current Streak</p>
           <div className="flex items-baseline justify-center gap-1">
@@ -93,10 +108,10 @@ const InsightsScreen = () => {
             <span className="text-sm text-primary">%</span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Top Triggers */}
-      <div className="mb-8">
+      <motion.div variants={fadeUp} className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-5 bg-primary rounded-full" />
           <h3 className="text-lg font-semibold text-foreground">Top Triggers</h3>
@@ -110,7 +125,12 @@ const InsightsScreen = () => {
                   <span className="text-sm text-primary">{t.pct}%</span>
                 </div>
                 <div className="w-full h-1 bg-border rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full" style={{ width: `${t.pct}%` }} />
+                  <motion.div
+                    className="h-full bg-primary rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${t.pct}%` }}
+                    transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
+                  />
                 </div>
               </div>
             ))}
@@ -118,10 +138,10 @@ const InsightsScreen = () => {
         ) : (
           <p className="text-sm text-muted-foreground">No data yet. Log urges to see your patterns.</p>
         )}
-      </div>
+      </motion.div>
 
       {/* Time Pattern */}
-      <div className="mb-8">
+      <motion.div variants={fadeUp} className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-5 bg-primary rounded-full" />
           <h3 className="text-lg font-semibold text-foreground">Time Pattern</h3>
@@ -134,10 +154,10 @@ const InsightsScreen = () => {
             {urgeLogs.length > 0 ? `Urges peak at ${peakLabel}.` : 'Log urges to see time patterns.'}
           </p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Personalized Insight */}
-      <div className="bg-secondary rounded-2xl p-5 border border-primary/20">
+      <motion.div variants={fadeUp} className="bg-secondary rounded-2xl p-5 border border-primary/20">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
             <span className="text-primary text-xs">◉</span>
@@ -148,8 +168,8 @@ const InsightsScreen = () => {
         <div className="bg-background rounded-xl px-4 py-2.5">
           <p className="text-xs text-foreground">{recommendation.tip}</p>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

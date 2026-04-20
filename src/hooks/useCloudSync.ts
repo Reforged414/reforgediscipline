@@ -22,6 +22,12 @@ export function useCloudSync() {
     }
 
     const loadFromCloud = async () => {
+      // If a guest-to-account transfer is pending, skip overwriting local state.
+      // The GuestTransferPrompt will resolve it (transfer or discard), and sync resumes after.
+      if (localStorage.getItem('reforged-pending-transfer') === 'true') {
+        hasLoaded.current = true;
+        return;
+      }
       isLoadingFromCloud.current = true;
       try {
         const { data, error } = await supabase

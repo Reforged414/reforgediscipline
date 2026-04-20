@@ -16,16 +16,16 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import EditAnswersScreen from './EditAnswersScreen';
+import LegalScreen from './LegalScreen';
+import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '@/content/legal';
 
 const SUPPORT_EMAIL = 'reforged.support@gmail.com';
-const PRIVACY_URL = 'https://reforgediscipline.lovable.app/privacy';
-const TERMS_URL = 'https://reforgediscipline.lovable.app/terms';
 
 interface Props {
   onBack: () => void;
 }
 
-type Subview = 'main' | 'editAnswers' | 'webview';
+type Subview = 'main' | 'editAnswers' | 'privacy' | 'terms';
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <p className="text-[10px] tracking-[0.3em] uppercase text-primary font-semibold mb-3 px-1">{children}</p>
@@ -71,8 +71,6 @@ const SettingsScreen = ({ onBack }: Props) => {
   const { notificationPrefs, updateNotificationPrefs, resetAllLocalData } = useAppStore();
 
   const [view, setView] = useState<Subview>('main');
-  const [webviewUrl, setWebviewUrl] = useState<string | null>(null);
-  const [webviewTitle, setWebviewTitle] = useState('');
 
   // Username dialog
   const [usernameOpen, setUsernameOpen] = useState(false);
@@ -94,11 +92,6 @@ const SettingsScreen = ({ onBack }: Props) => {
     (isGuest ? 'Guest' : '—');
   const email = user?.email ?? (isGuest ? 'Guest mode' : '—');
 
-  const openWebview = (url: string, title: string) => {
-    setWebviewUrl(url);
-    setWebviewTitle(title);
-    setView('webview');
-  };
 
   const handleSaveUsername = async () => {
     if (!user) {
@@ -157,21 +150,12 @@ const SettingsScreen = ({ onBack }: Props) => {
     return <EditAnswersScreen onBack={() => setView('main')} />;
   }
 
-  if (view === 'webview' && webviewUrl) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <div className="flex items-center gap-3 px-5 pt-6 pb-4 border-b border-border">
-          <button onClick={() => setView('main')} className="text-foreground p-1" aria-label="Back">
-            <ArrowLeft size={22} />
-          </button>
-          <h1 className="font-display text-base tracking-wider text-foreground flex-1">{webviewTitle}</h1>
-          <a href={webviewUrl} target="_blank" rel="noreferrer" className="text-primary p-1" aria-label="Open externally">
-            <ExternalLink size={18} />
-          </a>
-        </div>
-        <iframe src={webviewUrl} title={webviewTitle} className="flex-1 w-full bg-background" />
-      </div>
-    );
+  if (view === 'privacy') {
+    return <LegalScreen {...PRIVACY_POLICY} onBack={() => setView('main')} />;
+  }
+
+  if (view === 'terms') {
+    return <LegalScreen {...TERMS_OF_SERVICE} onBack={() => setView('main')} />;
   }
 
   return (
@@ -250,8 +234,8 @@ const SettingsScreen = ({ onBack }: Props) => {
       <div className="px-5">
         <SectionLabel>Support</SectionLabel>
         <div className="space-y-2">
-          <Row icon={Shield} label="Privacy Policy" onClick={() => openWebview(PRIVACY_URL, 'Privacy Policy')} />
-          <Row icon={FileText} label="Terms of Service" onClick={() => openWebview(TERMS_URL, 'Terms of Service')} />
+          <Row icon={Shield} label="Privacy Policy" onClick={() => setView('privacy')} />
+          <Row icon={FileText} label="Terms of Service" onClick={() => setView('terms')} />
           <Row
             icon={Mail}
             label="Contact / Send Feedback"

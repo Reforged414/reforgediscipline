@@ -17,14 +17,15 @@ interface Props {
   selected: string;
   onBack: () => void;
   onNext: (value: string) => void;
+  editMode?: boolean;
 }
 
-const LastRelapseScreen = ({ step, total, selected: init, onBack, onNext }: Props) => {
+const LastRelapseScreen = ({ step, total, selected: init, onBack, onNext, editMode }: Props) => {
   const [selected, setSelected] = useState(init);
 
   return (
     <div className="min-h-screen flex flex-col">
-      <OnboardingHeader step={step} total={total} onBack={onBack} />
+      <OnboardingHeader step={step} total={total} onBack={onBack} editMode={editMode} />
 
       <div className="flex-1 px-5">
         <div className="text-center mb-10 mt-4">

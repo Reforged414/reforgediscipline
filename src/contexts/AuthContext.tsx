@@ -32,6 +32,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
+        // If the user was in guest mode and has meaningful local progress,
+        // flag a pending transfer so we can prompt before cloud sync overwrites it.
+        const wasGuest = localStorage.getItem('reforged-guest') === 'true';
+        if (wasGuest) {
+          const s = useAppStore.getState();
+          const hasProgress =
+            s.streak > 0 ||
+            s.xp > 0 ||
+            s.urgeLogs.length > 0 ||
+            s.relapseLogs.length > 0 ||
+            s.journalLogs.length > 0;
+          if (hasProgress) {
+            localStorage.setItem('reforged-pending-transfer', 'true');
+          }
+        }
         setIsGuest(false);
         localStorage.removeItem('reforged-guest');
       }

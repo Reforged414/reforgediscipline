@@ -19,9 +19,11 @@ import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import LoginScreen from '@/components/LoginScreen';
 import TutorialOverlay from '@/components/TutorialOverlay';
 import SettingsScreen from '@/components/SettingsScreen';
+import GuestTransferPrompt from '@/components/GuestTransferPrompt';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCloudSync } from '@/hooks/useCloudSync';
+import { useGuestNudge } from '@/hooks/useGuestNudge';
 
 type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'journal' | 'milestone' | 'settings';
 
@@ -63,6 +65,7 @@ const PageWrap = ({ children, variant, screenKey }: { children: React.ReactNode;
 const Index = () => {
   const { session, user, isGuest, loading } = useAuth();
   useCloudSync();
+  useGuestNudge();
 
   const [screen, setScreen] = useState<Screen>('dashboard');
   const [actionHubOpen, setActionHubOpen] = useState(false);
@@ -227,6 +230,8 @@ const Index = () => {
       <AnimatePresence mode="wait">
         {renderScreen()}
       </AnimatePresence>
+
+      <GuestTransferPrompt />
 
       {screen === 'dashboard' && (
         <>

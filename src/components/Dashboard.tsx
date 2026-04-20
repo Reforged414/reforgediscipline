@@ -18,9 +18,10 @@ interface DashboardProps {
   onLogUrge?: () => void;
   onDailyCheckIn?: () => void;
   onJournal?: () => void;
+  onOpenSettings?: () => void;
 }
 
-const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: DashboardProps) => {
+const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSettings }: DashboardProps) => {
   const { streak, xp, level, levelName, xpForNextLevel, dailyDiscipline, checkNewDay, urgeLogs, relapseLogs } = useAppStore();
 
   React.useEffect(() => {
@@ -63,7 +64,9 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
       {/* Header */}
       <motion.div variants={fadeUp} className="flex items-center justify-between mb-10">
         <h1 className="font-display text-xl tracking-widest text-primary">REFORGED</h1>
-        <Settings size={20} className="text-muted-foreground" />
+        <button onClick={onOpenSettings} aria-label="Settings" className="text-muted-foreground hover:text-foreground transition-colors">
+          <Settings size={20} />
+        </button>
       </motion.div>
 
       {/* Retention Banner */}
@@ -115,22 +118,32 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
       )}
 
       {/* CTA Buttons */}
-      <motion.div variants={fadeUp} className="space-y-3 mb-10">
-        <motion.button
-          onClick={onRideUrge}
-          className="w-full py-4 rounded-xl bg-primary text-center"
-          whileTap={{ scale: 0.97 }}
-        >
-          <span className="font-display text-lg tracking-wider text-primary-foreground">RIDE THE URGE</span>
-        </motion.button>
-        <motion.button
-          data-tutorial="log-urge"
-          onClick={onLogUrge}
-          className="w-full py-4 rounded-xl border border-border text-center"
-          whileTap={{ scale: 0.97 }}
-        >
-          <span className="font-display text-sm tracking-wider text-foreground">LOG URGE</span>
-        </motion.button>
+      <motion.div variants={fadeUp} className="space-y-4 mb-10">
+        <div>
+          <motion.button
+            onClick={onRideUrge}
+            className="w-full py-4 rounded-xl bg-primary text-center"
+            whileTap={{ scale: 0.97 }}
+          >
+            <span className="font-display text-lg tracking-wider text-primary-foreground">RIDE THE URGE</span>
+          </motion.button>
+          <p className="text-center text-[11px] text-muted-foreground mt-1.5">
+            Feel an urge? Work through it here
+          </p>
+        </div>
+        <div>
+          <motion.button
+            data-tutorial="log-urge"
+            onClick={onLogUrge}
+            className="w-full py-4 rounded-xl border border-border text-center"
+            whileTap={{ scale: 0.97 }}
+          >
+            <span className="font-display text-sm tracking-wider text-foreground">LOG URGE</span>
+          </motion.button>
+          <p className="text-center text-[11px] text-muted-foreground mt-1.5">
+            Record an urge you experienced
+          </p>
+        </div>
       </motion.div>
 
       {/* Daily Discipline */}

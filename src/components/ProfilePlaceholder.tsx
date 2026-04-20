@@ -16,7 +16,11 @@ const ACHIEVEMENTS = [
   { id: 'urge100', label: 'IRON WILL', condition: (s: any) => (s.resistedTimestamps?.length ?? 0) >= 100, icon: Shield, desc: 'Resist 100 urges' },
 ];
 
-const ProfilePlaceholder = () => {
+interface ProfileProps {
+  onOpenSettings?: () => void;
+}
+
+const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
   const store = useAppStore();
   const { streak, xp, level, resistedTimestamps, journalLogs, relapseLogs, onboardingData } = store;
   const { user, isGuest } = useAuth();
@@ -73,7 +77,7 @@ const ProfilePlaceholder = () => {
       {/* Header bar */}
       <div className="flex items-center justify-between px-6 pt-6 pb-4">
         <h1 className="font-display text-lg tracking-widest text-primary">REFORGED</h1>
-        <button className="text-primary p-1" aria-label="Settings">
+        <button onClick={onOpenSettings} className="text-primary p-1" aria-label="Settings">
           <Settings size={22} />
         </button>
       </div>

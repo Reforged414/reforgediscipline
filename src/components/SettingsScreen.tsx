@@ -92,11 +92,6 @@ const SettingsScreen = ({ onBack }: Props) => {
     (isGuest ? 'Guest' : '—');
   const email = user?.email ?? (isGuest ? 'Guest mode' : '—');
 
-  const openWebview = (url: string, title: string) => {
-    setWebviewUrl(url);
-    setWebviewTitle(title);
-    setView('webview');
-  };
 
   const handleSaveUsername = async () => {
     if (!user) {

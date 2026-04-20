@@ -37,6 +37,11 @@ interface JournalLog {
   timestamp: string;
 }
 
+interface NotificationPrefs {
+  dailyCheckInEnabled: boolean;
+  dailyCheckInTime: string; // "HH:MM"
+}
+
 interface AppState {
   onboardingComplete: boolean;
   onboardingData: OnboardingData | null;
@@ -55,6 +60,7 @@ interface AppState {
   hasSeenTutorial: boolean;
   hasCompletedTutorial: boolean;
   lastStreakIncrementDate: string | null;
+  notificationPrefs: NotificationPrefs;
   completeOnboarding: (lastRelapse: string, data?: Partial<OnboardingData>) => void;
   resistUrge: () => void;
   logUrge: (log: Omit<UrgeLog, 'timestamp'>) => void;
@@ -65,6 +71,9 @@ interface AppState {
   saveJournalEntry: (entry: Omit<JournalLog, 'timestamp'>) => void;
   dismissMilestone: () => void;
   markTutorialSeen: () => void;
+  updateOnboardingData: (data: Partial<OnboardingData>) => void;
+  updateNotificationPrefs: (prefs: Partial<NotificationPrefs>) => void;
+  resetAllLocalData: () => void;
 }
 
 const LEVELS = [
@@ -151,8 +160,39 @@ export const useAppStore = create<AppState>()(
       hasSeenTutorial: false,
       hasCompletedTutorial: false,
       lastStreakIncrementDate: null,
+      notificationPrefs: { dailyCheckInEnabled: false, dailyCheckInTime: '09:00' },
 
       markTutorialSeen: () => set({ hasSeenTutorial: true, hasCompletedTutorial: true }),
+
+      updateOnboardingData: (data) =>
+        set((state) => ({
+          onboardingData: { ...(state.onboardingData ?? { goals: [], identity: [], lastRelapse: '', triggers: [], severity: '' }), ...data },
+        })),
+
+      updateNotificationPrefs: (prefs) =>
+        set((state) => ({ notificationPrefs: { ...state.notificationPrefs, ...prefs } })),
+
+      resetAllLocalData: () =>
+        set({
+          onboardingComplete: false,
+          onboardingData: null,
+          streak: 0,
+          xp: 0,
+          level: 1,
+          levelName: 'Initiate',
+          xpForNextLevel: 100,
+          urgeLogs: [],
+          relapseLogs: [],
+          resistedTimestamps: [],
+          journalLogs: [],
+          dailyDiscipline: freshDailyDiscipline(),
+          shownMilestones: [],
+          pendingMilestone: null,
+          hasSeenTutorial: false,
+          hasCompletedTutorial: false,
+          lastStreakIncrementDate: null,
+          notificationPrefs: { dailyCheckInEnabled: false, dailyCheckInTime: '09:00' },
+        }),
 
       completeOnboarding: (lastRelapse, data) => {
         const initialStreak = getInitialStreak(lastRelapse);

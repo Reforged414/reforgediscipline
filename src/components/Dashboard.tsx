@@ -18,9 +18,10 @@ interface DashboardProps {
   onLogUrge?: () => void;
   onDailyCheckIn?: () => void;
   onJournal?: () => void;
+  onOpenSettings?: () => void;
 }
 
-const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: DashboardProps) => {
+const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSettings }: DashboardProps) => {
   const { streak, xp, level, levelName, xpForNextLevel, dailyDiscipline, checkNewDay, urgeLogs, relapseLogs } = useAppStore();
 
   React.useEffect(() => {
@@ -63,7 +64,9 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal }: Dashboa
       {/* Header */}
       <motion.div variants={fadeUp} className="flex items-center justify-between mb-10">
         <h1 className="font-display text-xl tracking-widest text-primary">REFORGED</h1>
-        <Settings size={20} className="text-muted-foreground" />
+        <button onClick={onOpenSettings} aria-label="Settings" className="text-muted-foreground hover:text-foreground transition-colors">
+          <Settings size={20} />
+        </button>
       </motion.div>
 
       {/* Retention Banner */}

@@ -54,6 +54,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const continueAsGuest = () => {
+    // Fully isolate: wipe any prior store state (e.g. from a previously signed-in account on this device)
+    useAppStore.getState().resetAllLocalData();
     setIsGuest(true);
     localStorage.setItem('reforged-guest', 'true');
   };

@@ -18,11 +18,12 @@ import MilestoneScreen from '@/components/MilestoneScreen';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import LoginScreen from '@/components/LoginScreen';
 import TutorialOverlay from '@/components/TutorialOverlay';
+import SettingsScreen from '@/components/SettingsScreen';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCloudSync } from '@/hooks/useCloudSync';
 
-type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'journal' | 'milestone';
+type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'journal' | 'milestone' | 'settings';
 
 type Variant = { initial: Record<string, any>; animate: Record<string, any>; exit: Record<string, any> };
 
@@ -193,6 +194,12 @@ const Index = () => {
             <RewardScreen streak={streak} onContinue={handleContinue} />
           </PageWrap>
         );
+      case 'settings':
+        return (
+          <PageWrap variant={slideRight} screenKey="settings">
+            <SettingsScreen onBack={() => goBack('dashboard')} />
+          </PageWrap>
+        );
       default:
         return (
           <PageWrap variant={slideLeft} screenKey={`main-${activeTab}`}>
@@ -203,11 +210,12 @@ const Index = () => {
                   onLogUrge={() => { setActionHubOpen(false); navigateTo('log'); }}
                   onDailyCheckIn={() => navigateTo('checkin')}
                   onJournal={() => navigateTo('journal')}
+                  onOpenSettings={() => navigateTo('settings')}
                 />
               )}
               {activeTab === 'insights' && <InsightsScreen />}
               {activeTab === 'community' && <ComingSoonPlaceholder title="Community" />}
-              {activeTab === 'profile' && <ProfilePlaceholder />}
+              {activeTab === 'profile' && <ProfilePlaceholder onOpenSettings={() => navigateTo('settings')} />}
             </div>
           </PageWrap>
         );

@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import EditAnswersScreen from './EditAnswersScreen';
 
-const SUPPORT_EMAIL = 'support@reforgediscipline.app';
+const SUPPORT_EMAIL = 'reforged.support@gmail.com';
 const PRIVACY_URL = 'https://reforgediscipline.lovable.app/privacy';
 const TERMS_URL = 'https://reforgediscipline.lovable.app/terms';
 

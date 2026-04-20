@@ -24,9 +24,10 @@ interface Props {
   identity: string[];
   onBack: () => void;
   onNext: (goals: string[], identity: string[]) => void;
+  editMode?: boolean;
 }
 
-const GoalIdentityScreen = ({ step, total, goals: initGoals, identity: initIdentity, onBack, onNext }: Props) => {
+const GoalIdentityScreen = ({ step, total, goals: initGoals, identity: initIdentity, onBack, onNext, editMode }: Props) => {
   const [goals, setGoals] = useState<string[]>(initGoals);
   const [identity, setIdentity] = useState<string[]>(initIdentity);
 
@@ -38,7 +39,7 @@ const GoalIdentityScreen = ({ step, total, goals: initGoals, identity: initIdent
 
   return (
     <div className="min-h-screen flex flex-col">
-      <OnboardingHeader step={step} total={total} onBack={onBack} />
+      <OnboardingHeader step={step} total={total} onBack={onBack} editMode={editMode} />
 
       <div className="flex-1 px-5 overflow-y-auto pb-4">
         <div className="text-center mb-8 mt-4">

@@ -29,6 +29,7 @@ const EditAnswersScreen = ({ onBack }: Props) => {
       <GoalIdentityScreen
         step={1}
         total={1}
+        editMode
         goals={data.goals}
         identity={data.identity}
         onBack={() => setSection('menu')}
@@ -44,6 +45,7 @@ const EditAnswersScreen = ({ onBack }: Props) => {
       <LastRelapseScreen
         step={1}
         total={1}
+        editMode
         selected={data.lastRelapse}
         onBack={() => setSection('menu')}
         onNext={(lastRelapse) => {
@@ -58,6 +60,7 @@ const EditAnswersScreen = ({ onBack }: Props) => {
       <TriggersScreen
         step={1}
         total={1}
+        editMode
         selected={data.triggers}
         onBack={() => setSection('menu')}
         onNext={(triggers) => {
@@ -72,6 +75,7 @@ const EditAnswersScreen = ({ onBack }: Props) => {
       <SeverityScreen
         step={1}
         total={1}
+        editMode
         selected={data.severity}
         onBack={() => setSection('menu')}
         onNext={(severity) => {

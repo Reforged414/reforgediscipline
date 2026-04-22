@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import WelcomeScreen from './WelcomeScreen';
 import GoalIdentityScreen from './GoalIdentityScreen';
 import LastRelapseScreen from './LastRelapseScreen';
@@ -22,6 +23,7 @@ interface OnboardingFlowProps {
 
 const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   const [step, setStep] = useState(0);
+  const directionRef = useRef(1);
   const [data, setData] = useState<OnboardingData>({
     goals: [],
     identity: [],
@@ -30,10 +32,15 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
     severity: '',
   });
 
-  const goBack = () => setStep((s) => Math.max(0, s - 1));
+  const goTo = (next: number) => {
+    directionRef.current = next > step ? 1 : -1;
+    setStep(next);
+  };
+
+  const goBack = () => goTo(Math.max(0, step - 1));
 
   const screens = [
-    <WelcomeScreen key="welcome" onNext={() => setStep(1)} />,
+    <WelcomeScreen key="welcome" onNext={() => goTo(1)} />,
     <GoalIdentityScreen
       key="goals"
       step={2}
@@ -43,7 +50,7 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       onBack={goBack}
       onNext={(goals, identity) => {
         setData((d) => ({ ...d, goals, identity }));
-        setStep(2);
+        goTo(2);
       }}
     />,
     <LastRelapseScreen
@@ -54,7 +61,7 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       onBack={goBack}
       onNext={(lastRelapse) => {
         setData((d) => ({ ...d, lastRelapse }));
-        setStep(3);
+        goTo(3);
       }}
     />,
     <TriggersScreen
@@ -65,7 +72,7 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       onBack={goBack}
       onNext={(triggers) => {
         setData((d) => ({ ...d, triggers }));
-        setStep(4);
+        goTo(4);
       }}
     />,
     <SeverityScreen
@@ -76,7 +83,7 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       onBack={goBack}
       onNext={(severity) => {
         setData((d) => ({ ...d, severity }));
-        setStep(5);
+        goTo(5);
       }}
     />,
     <AccountScreen
@@ -84,15 +91,28 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       step={6}
       total={6}
       onBack={goBack}
-      onNext={() => setStep(6)}
+      onNext={() => goTo(6)}
     />,
-    <FinishScreen key="finish" onNext={() => setStep(7)} />,
+    <FinishScreen key="finish" onNext={() => goTo(7)} />,
     <PaywallScreen key="paywall" onComplete={() => onComplete(data)} />,
   ];
 
+  const direction = directionRef.current;
+
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-background">
-      {screens[step]}
+    <div className="max-w-md mx-auto min-h-screen bg-background overflow-hidden relative">
+      <AnimatePresence mode="wait" custom={direction} initial={false}>
+        <motion.div
+          key={step}
+          custom={direction}
+          initial={{ x: direction > 0 ? '100%' : '-100%', opacity: 0.6 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: direction > 0 ? '-100%' : '100%', opacity: 0.6 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        >
+          {screens[step]}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };

@@ -85,7 +85,7 @@ const GoalIdentityScreen = ({ step, total, goals: initGoals, identity: initIdent
                     </svg>
                   </div>
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -99,10 +99,13 @@ const GoalIdentityScreen = ({ step, total, goals: initGoals, identity: initIdent
             const selected = identity.includes(i.id);
             const Icon = i.icon;
             return (
-              <button
+              <motion.button
                 key={i.id}
                 onClick={() => toggleIdentity(i.id)}
-                className={`flex flex-col items-center gap-2 px-4 py-4 rounded-xl border transition-all ${
+                whileTap={{ scale: 0.96 }}
+                animate={selected ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className={`flex flex-col items-center gap-2 px-4 py-4 rounded-xl border ${
                   selected
                     ? 'border-primary bg-primary/10'
                     : 'border-border bg-secondary'
@@ -110,7 +113,7 @@ const GoalIdentityScreen = ({ step, total, goals: initGoals, identity: initIdent
               >
                 <Icon size={20} className="text-primary" />
                 <span className="text-foreground text-xs text-center">{i.label}</span>
-              </button>
+              </motion.button>
             );
           })}
         </div>

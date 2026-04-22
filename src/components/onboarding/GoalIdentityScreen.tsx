@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import OnboardingHeader from './OnboardingHeader';
 import ContinueButton from './ContinueButton';
 import { Ban, Flame, Target, Shield, Heart, Brain, Sword, Zap } from 'lucide-react';
@@ -42,10 +43,15 @@ const GoalIdentityScreen = ({ step, total, goals: initGoals, identity: initIdent
       <OnboardingHeader step={step} total={total} onBack={onBack} editMode={editMode} />
 
       <div className="flex-1 px-5 overflow-y-auto pb-4">
-        <div className="text-center mb-8 mt-4">
+        <motion.div
+          className="text-center mb-8 mt-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2, ease: 'easeOut' }}
+        >
           <h1 className="text-3xl font-bold text-foreground mb-2">Why are you here?</h1>
           <p className="text-muted-foreground text-sm">Choose your goal and direction.</p>
-        </div>
+        </motion.div>
 
         {/* Goals */}
         <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
@@ -56,10 +62,13 @@ const GoalIdentityScreen = ({ step, total, goals: initGoals, identity: initIdent
             const selected = goals.includes(g.id);
             const Icon = g.icon;
             return (
-              <button
+              <motion.button
                 key={g.id}
                 onClick={() => toggleGoal(g.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all ${
+                whileTap={{ scale: 0.96 }}
+                animate={selected ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border ${
                   selected
                     ? 'border-primary bg-primary/10'
                     : 'border-border bg-secondary'

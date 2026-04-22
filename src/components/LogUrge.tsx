@@ -162,20 +162,26 @@ const LogUrge = ({ onBack, onRideUrge }: LogUrgeProps) => {
           <Circle size={14} className="text-primary" /> What did you do instead? (Optional)
         </p>
         <div className="grid grid-cols-2 gap-2">
-          {ACTIONS.map(({ label, icon }) => (
-            <button
-              key={label}
-              onClick={() => toggleAction(label)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm transition-all ${
-                actions.includes(label)
-                  ? 'border-primary text-primary bg-primary/10'
-                  : 'border-border text-foreground'
-              }`}
-            >
-              <span className="text-primary">{icon}</span>
-              {label}
-            </button>
-          ))}
+          {ACTIONS.map(({ label, icon }) => {
+            const isSel = actions.includes(label);
+            return (
+              <motion.button
+                key={label}
+                onClick={() => toggleAction(label)}
+                whileTap={{ scale: 0.96 }}
+                animate={isSel ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm ${
+                  isSel
+                    ? 'border-primary text-primary bg-primary/10'
+                    : 'border-border text-foreground'
+                }`}
+              >
+                <span className="text-primary">{icon}</span>
+                {label}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 

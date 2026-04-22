@@ -110,8 +110,9 @@ const DailyCheckIn = ({ onBack, onComplete }: DailyCheckInProps) => {
                 }`}
               >
                 {opt.toUpperCase()}
-            </button>
-          ))}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 

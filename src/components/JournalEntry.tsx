@@ -55,22 +55,26 @@ const JournalEntry = ({ onBack }: JournalEntryProps) => {
           Tag this entry (optional)
         </p>
         <div className="flex gap-3">
-          {TAGS.map((tag) => (
-            <button
-              key={tag}
-              onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-              className={`px-5 py-2 rounded-full text-xs font-display tracking-wider transition-all active:scale-[0.97] ${
-                selectedTag === tag
-                  ? 'bg-primary text-primary-foreground'
-                  : 'border border-border text-muted-foreground'
-              }`}
-            >
-              {selectedTag === tag && (
-                <span className="mr-1">✓</span>
-              )}
-              {tag.toUpperCase()}
-            </button>
-          ))}
+          {TAGS.map((tag) => {
+            const isSel = selectedTag === tag;
+            return (
+              <motion.button
+                key={tag}
+                onClick={() => setSelectedTag(isSel ? null : tag)}
+                whileTap={{ scale: 0.96 }}
+                animate={isSel ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className={`px-5 py-2 rounded-full text-xs font-display tracking-wider ${
+                  isSel
+                    ? 'bg-primary text-primary-foreground'
+                    : 'border border-border text-muted-foreground'
+                }`}
+              >
+                {isSel && <span className="mr-1">✓</span>}
+                {tag.toUpperCase()}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 

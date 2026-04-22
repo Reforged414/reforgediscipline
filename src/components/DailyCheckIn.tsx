@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowLeft, Zap, Target, Smile, AlertTriangle } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -64,22 +65,28 @@ const DailyCheckIn = ({ onBack, onComplete }: DailyCheckInProps) => {
       <div className="mt-8">
         <h3 className="text-foreground font-semibold text-center mb-4">How Are You Feeling Today?</h3>
         <div className="grid grid-cols-2 gap-3">
-          {moods.map(({ label, icon: Icon }) => (
-            <button
-              key={label}
-              onClick={() => setMood(label)}
-              className={`flex flex-col items-center gap-2 py-5 rounded-xl border-2 transition-all active:scale-[0.97] ${
-                mood === label
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border bg-secondary'
-              }`}
-            >
-              <Icon size={28} className={mood === label ? 'text-primary' : 'text-primary/60'} />
-              <span className={`text-sm ${mood === label ? 'text-primary font-medium' : 'text-foreground'}`}>
-                {label}
-              </span>
-            </button>
-          ))}
+          {moods.map(({ label, icon: Icon }) => {
+            const isSel = mood === label;
+            return (
+              <motion.button
+                key={label}
+                onClick={() => setMood(label)}
+                whileTap={{ scale: 0.96 }}
+                animate={isSel ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className={`flex flex-col items-center gap-2 py-5 rounded-xl border-2 ${
+                  isSel
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border bg-secondary'
+                }`}
+              >
+                <Icon size={28} className={isSel ? 'text-primary' : 'text-primary/60'} />
+                <span className={`text-sm ${isSel ? 'text-primary font-medium' : 'text-foreground'}`}>
+                  {label}
+                </span>
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 
@@ -87,17 +94,22 @@ const DailyCheckIn = ({ onBack, onComplete }: DailyCheckInProps) => {
       <div className="mt-8">
         <h3 className="text-foreground font-semibold text-center mb-4">Did you experience urges today?</h3>
         <div className="flex gap-2">
-          {urgeOptions.map((opt) => (
-            <button
-              key={opt}
-              onClick={() => setUrgeLevel(opt)}
-              className={`flex-1 py-3 rounded-xl font-display tracking-wider text-sm transition-all active:scale-[0.97] ${
-                urgeLevel === opt
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-foreground border border-border'
-              }`}
-            >
-              {opt.toUpperCase()}
+          {urgeOptions.map((opt) => {
+            const isSel = urgeLevel === opt;
+            return (
+              <motion.button
+                key={opt}
+                onClick={() => setUrgeLevel(opt)}
+                whileTap={{ scale: 0.96 }}
+                animate={isSel ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className={`flex-1 py-3 rounded-xl font-display tracking-wider text-sm ${
+                  isSel
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-foreground border border-border'
+                }`}
+              >
+                {opt.toUpperCase()}
             </button>
           ))}
         </div>

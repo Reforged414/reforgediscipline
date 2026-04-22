@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import OnboardingHeader from './OnboardingHeader';
 import ContinueButton from './ContinueButton';
 import { Moon, Clock, Zap, Smartphone, Users, Flame, Plus } from 'lucide-react';
@@ -33,14 +34,19 @@ const TriggersScreen = ({ step, total, selected: init, onBack, onNext, editMode 
       <OnboardingHeader step={step} total={total} onBack={onBack} editMode={editMode} />
 
       <div className="flex-1 px-5">
-        <div className="text-center mb-10 mt-4">
+        <motion.div
+          className="text-center mb-10 mt-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2, ease: 'easeOut' }}
+        >
           <h1 className="text-3xl font-bold text-foreground mb-2">
             What Sets You<br />Back?
           </h1>
           <p className="text-muted-foreground text-sm">
             Select the triggers that lead to<br />relapse.
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-2 gap-3">
           {TRIGGERS.map((t, idx) => {
@@ -48,10 +54,13 @@ const TriggersScreen = ({ step, total, selected: init, onBack, onNext, editMode 
             const Icon = t.icon;
             const isLast = idx === TRIGGERS.length - 1;
             return (
-              <button
+              <motion.button
                 key={t.id}
                 onClick={() => toggle(t.id)}
-                className={`flex flex-col items-center gap-3 px-4 py-5 rounded-xl border transition-all ${
+                whileTap={{ scale: 0.96 }}
+                animate={isSelected ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className={`flex flex-col items-center gap-3 px-4 py-5 rounded-xl border ${
                   isLast ? 'col-span-2 max-w-[50%] mx-auto w-full' : ''
                 } ${
                   isSelected
@@ -61,7 +70,7 @@ const TriggersScreen = ({ step, total, selected: init, onBack, onNext, editMode 
               >
                 <Icon size={24} className="text-primary" />
                 <span className="text-foreground text-xs text-center whitespace-pre-line">{t.label}</span>
-              </button>
+              </motion.button>
             );
           })}
         </div>

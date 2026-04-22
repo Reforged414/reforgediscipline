@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowLeft, Target, Brain, MapPin, PenLine } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -56,19 +57,25 @@ const LogRelapse = ({ onBack, onLogged }: LogRelapseProps) => {
           <Target size={14} className="text-primary" /> 1. Trigger - (Multi Select)
         </p>
         <div className="flex flex-wrap gap-2">
-          {TRIGGERS.map((t) => (
-            <button
-              key={t}
-              onClick={() => toggleTrigger(t)}
-              className={`px-4 py-2 rounded-xl border text-xs transition-all ${
-                triggers.includes(t)
-                  ? 'border-primary text-primary bg-primary/10'
-                  : 'border-border text-foreground'
-              }`}
-            >
-              {t}
-            </button>
-          ))}
+          {TRIGGERS.map((t) => {
+            const isSel = triggers.includes(t);
+            return (
+              <motion.button
+                key={t}
+                onClick={() => toggleTrigger(t)}
+                whileTap={{ scale: 0.94 }}
+                animate={isSel ? { scale: [1, 1.06, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className={`px-4 py-2 rounded-xl border text-xs ${
+                  isSel
+                    ? 'border-primary text-primary bg-primary/10'
+                    : 'border-border text-foreground'
+                }`}
+              >
+                {t}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 
@@ -78,19 +85,25 @@ const LogRelapse = ({ onBack, onLogged }: LogRelapseProps) => {
           <Brain size={14} className="text-primary" /> 2. Mood
         </p>
         <div className="flex flex-wrap gap-2">
-          {MOODS.map((m) => (
-            <button
-              key={m}
-              onClick={() => setMood(m)}
-              className={`px-4 py-2 rounded-xl border text-xs transition-all ${
-                mood === m
-                  ? 'border-primary text-primary bg-primary/10'
-                  : 'border-border text-foreground'
-              }`}
-            >
-              {m}
-            </button>
-          ))}
+          {MOODS.map((m) => {
+            const isSel = mood === m;
+            return (
+              <motion.button
+                key={m}
+                onClick={() => setMood(m)}
+                whileTap={{ scale: 0.94 }}
+                animate={isSel ? { scale: [1, 1.06, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className={`px-4 py-2 rounded-xl border text-xs ${
+                  isSel
+                    ? 'border-primary text-primary bg-primary/10'
+                    : 'border-border text-foreground'
+                }`}
+              >
+                {m}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 
@@ -100,19 +113,25 @@ const LogRelapse = ({ onBack, onLogged }: LogRelapseProps) => {
           <MapPin size={14} className="text-primary" /> 3. Location
         </p>
         <div className="flex flex-wrap gap-2">
-          {LOCATIONS.map((l) => (
-            <button
-              key={l}
-              onClick={() => setLocation(l)}
-              className={`px-4 py-2 rounded-xl border text-xs transition-all ${
-                location === l
-                  ? 'border-primary text-primary bg-primary/10'
-                  : 'border-border text-foreground'
-              }`}
-            >
-              {l}
-            </button>
-          ))}
+          {LOCATIONS.map((l) => {
+            const isSel = location === l;
+            return (
+              <motion.button
+                key={l}
+                onClick={() => setLocation(l)}
+                whileTap={{ scale: 0.94 }}
+                animate={isSel ? { scale: [1, 1.06, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className={`px-4 py-2 rounded-xl border text-xs ${
+                  isSel
+                    ? 'border-primary text-primary bg-primary/10'
+                    : 'border-border text-foreground'
+                }`}
+              >
+                {l}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 

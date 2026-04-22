@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { ArrowLeft, Zap, Target, Circle } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -105,19 +106,25 @@ const LogUrge = ({ onBack, onRideUrge }: LogUrgeProps) => {
           <Zap size={14} className="text-primary" /> Urge Strength
         </p>
         <div className="grid grid-cols-2 gap-2">
-          {STRENGTHS.map((s) => (
-            <button
-              key={s}
-              onClick={() => setStrength(s)}
-              className={`py-3 rounded-xl border text-sm transition-all ${
-                strength === s
-                  ? 'border-primary text-primary bg-primary/10'
-                  : 'border-border text-foreground'
-              }`}
-            >
-              {s}
-            </button>
-          ))}
+          {STRENGTHS.map((s) => {
+            const isSel = strength === s;
+            return (
+              <motion.button
+                key={s}
+                onClick={() => setStrength(s)}
+                whileTap={{ scale: 0.96 }}
+                animate={isSel ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className={`py-3 rounded-xl border text-sm ${
+                  isSel
+                    ? 'border-primary text-primary bg-primary/10'
+                    : 'border-border text-foreground'
+                }`}
+              >
+                {s}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 
@@ -127,19 +134,25 @@ const LogUrge = ({ onBack, onRideUrge }: LogUrgeProps) => {
           <Target size={14} className="text-primary" /> What triggered it? (Multi-Select)
         </p>
         <div className="flex flex-wrap gap-2">
-          {TRIGGERS.map((t) => (
-            <button
-              key={t}
-              onClick={() => toggleTrigger(t)}
-              className={`px-4 py-2 rounded-xl border text-xs transition-all ${
-                triggers.includes(t)
-                  ? 'border-primary text-primary bg-primary/10'
-                  : 'border-border text-foreground'
-              }`}
-            >
-              {t}
-            </button>
-          ))}
+          {TRIGGERS.map((t) => {
+            const isSel = triggers.includes(t);
+            return (
+              <motion.button
+                key={t}
+                onClick={() => toggleTrigger(t)}
+                whileTap={{ scale: 0.94 }}
+                animate={isSel ? { scale: [1, 1.06, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className={`px-4 py-2 rounded-xl border text-xs ${
+                  isSel
+                    ? 'border-primary text-primary bg-primary/10'
+                    : 'border-border text-foreground'
+                }`}
+              >
+                {t}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 

@@ -72,3 +72,30 @@ button.bg-primary:active,
 .bg-primary:active {
   box-shadow: 0 0 20px hsl(25 95% 53% / 0.5);
 }
+
+/* Ambient top glow — fixed overlay shown on every screen */
+.ambient-top-glow {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120%;
+  max-width: 700px;
+  height: 320px;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    hsl(25 95% 53% / 0.32) 0%,
+    hsl(25 95% 53% / 0.16) 25%,
+    hsl(25 95% 53% / 0.06) 45%,
+    transparent 70%
+  );
+  filter: blur(8px);
+  animation: ambient-glow-pulse 5s ease-in-out infinite;
+}
+
+@keyframes ambient-glow-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}

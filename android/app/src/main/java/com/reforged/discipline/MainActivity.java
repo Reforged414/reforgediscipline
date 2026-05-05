@@ -1,4 +1,4 @@
-package com.reforged.app;
+package com.reforged.discipline;
 
 import com.getcapacitor.BridgeActivity;
 

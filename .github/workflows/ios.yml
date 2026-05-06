@@ -33,16 +33,18 @@ jobs:
           CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
           PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE }}
         run: |
-          echo $CERTIFICATE_BASE64 | base64 --decode > certificate.p12
-          echo $PROVISIONING_PROFILE_BASE64 | base64 --decode > profile.mobileprovision
-          security create-keychain -p "" build.keychain
-          security import certificate.p12 -k build.keychain -P $CERTIFICATE_PASSWORD -T /usr/bin/codesign
+          echo "$CERTIFICATE_BASE64" > /tmp/cert.b64
+          base64 --decode /tmp/cert.b64 > /tmp/certificate.p12
+          echo "$PROVISIONING_PROFILE_BASE64" > /tmp/profile.b64
+          base64 --decode /tmp/profile.b64 > /tmp/profile.mobileprovision
+          security create-keychain -p "build" build.keychain
+          security import /tmp/certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           security list-keychains -s build.keychain
           security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+          security unlock-keychain -p "build" build.keychain
+          security set-key-partition-list -S apple-tool:,apple: -s -k "build" build.keychain
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+          cp /tmp/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Build iOS app
         run: |

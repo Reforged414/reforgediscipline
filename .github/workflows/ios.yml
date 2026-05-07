@@ -50,7 +50,7 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM=3N2S3HGDZ8 \
-            PROVISIONING_PROFILE_SPECIFIER="Reforged Discipline Distribution 2"
+            PROVISIONING_PROFILE_SPECIFIER="Reforged Discipline Distribution 3"
 
       - name: Export IPA
         run: |

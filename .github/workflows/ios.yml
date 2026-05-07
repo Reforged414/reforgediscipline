@@ -48,9 +48,9 @@ jobs:
             -archivePath $RUNNER_TEMP/App.xcarchive \
             archive \
             CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="iPhone Distribution" \
+            "CODE_SIGN_IDENTITY=iPhone Distribution" \
             DEVELOPMENT_TEAM=3N2S3HGDZ8 \
-            PROVISIONING_PROFILE_SPECIFIER="Reforged Discipline Distribution 3"
+            "PROVISIONING_PROFILE_SPECIFIER=Reforged Discipline Distribution 3"
 
       - name: Export IPA
         run: |
@@ -60,7 +60,14 @@ jobs:
           <plist version="1.0">
           <dict>
             <key>method</key>
-            <string>app-store</string>
+            <string>app-store-connect</string>
+            <key>teamID</key>
+            <string>3N2S3HGDZ8</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.reforged.discipline</key>
+              <string>Reforged Discipline Distribution 3</string>
+            </dict>
           </dict>
           </plist>
           PLIST

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Flame } from 'lucide-react';
-import { lovable } from '@/integrations/lovable';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 
@@ -11,11 +11,14 @@ const LoginScreen = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: window.location.origin,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'com.reforged.discipline://auth/callback',
+        },
       });
-      if (result.error) {
-        console.error('Sign in error:', result.error);
+      if (error) {
+        console.error('Sign in error:', error);
       }
     } catch (err) {
       console.error('Sign in failed:', err);
@@ -32,7 +35,6 @@ const LoginScreen = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Logo */}
         <motion.div
           className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mb-6"
           initial={{ scale: 0.8 }}
@@ -47,7 +49,6 @@ const LoginScreen = () => {
           Break free. Rebuild stronger.
         </p>
 
-        {/* Google Sign In */}
         <motion.button
           onClick={handleGoogleSignIn}
           disabled={loading}
@@ -68,14 +69,12 @@ const LoginScreen = () => {
           </span>
         </motion.button>
 
-        {/* Divider */}
         <div className="flex items-center gap-3 w-full my-4">
           <div className="flex-1 h-px bg-border" />
           <span className="text-muted-foreground text-xs tracking-wider uppercase">or</span>
           <div className="flex-1 h-px bg-border" />
         </div>
 
-        {/* Guest */}
         <motion.button
           onClick={continueAsGuest}
           className="w-full py-4 rounded-xl border border-border text-foreground font-display text-sm tracking-wider"

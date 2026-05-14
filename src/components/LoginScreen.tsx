@@ -3,6 +3,7 @@ import { Flame } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 const LoginScreen = () => {
   const { continueAsGuest } = useAuth();
@@ -11,22 +12,23 @@ const LoginScreen = () => {
  const handleGoogleSignIn = async () => {
   setLoading(true);
   try {
-    console.log('Starting Google Sign In...');
-    console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: 'https://fpqezkuhwkazzzqrhofu.supabase.co/auth/v1/callback',
+        skipBrowserRedirect: true,
       },
     });
-    console.log('Result:', data, error);
     if (error) {
-      console.error('Sign in error:', error);
       alert('Error: ' + error.message);
+      return;
+    }
+    if (data?.url) {
+      const { Browser } = await import('@capacitor/browser');
+      await Browser.open({ url: data.url });
     }
   } catch (err) {
-    console.error('Sign in failed:', err);
-    alert('Failed: ' + err);
+    alert('Failed: ' + String(err));
   } finally {
     setLoading(false);
   }

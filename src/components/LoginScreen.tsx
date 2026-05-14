@@ -8,26 +8,30 @@ const LoginScreen = () => {
   const { continueAsGuest } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-         redirectTo: 'https://duvnxydvdjfywxhvdhyb.supabase.co/auth/v1/callback',
-        },
-      });
-      if (error) {
-        console.error('Sign in error:', error);
-      }
-    } catch (err) {
-      console.error('Sign in failed:', err);
-    } finally {
-      setLoading(false);
+ const handleGoogleSignIn = async () => {
+  setLoading(true);
+  try {
+    console.log('Starting Google Sign In...');
+    console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://fpqezkuhwkazzzqrhofu.supabase.co/auth/v1/callback',
+      },
+    });
+    console.log('Result:', data, error);
+    if (error) {
+      console.error('Sign in error:', error);
+      alert('Error: ' + error.message);
     }
-  };
-
-  return (
+  } catch (err) {
+    console.error('Sign in failed:', err);
+    alert('Failed: ' + err);
+  } finally {
+    setLoading(false);
+  }
+};
+return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
       <motion.div
         className="w-full max-w-sm flex flex-col items-center"

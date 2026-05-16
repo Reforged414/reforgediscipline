@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import OnboardingHeader from './OnboardingHeader';
 import { User } from 'lucide-react';
-import { lovable } from '@/integrations/lovable';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Props {
@@ -17,36 +17,30 @@ const AccountScreen = ({ step, total, onBack, onNext }: Props) => {
   const [loading, setLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-      const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) {
-        console.error('Sign in error:', result.error);
-        setLoading(false);
-        return;
-      }
-      // If not redirected, sign-in succeeded inline
-      if (!result.redirected) {
-        onNext();
-      }
-      // If redirected, the page will reload and auth state will be picked up
-    } catch (err) {
-      console.error('Sign in failed:', err);
+  setLoading(true);
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://reforgediscipline.lovable.app/auth/callback',
+      },
+    });
+    if (error) {
+      console.error('Sign in error:', error);
       setLoading(false);
     }
-  };
-
-  const handleGuest = () => {
+  } catch (err) {
+    console.error('Sign in failed:', err);
+    setLoading(false);
+  }
+};
+const handleGuest = () => {
     continueAsGuest();
     onNext();
   };
-
   return (
     <div className="min-h-screen flex flex-col">
       <OnboardingHeader step={step} total={total} onBack={onBack} />
-
       <div className="flex-1 flex flex-col items-center justify-center px-8">
         <h1 className="text-3xl font-bold text-foreground text-center mb-1">
           Create your
@@ -54,8 +48,6 @@ const AccountScreen = ({ step, total, onBack, onNext }: Props) => {
         <h1 className="text-3xl font-bold text-primary text-center mb-16">
           account
         </h1>
-
-        {/* Google Button */}
         <motion.button
           onClick={handleGoogleSignIn}
           disabled={loading}
@@ -72,10 +64,7 @@ const AccountScreen = ({ step, total, onBack, onNext }: Props) => {
             {loading ? 'Signing in...' : 'Continue with Google'}
           </span>
         </motion.button>
-
         <p className="text-muted-foreground text-xs mb-6 tracking-widest uppercase">or</p>
-
-        {/* Guest Button */}
         <motion.button
           onClick={handleGuest}
           className="w-full max-w-xs flex items-center justify-center gap-3 px-6 py-4 rounded-xl border border-primary"
@@ -86,8 +75,6 @@ const AccountScreen = ({ step, total, onBack, onNext }: Props) => {
           <span className="text-primary-foreground text-sm font-medium">Continue as Guest</span>
         </motion.button>
       </div>
-
-      {/* Footer */}
       <div className="text-center pb-8 px-8">
         <p className="text-muted-foreground text-xs">
           By signing up, you agree to our{' '}

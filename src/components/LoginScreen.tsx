@@ -15,7 +15,7 @@ const LoginScreen = () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'https://fpqezkuhwkazzzqrhofu.supabase.co/auth/v1/callback',
+        redirectTo: 'https://reforgediscipline.lovable.app/auth/callback',
         skipBrowserRedirect: true,
       },
     });

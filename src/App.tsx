@@ -15,8 +15,8 @@ const AuthCallback = () => {
   const navigate = useNavigate();
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/", { replace: true });
+      if (Capacitor.getPlatform() === "android") {
+        window.location.href = "com.reforged.discipline://auth/callback";
       } else {
         navigate("/", { replace: true });
       }

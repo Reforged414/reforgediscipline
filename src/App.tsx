@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound.tsx";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 
 const AuthCallback = () => {
   const navigate = useNavigate();

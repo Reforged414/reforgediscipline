@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppStore } from '@/store/useAppStore';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp, type URLOpenListenerEvent } from '@capacitor/app';
 
 interface AuthContextType {
   session: Session | null;

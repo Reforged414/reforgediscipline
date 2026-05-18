@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'your.package.id', // Keep whatever your appId is here
+  appId: 'com.reforged.discipline',
   appName: 'reforgediscipline',
   webDir: 'dist',
   plugins: {

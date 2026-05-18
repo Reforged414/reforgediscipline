@@ -27,6 +27,14 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync ios
 
+      - name: Inject Google URL Scheme to Info.plist
+        run: |
+          INFOPLIST="ios/App/App/Info.plist"
+          echo "Injecting Google Reverse Client ID into Info.plist..."
+          
+          # Use macOS native plutil to safely inject the custom URL types array
+          plutil -insert CFBundleURLTypes -json '[{"CFBundleURLSchemes":["com.googleusercontent.apps.901513190581-kebnm9ij83851i249b10mk286gi2r0ov"]}]' "$INFOPLIST"
+
       - name: Install Apple Certificate
         uses: apple-actions/import-codesign-certs@v2
         with:

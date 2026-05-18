@@ -51,7 +51,7 @@ jobs:
             "CODE_SIGN_IDENTITY=iPhone Distribution" \
             DEVELOPMENT_TEAM=3N2S3HGDZ8 \
             "PROVISIONING_PROFILE_SPECIFIER=Reforged Discipline Distribution 3" \
-            CODE_SIGNING_ALLOWED=NO
+            PR_AMD_DISABLE_AGX_CODE_SIGNING=YES
 
       - name: Export IPA
         run: |
@@ -64,6 +64,8 @@ jobs:
             <string>app-store-connect</string>
             <key>teamID</key>
             <string>3N2S3HGDZ8</string>
+            <key>signingStyle</key>
+            <string>manual</string>
             <key>provisioningProfiles</key>
             <dict>
               <key>com.reforged.discipline</key>
@@ -75,8 +77,7 @@ jobs:
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -exportOptionsPlist $RUNNER_TEMP/ExportOptions.plist \
-            -exportPath $RUNNER_TEMP/export \
-            CODE_SIGN_STYLE=Manual
+            -exportPath $RUNNER_TEMP/export
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4

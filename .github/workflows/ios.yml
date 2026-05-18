@@ -27,6 +27,16 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync ios
 
+      - name: Fix SPM Package Code Signing
+        run: |
+          # This script modifies the Xcode project file on the fly to prevent manual signing on SPM dependencies
+          XCODE_PROJ="ios/App/App.xcodeproj/project.pbxproj"
+          if [ -f "$XCODE_PROJ" ]; then
+            echo "Patching Xcode project for SPM signing..."
+            # Strip explicit provisioning profiles from non-app resource targets
+            sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = "Reforged Discipline Distribution 3";/PROVISIONING_PROFILE_SPECIFIER = "";/g' "$XCODE_PROJ"
+          fi
+
       - name: Install Apple Certificate
         uses: apple-actions/import-codesign-certs@v2
         with:
@@ -50,8 +60,7 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             "CODE_SIGN_IDENTITY=iPhone Distribution" \
             DEVELOPMENT_TEAM=3N2S3HGDZ8 \
-            "PROVISIONING_PROFILE_SPECIFIER=Reforged Discipline Distribution 3" \
-            PR_AMD_DISABLE_AGX_CODE_SIGNING=YES
+            "PROVISIONING_PROFILE_SPECIFIER=Reforged Discipline Distribution 3"
 
       - name: Export IPA
         run: |

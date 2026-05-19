@@ -49,9 +49,9 @@ jobs:
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
-          
-          - name: Extract and Print SHA-1 Fingerprint
-        run: |
+
+      - name: Extract and Print SHA-1 Fingerprint
+          run: |
           echo "=== EXTRACTING PRODUCTION SHA-1 FINGERPRINT ==="
           keytool -list -v -keystore android/app/build/outputs/bundle/release/signingKey.jks -storepass "${{ secrets.KEY_STORE_PASSWORD }}" | grep -E "SHA1:|SHA-1:"
           echo "================================================"

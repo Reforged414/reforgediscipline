@@ -7,7 +7,6 @@ import { Capacitor } from '@capacitor/core';
 import { GoogleSignIn } from '@capawesome/capacitor-google-sign-in';
 
 export default function LoginScreen() {
-
   const handleGoogleSignIn = async () => {
     try {
       // 1. Trigger the native Google overlay
@@ -18,26 +17,29 @@ export default function LoginScreen() {
       const idToken = result.idToken;
       
       if (idToken) {
-        // TODO: Send this idToken to your backend (Firebase, Supabase, Node, etc.)
-        console.log("Token received, ready to authenticate:", idToken);
+        // 3. Log into Supabase natively using the ID token
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: idToken,
+        });
+
+        if (error) throw error;
+        console.log('Supabase session started:', data);
       }
-      
     } catch (error) {
-      console.error('Google Sign In Failed:', error);
+      console.error('Google sign in failed:', error);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      {/* Your other login UI elements */}
-      
+    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+      {/* Your actual Login Screen design elements (buttons, layout) go here */}
       <button 
         onClick={handleGoogleSignIn}
-        className="px-4 py-2 bg-white text-black border rounded-md shadow-md hover:bg-gray-100"
+        className="flex items-center gap-2 rounded bg-blue-600 px-4 py-2 text-white"
       >
         Sign in with Google
       </button>
     </div>
   );
 }
-

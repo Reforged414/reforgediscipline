@@ -51,11 +51,11 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
       - name: Extract and Print SHA-1 Fingerprint
-          run: |
+        run: |
           echo "=== EXTRACTING PRODUCTION SHA-1 FINGERPRINT ==="
           keytool -list -v -keystore android/app/build/outputs/bundle/release/signingKey.jks -storepass "${{ secrets.KEY_STORE_PASSWORD }}" | grep -E "SHA1:|SHA-1:"
           echo "================================================"
-
+          
       - name: Upload Signed AAB
         uses: actions/upload-artifact@v4
         with:

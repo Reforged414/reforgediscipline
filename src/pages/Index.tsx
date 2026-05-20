@@ -27,6 +27,7 @@ import { useCloudSync } from '@/hooks/useCloudSync';
 import { useGuestNudge } from '@/hooks/useGuestNudge';
 
 type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'journal' | 'milestone' | 'settings';
+type EntryScreen = 'welcome' | 'onboarding' | 'login' | 'dashboard';
 
 type Variant = { initial: Record<string, any>; animate: Record<string, any>; exit: Record<string, any> };
 
@@ -64,16 +65,16 @@ const PageWrap = ({ children, variant, screenKey }: { children: React.ReactNode;
 );
 
 const Index = () => {
-  const { session, user, isGuest, loading, continueAsGuest } = useAuth();
+  const { session, user, isGuest, loading } = useAuth();
   const { loading: cloudLoading } = useCloudSync();
   useGuestNudge();
-  const [entryView, setEntryView] = useState<'welcome' | 'login'>('welcome');
+  const [currentScreen, setCurrentScreen] = useState<EntryScreen>(() => 'welcome');
 
   const [screen, setScreen] = useState<Screen>('dashboard');
   const [actionHubOpen, setActionHubOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const prevScreen = useRef<Screen>('dashboard');
-  const { streak, resistUrge, onboardingComplete, completeOnboarding, pendingMilestone, dismissMilestone } = useAppStore();
+  const { streak, resistUrge, completeOnboarding, pendingMilestone, dismissMilestone } = useAppStore();
 
   // Auto-navigate to milestone screen when a pending milestone exists
   useEffect(() => {

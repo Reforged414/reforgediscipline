@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppStore } from '@/store/useAppStore';
+/**
  * Syncs Zustand local state with Supabase user_data table for authenticated users.
- * - On login: loads cloud data into local store
+ * - On login: loads cloud data into local store (returns `loading` until done)
  * - On state change: saves to cloud (debounced)
  */
 export function useCloudSync() {
@@ -11,6 +12,7 @@ export function useCloudSync() {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isLoadingFromCloud = useRef(false);
   const hasLoaded = useRef(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Load data from cloud on auth
   useEffect(() => {

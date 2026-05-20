@@ -1,9 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppStore } from '@/store/useAppStore';
-
-/**
  * Syncs Zustand local state with Supabase user_data table for authenticated users.
  * - On login: loads cloud data into local store
  * - On state change: saves to cloud (debounced)

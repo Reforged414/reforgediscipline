@@ -30,18 +30,27 @@ export default function LoginScreen() {
       return;
     }
 
+    const safeEmail = (email ?? '').trim();
+    const safePassword = password ?? '';
+
+    if (!safeEmail || !safePassword) {
+      setError('Email and password are required');
+      return;
+    }
+
     setLoading(true);
     try {
+      console.log("Submitting:", safeEmail, safePassword);
       if (mode === 'signup') {
         const { error } = await supabase.auth.signUp({
-          email,
-          password,
+          email: safeEmail,
+          password: safePassword,
           options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
         });
         if (error) throw error;
         setMessage('Check your email to confirm your account.');
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: safeEmail, password: safePassword });
         if (error) throw error;
       }
     } catch (err: any) {

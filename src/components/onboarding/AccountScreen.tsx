@@ -1,25 +1,42 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import OnboardingHeader from './OnboardingHeader';
-import { User, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+
+interface OnboardingData {
+  goals: string[];
+  identity: string[];
+  lastRelapse: string;
+  triggers: string[];
+  severity: string;
+}
 
 interface Props {
   step: number;
   total: number;
   onBack: () => void;
-  onNext: () => void;
+  onSignedUp: () => void | Promise<void>;
+  onboardingData: OnboardingData;
 }
 
-const AccountScreen = ({ step, total, onBack, onNext }: Props) => {
-  const { continueAsGuest } = useAuth();
+const getInitialStreak = (lastRelapse: string): number => {
+  switch (lastRelapse) {
+    case 'yesterday': return 1;
+    case '3-4-days': return 2;
+    case 'week+': return 7;
+    case 'today':
+    case 'not-sure':
+    default: return 0;
+  }
+};
+
+const AccountScreen = ({ step, total, onBack, onSignedUp, onboardingData }: Props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
 
   const validate = () => {
     if (!email.trim()) return 'Email is required';
@@ -31,7 +48,6 @@ const AccountScreen = ({ step, total, onBack, onNext }: Props) => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setMessage(null);
 
     const validationError = validate();
     if (validationError) {
@@ -41,24 +57,31 @@ const AccountScreen = ({ step, total, onBack, onNext }: Props) => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       });
       if (error) throw error;
-      // Auto-confirm is on — session is established immediately. Continue the flow.
-      onNext();
+      if (!data.user) throw new Error('Account creation did not return a user. Please try again.');
+
+      const initialStreak = getInitialStreak(onboardingData.lastRelapse);
+      const { error: profileError } = await supabase
+        .from('user_data')
+        .upsert({
+          user_id: data.user.id,
+          onboarding_complete: true,
+          onboarding_data: onboardingData as any,
+          streak: initialStreak,
+        } as any, { onConflict: 'user_id' });
+
+      if (profileError) throw profileError;
+      await onSignedUp();
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGuest = () => {
-    continueAsGuest();
-    onNext();
   };
 
   return (
@@ -123,16 +146,6 @@ const AccountScreen = ({ step, total, onBack, onNext }: Props) => {
             </motion.p>
           )}
 
-          {message && (
-            <motion.p
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-sm font-medium text-green-500"
-            >
-              {message}
-            </motion.p>
-          )}
-
           <motion.button
             type="submit"
             disabled={loading}
@@ -147,18 +160,6 @@ const AccountScreen = ({ step, total, onBack, onNext }: Props) => {
             )}
           </motion.button>
         </form>
-
-        <p className="text-muted-foreground text-xs my-6 tracking-widest uppercase">or</p>
-
-        <motion.button
-          onClick={handleGuest}
-          className="w-full max-w-xs flex items-center justify-center gap-3 px-6 py-4 rounded-xl border border-primary"
-          style={{ background: 'linear-gradient(135deg, hsl(25 95% 53%), hsl(30 100% 60%))' }}
-          whileTap={{ scale: 0.97 }}
-        >
-          <User size={18} className="text-primary-foreground" />
-          <span className="text-primary-foreground text-sm font-medium">Continue as Guest</span>
-        </motion.button>
       </div>
       <div className="text-center pb-8 px-8">
         <p className="text-muted-foreground text-xs">

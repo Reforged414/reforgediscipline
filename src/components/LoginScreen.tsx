@@ -10,7 +10,6 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
 
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -29,7 +28,6 @@ export default function LoginScreen() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    setMessage(null);
 
     
 
@@ -72,8 +70,7 @@ export default function LoginScreen() {
           options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
         });
         if (signUpError) throw signUpError;
-        console.log('Sign up response:', data);
-        setMessage('Check your email to confirm your account.');
+        console.log('Sign up success — session will be established automatically:', data?.user?.id);
       } else {
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email: resolvedEmail,
@@ -164,15 +161,8 @@ export default function LoginScreen() {
             </motion.p>
           )}
 
-          {message && (
-            <motion.p
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-sm font-medium text-green-500"
-            >
-              {message}
-            </motion.p>
-          )}
+
+
 
           <motion.button
             type="submit"
@@ -194,7 +184,7 @@ export default function LoginScreen() {
         <div className="text-center">
           <button
             type="button"
-            onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(null); setMessage(null); }}
+            onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(null); }}
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}

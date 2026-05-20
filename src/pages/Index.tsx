@@ -64,7 +64,7 @@ const PageWrap = ({ children, variant, screenKey }: { children: React.ReactNode;
 
 const Index = () => {
   const { session, user, isGuest, loading } = useAuth();
-  useCloudSync();
+  const { loading: cloudLoading } = useCloudSync();
   useGuestNudge();
 
   const [screen, setScreen] = useState<Screen>('dashboard');
@@ -80,8 +80,8 @@ const Index = () => {
     }
   }, [pendingMilestone]);
 
-  // 1. Check loading state first — premium splash prevents onboarding flash for returning users
-  if (loading) {
+  // 1. Auth bootstrap or cloud hydration in progress — show splash to avoid onboarding flash
+  if (loading || (session && cloudLoading)) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center overflow-hidden">
         <motion.div
@@ -126,14 +126,16 @@ const Index = () => {
     );
   }
 
-  // 2. Show onboarding for new users
-  if (!onboardingComplete) {
-    return <OnboardingFlow onComplete={(data) => completeOnboarding(data.lastRelapse)} />;
-  }
-
-  // 3. Show login if not authenticated and not a guest
+  // 2. Require auth or guest mode before anything else (including onboarding).
+  //    This ensures an existing account's onboardingComplete is sourced from the DB,
+  //    not from a stale local flag.
   if (!session && !isGuest) {
     return <LoginScreen />;
+  }
+
+  // 3. Onboarding — by now, for authenticated users this reflects the cloud value.
+  if (!onboardingComplete) {
+    return <OnboardingFlow onComplete={(data) => completeOnboarding(data.lastRelapse)} />;
   }
 
   const navigateTo = (next: Screen) => {

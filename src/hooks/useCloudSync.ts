@@ -1,11 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppStore } from '@/store/useAppStore';
-
 /**
  * Syncs Zustand local state with Supabase user_data table for authenticated users.
- * - On login: loads cloud data into local store
+ * - On login: loads cloud data into local store (returns `loading` until done)
  * - On state change: saves to cloud (debounced)
  */
 export function useCloudSync() {
@@ -13,19 +12,23 @@ export function useCloudSync() {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isLoadingFromCloud = useRef(false);
   const hasLoaded = useRef(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Load data from cloud on auth
   useEffect(() => {
     if (!user || isGuest) {
       hasLoaded.current = false;
+      setLoading(false);
       return;
     }
+    setLoading(true);
 
     const loadFromCloud = async () => {
       // If a guest-to-account transfer is pending, skip overwriting local state.
       // The GuestTransferPrompt will resolve it (transfer or discard), and sync resumes after.
       if (localStorage.getItem('reforged-pending-transfer') === 'true') {
         hasLoaded.current = true;
+        setLoading(false);
         return;
       }
       isLoadingFromCloud.current = true;
@@ -67,6 +70,7 @@ export function useCloudSync() {
       } finally {
         isLoadingFromCloud.current = false;
         hasLoaded.current = true;
+        setLoading(false);
       }
     };
 
@@ -114,4 +118,6 @@ export function useCloudSync() {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
   }, [user, isGuest]);
+
+  return { loading };
 }

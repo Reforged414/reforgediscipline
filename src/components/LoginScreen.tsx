@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
 import { Flame, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { useState, useRef } from 'react';
 
 export default function LoginScreen() {
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const { continueAsGuest } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -13,38 +14,16 @@ export default function LoginScreen() {
 
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    if (error) setError(null);
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-    if (error) setError(null);
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
-    
-
-    // Triple-source the values: state -> ref -> FormData. Whichever has a value wins.
     const fd = new FormData(e.currentTarget);
-    const fdEmail = (fd.get('email') as string | null) ?? '';
-    const fdPassword = (fd.get('password') as string | null) ?? '';
+    const resolvedEmail = (email || emailRef.current?.value || (fd.get('email') as string) || '').trim();
+    const resolvedPassword = password || passwordRef.current?.value || (fd.get('password') as string) || '';
 
-    const resolvedEmail = (email || emailRef.current?.value || fdEmail || '').trim();
-    const resolvedPassword = password || passwordRef.current?.value || fdPassword || '';
-
-    if (!resolvedEmail) {
-      setError('Email is required');
-      emailRef.current?.focus();
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resolvedEmail)) {
+    if (!resolvedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resolvedEmail)) {
       setError('Please enter a valid email');
       emailRef.current?.focus();
       return;
@@ -55,33 +34,16 @@ export default function LoginScreen() {
       return;
     }
 
-    console.log('Submitting auth request:', {
-      mode,
-      email: resolvedEmail,
-      passwordLength: resolvedPassword.length,
-    });
-
     setLoading(true);
     try {
-      if (mode === 'signup') {
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email: resolvedEmail,
-          password: resolvedPassword,
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-        });
-        if (signUpError) throw signUpError;
-        console.log('Sign up success — session will be established automatically:', data?.user?.id);
-      } else {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email: resolvedEmail,
-          password: resolvedPassword,
-        });
-        if (signInError) throw signInError;
-        console.log('Sign in success for user:', data?.user?.id);
-      }
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: resolvedEmail,
+        password: resolvedPassword,
+      });
+      if (signInError) throw signInError;
     } catch (err: any) {
-      console.error('Auth error:', err);
-      setError(err?.message || 'Something went wrong. Please try again.');
+      console.error('Sign-in error:', err);
+      setError(err?.message || 'Unable to sign in. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -96,11 +58,11 @@ export default function LoginScreen() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Reforged Discipline</h1>
           <p className="text-sm text-muted-foreground">
-            Forge your mind. Control your actions.
+            Welcome back. Sign in to continue your streak.
           </p>
         </div>
 
-        <form ref={formRef} onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
+        <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">Email</label>
             <div className="relative">
@@ -113,7 +75,7 @@ export default function LoginScreen() {
                 autoComplete="email"
                 inputMode="email"
                 value={email}
-                onChange={handleEmailChange}
+                onChange={(e) => { setEmail(e.target.value); if (error) setError(null); }}
                 placeholder="you@example.com"
                 className="flex h-10 w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 disabled={loading}
@@ -131,9 +93,9 @@ export default function LoginScreen() {
                 id="password"
                 name="password"
                 type={showPassword ? 'text' : 'password'}
-                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                autoComplete="current-password"
                 value={password}
-                onChange={handlePasswordChange}
+                onChange={(e) => { setPassword(e.target.value); if (error) setError(null); }}
                 placeholder="••••••••"
                 className="flex h-10 w-full rounded-md border border-input bg-background pl-10 pr-10 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 disabled={loading}
@@ -161,35 +123,34 @@ export default function LoginScreen() {
             </motion.p>
           )}
 
-
-
-
           <motion.button
             type="submit"
             disabled={loading}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-60"
             whileTap={{ scale: 0.97 }}
           >
-            {loading ? (
-              mode === 'signup' ? 'Creating account...' : 'Signing in...'
-            ) : (
+            {loading ? 'Signing in...' : (
               <>
-                {mode === 'signup' ? 'Create Account' : 'Sign In'}
+                Sign In
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
           </motion.button>
         </form>
 
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(null); }}
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-          </button>
+        <div className="relative flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs uppercase tracking-widest text-muted-foreground">New here?</span>
+          <div className="h-px flex-1 bg-border" />
         </div>
+
+        <button
+          type="button"
+          onClick={continueAsGuest}
+          className="w-full rounded-xl border border-primary/40 bg-primary/5 px-4 py-3.5 text-sm font-semibold text-primary transition-all hover:bg-primary/10 active:scale-[0.98]"
+        >
+          Get started — create your account
+        </button>
       </div>
     </div>
   );

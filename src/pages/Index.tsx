@@ -17,6 +17,7 @@ import JournalEntry from '@/components/JournalEntry';
 import MilestoneScreen from '@/components/MilestoneScreen';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import LoginScreen from '@/components/LoginScreen';
+import WelcomeGate from '@/components/WelcomeGate';
 import TutorialOverlay from '@/components/TutorialOverlay';
 import SettingsScreen from '@/components/SettingsScreen';
 import GuestTransferPrompt from '@/components/GuestTransferPrompt';

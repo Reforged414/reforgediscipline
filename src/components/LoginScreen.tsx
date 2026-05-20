@@ -41,6 +41,7 @@ export default function LoginScreen() {
       }
     } catch (error) {
       console.error('Google native sign in failed:', error);
+      alert('Native Error: ' + (error?.message || JSON.stringify(error)));
     }
   };
 

@@ -18,14 +18,17 @@ export function useCloudSync() {
   useEffect(() => {
     if (!user || isGuest) {
       hasLoaded.current = false;
+      setLoading(false);
       return;
     }
+    setLoading(true);
 
     const loadFromCloud = async () => {
       // If a guest-to-account transfer is pending, skip overwriting local state.
       // The GuestTransferPrompt will resolve it (transfer or discard), and sync resumes after.
       if (localStorage.getItem('reforged-pending-transfer') === 'true') {
         hasLoaded.current = true;
+        setLoading(false);
         return;
       }
       isLoadingFromCloud.current = true;
@@ -67,6 +70,7 @@ export function useCloudSync() {
       } finally {
         isLoadingFromCloud.current = false;
         hasLoaded.current = true;
+        setLoading(false);
       }
     };
 

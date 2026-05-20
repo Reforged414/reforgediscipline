@@ -64,9 +64,10 @@ const PageWrap = ({ children, variant, screenKey }: { children: React.ReactNode;
 );
 
 const Index = () => {
-  const { session, user, isGuest, loading } = useAuth();
+  const { session, user, isGuest, loading, continueAsGuest } = useAuth();
   const { loading: cloudLoading } = useCloudSync();
   useGuestNudge();
+  const [entryView, setEntryView] = useState<'welcome' | 'login'>('welcome');
 
   const [screen, setScreen] = useState<Screen>('dashboard');
   const [actionHubOpen, setActionHubOpen] = useState(false);

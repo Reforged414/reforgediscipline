@@ -30,6 +30,9 @@ export default function LoginScreen() {
     e.preventDefault();
     setError(null);
     setMessage(null);
+    alert("STATE CHECK - Email: " + email + " | Password: " + password);
+console.log("Submitting:", email, password);
+    
 
     // Triple-source the values: state -> ref -> FormData. Whichever has a value wins.
     const fd = new FormData(e.currentTarget);

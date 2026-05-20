@@ -6,8 +6,6 @@ import LastRelapseScreen from './LastRelapseScreen';
 import TriggersScreen from './TriggersScreen';
 import SeverityScreen from './SeverityScreen';
 import AccountScreen from './AccountScreen';
-import FinishScreen from './FinishScreen';
-import PaywallScreen from './PaywallScreen';
 
 interface OnboardingData {
   goals: string[];
@@ -91,10 +89,9 @@ const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
       step={6}
       total={6}
       onBack={goBack}
-      onNext={() => goTo(6)}
+      onboardingData={data}
+      onSignedUp={() => onComplete(data)}
     />,
-    <FinishScreen key="finish" onNext={() => goTo(7)} />,
-    <PaywallScreen key="paywall" onComplete={() => onComplete(data)} />,
   ];
 
   const direction = directionRef.current;

@@ -22,6 +22,8 @@ export default function WelcomeGate({ onGetStarted, onSignIn }: Props) {
       {!leaving ? (
         <motion.div
           key="welcome"
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 1.04, filter: 'blur(8px)' }}
           transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
           className="flex min-h-screen flex-col items-center justify-between bg-background p-6 text-foreground"

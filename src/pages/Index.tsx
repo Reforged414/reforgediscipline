@@ -83,8 +83,19 @@ const Index = () => {
     }
   }, [pendingMilestone]);
 
+  // Keep the explicit entry state aligned only for app bootstrap/sign-out cases.
+  useEffect(() => {
+    if (loading) return;
+    if (session && currentScreen === 'welcome') {
+      setCurrentScreen('dashboard');
+    }
+    if (!session && currentScreen === 'dashboard') {
+      setCurrentScreen('welcome');
+    }
+  }, [loading, session, currentScreen]);
+
   // 1. Auth bootstrap or cloud hydration in progress — show splash to avoid onboarding flash
-  if (loading || (session && cloudLoading)) {
+  if (loading || (currentScreen === 'dashboard' && session && cloudLoading)) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center overflow-hidden">
         <motion.div
@@ -129,22 +140,34 @@ const Index = () => {
     );
   }
 
-  // 2. No session and not in guest/onboarding mode — show welcome gate, then optional login.
-  if (!session && !isGuest) {
-    if (entryView === 'login') {
-      return <LoginScreen onBack={() => setEntryView('welcome')} />;
-    }
+  // 2. Explicit entry state machine — only user actions move between these screens.
+  if (currentScreen === 'welcome') {
     return (
       <WelcomeGate
-        onGetStarted={continueAsGuest}
-        onSignIn={() => setEntryView('login')}
+        onGetStarted={() => setCurrentScreen('onboarding')}
+        onSignIn={() => setCurrentScreen('login')}
       />
     );
   }
 
-  // 3. Onboarding — by now, for authenticated users this reflects the cloud value.
-  if (!onboardingComplete) {
-    return <OnboardingFlow onComplete={(data) => completeOnboarding(data.lastRelapse)} />;
+  if (currentScreen === 'login') {
+    return (
+      <LoginScreen
+        onBack={() => setCurrentScreen('welcome')}
+        onSignedIn={() => setCurrentScreen('dashboard')}
+      />
+    );
+  }
+
+  if (currentScreen === 'onboarding') {
+    return (
+      <OnboardingFlow
+        onComplete={(data) => {
+          completeOnboarding(data.lastRelapse, data);
+          setCurrentScreen('dashboard');
+        }}
+      />
+    );
   }
 
   const navigateTo = (next: Screen) => {

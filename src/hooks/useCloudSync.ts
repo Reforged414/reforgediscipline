@@ -118,4 +118,6 @@ export function useCloudSync() {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
   }, [user, isGuest]);
+
+  return { loading };
 }

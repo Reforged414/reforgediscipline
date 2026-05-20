@@ -80,21 +80,58 @@ const Index = () => {
     }
   }, [pendingMilestone]);
 
-  // Show onboarding FIRST for new users (before any auth check)
-  if (!onboardingComplete) {
-    return <OnboardingFlow onComplete={(data) => completeOnboarding(data.lastRelapse)} />;
-  }
-
-  // Show loading while checking auth (only after onboarding is done)
+  // 1. Check loading state first — premium splash prevents onboarding flash for returning users
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center overflow-hidden">
+        <motion.div
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: [0.95, 1.05, 0.95], opacity: 1 }}
+          transition={{
+            opacity: { duration: 0.6, ease: 'easeOut' },
+            scale: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
+          }}
+          className="relative"
+        >
+          <div className="absolute inset-0 rounded-full bg-primary/30 blur-3xl" />
+          <svg
+            width="72"
+            height="72"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="hsl(25 95% 53%)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="relative drop-shadow-[0_0_20px_hsl(25_95%_53%/0.6)]"
+          >
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+          </svg>
+        </motion.div>
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
+          className="mt-8 font-display text-2xl tracking-[0.3em] uppercase text-foreground"
+        >
+          Reforged Discipline
+        </motion.h1>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 1 }}
+          className="mt-6 w-8 h-[2px] bg-primary/60 rounded-full"
+        />
       </div>
     );
   }
 
-  // Show login if not authenticated and not guest (only after onboarding)
+  // 2. Show onboarding for new users
+  if (!onboardingComplete) {
+    return <OnboardingFlow onComplete={(data) => completeOnboarding(data.lastRelapse)} />;
+  }
+
+  // 3. Show login if not authenticated and not a guest
   if (!session && !isGuest) {
     return <LoginScreen />;
   }

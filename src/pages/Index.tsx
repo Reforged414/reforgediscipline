@@ -24,7 +24,6 @@ import GuestTransferPrompt from '@/components/GuestTransferPrompt';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCloudSync } from '@/hooks/useCloudSync';
-import { useGuestNudge } from '@/hooks/useGuestNudge';
 
 type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'journal' | 'milestone' | 'settings';
 type EntryScreen = 'welcome' | 'onboarding' | 'login' | 'dashboard';
@@ -65,9 +64,8 @@ const PageWrap = ({ children, variant, screenKey }: { children: React.ReactNode;
 );
 
 const Index = () => {
-  const { session, user, isGuest, loading } = useAuth();
+  const { session, loading } = useAuth();
   const { loading: cloudLoading } = useCloudSync();
-  useGuestNudge();
   const [currentScreen, setCurrentScreen] = useState<EntryScreen>(() => 'welcome');
 
   const [screen, setScreen] = useState<Screen>('dashboard');
@@ -95,7 +93,7 @@ const Index = () => {
   }, [loading, session, currentScreen]);
 
   // 1. Auth bootstrap or cloud hydration in progress — show splash to avoid onboarding flash
-  if (loading || (currentScreen === 'dashboard' && session && cloudLoading)) {
+  if (loading || (session && currentScreen === 'welcome') || (currentScreen === 'dashboard' && session && cloudLoading)) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center overflow-hidden">
         <motion.div
@@ -144,7 +142,11 @@ const Index = () => {
   if (currentScreen === 'welcome') {
     return (
       <WelcomeGate
-        onGetStarted={() => setCurrentScreen('onboarding')}
+        onGetStarted={() => {
+          localStorage.removeItem('reforged-guest');
+          localStorage.removeItem('reforged-pending-transfer');
+          setCurrentScreen('onboarding');
+        }}
         onSignIn={() => setCurrentScreen('login')}
       />
     );

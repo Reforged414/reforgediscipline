@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Flame, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+
 import { useState, useRef } from 'react';
 
 interface LoginScreenProps {

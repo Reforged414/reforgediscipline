@@ -141,19 +141,15 @@ export default function LoginScreen({ onBack }: LoginScreenProps = {}) {
           </motion.button>
         </form>
 
-        <div className="relative flex items-center gap-3">
-          <div className="h-px flex-1 bg-border" />
-          <span className="text-xs uppercase tracking-widest text-muted-foreground">New here?</span>
-          <div className="h-px flex-1 bg-border" />
-        </div>
-
-        <button
-          type="button"
-          onClick={continueAsGuest}
-          className="w-full rounded-xl border border-primary/40 bg-primary/5 px-4 py-3.5 text-sm font-semibold text-primary transition-all hover:bg-primary/10 active:scale-[0.98]"
-        >
-          Get started — create your account
-        </button>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+          >
+            ← Back to welcome
+          </button>
+        )}
       </div>
     </div>
   );

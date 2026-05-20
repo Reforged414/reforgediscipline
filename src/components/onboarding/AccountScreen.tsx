@@ -47,7 +47,8 @@ const AccountScreen = ({ step, total, onBack, onNext }: Props) => {
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       });
       if (error) throw error;
-      setMessage('Account created! Check your email to confirm, then come back to sign in.');
+      // Auto-confirm is on — session is established immediately. Continue the flow.
+      onNext();
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {

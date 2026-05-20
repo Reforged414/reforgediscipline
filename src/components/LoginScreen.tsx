@@ -4,8 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useRef } from 'react';
 
-export default function LoginScreen() {
-  const { continueAsGuest } = useAuth();
+interface LoginScreenProps {
+  onBack?: () => void;
+}
+
+export default function LoginScreen({ onBack }: LoginScreenProps = {}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

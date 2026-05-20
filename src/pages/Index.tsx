@@ -17,6 +17,7 @@ import JournalEntry from '@/components/JournalEntry';
 import MilestoneScreen from '@/components/MilestoneScreen';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import LoginScreen from '@/components/LoginScreen';
+import WelcomeGate from '@/components/WelcomeGate';
 import TutorialOverlay from '@/components/TutorialOverlay';
 import SettingsScreen from '@/components/SettingsScreen';
 import GuestTransferPrompt from '@/components/GuestTransferPrompt';
@@ -63,9 +64,10 @@ const PageWrap = ({ children, variant, screenKey }: { children: React.ReactNode;
 );
 
 const Index = () => {
-  const { session, user, isGuest, loading } = useAuth();
+  const { session, user, isGuest, loading, continueAsGuest } = useAuth();
   const { loading: cloudLoading } = useCloudSync();
   useGuestNudge();
+  const [entryView, setEntryView] = useState<'welcome' | 'login'>('welcome');
 
   const [screen, setScreen] = useState<Screen>('dashboard');
   const [actionHubOpen, setActionHubOpen] = useState(false);
@@ -126,11 +128,17 @@ const Index = () => {
     );
   }
 
-  // 2. Require auth or guest mode before anything else (including onboarding).
-  //    This ensures an existing account's onboardingComplete is sourced from the DB,
-  //    not from a stale local flag.
+  // 2. No session and not in guest/onboarding mode — show welcome gate, then optional login.
   if (!session && !isGuest) {
-    return <LoginScreen />;
+    if (entryView === 'login') {
+      return <LoginScreen onBack={() => setEntryView('welcome')} />;
+    }
+    return (
+      <WelcomeGate
+        onGetStarted={continueAsGuest}
+        onSignIn={() => setEntryView('login')}
+      />
+    );
   }
 
   // 3. Onboarding — by now, for authenticated users this reflects the cloud value.

@@ -6,9 +6,10 @@ import { useState, useRef } from 'react';
 
 interface LoginScreenProps {
   onBack?: () => void;
+  onSignedIn?: () => void;
 }
 
-export default function LoginScreen({ onBack }: LoginScreenProps = {}) {
+export default function LoginScreen({ onBack, onSignedIn }: LoginScreenProps = {}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -44,6 +45,7 @@ export default function LoginScreen({ onBack }: LoginScreenProps = {}) {
         password: resolvedPassword,
       });
       if (signInError) throw signInError;
+      onSignedIn?.();
     } catch (err: any) {
       console.error('Sign-in error:', err);
       setError(err?.message || 'Unable to sign in. Please try again.');

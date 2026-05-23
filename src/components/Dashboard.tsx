@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Settings } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import RetentionBanner from '@/components/RetentionBanner';
+import DisciplineGoals from '@/components/DisciplineGoals';
 
 const stagger = {
   hidden: {},

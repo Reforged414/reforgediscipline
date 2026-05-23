@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      discipline_goals: {
+        Row: {
+          created_at: string
+          goal_name: string
+          id: string
+          is_completed: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          goal_name: string
+          id?: string
+          is_completed?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          goal_name?: string
+          id?: string
+          is_completed?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

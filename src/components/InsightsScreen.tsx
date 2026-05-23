@@ -1,6 +1,7 @@
 import { X, Moon, Sun, Cloud } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
+import AICoachPanel from './AICoachPanel';
 
 const stagger = {
   hidden: {},
@@ -137,6 +138,20 @@ const InsightsScreen = () => {
           <EmptyHint>Check back after 7 days of logging to see your success rate.</EmptyHint>
         </motion.div>
       )}
+
+      {/* AI Coach */}
+      <AICoachPanel
+        input={{
+          streak,
+          successRate: hasEnoughForSuccessRate ? successRate : null,
+          urgesThisWeek,
+          topTriggers,
+          peakLabel,
+          totalRelapses,
+          totalResisted,
+          daysOfData,
+        }}
+      />
 
       {/* Top Triggers */}
       <motion.div variants={fadeUp} className="mb-8">

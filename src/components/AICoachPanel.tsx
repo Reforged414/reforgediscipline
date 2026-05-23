@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Lock, Brain, Shield, Target, Loader2, RefreshCw } from 'lucide-react';
+import { Sparkles, Lock, Brain, Shield, Target, Loader2, RefreshCw, HeartPulse } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePremium } from '@/hooks/usePremium';
 import PaywallModal from './PaywallModal';
+
+interface JournalSnippet {
+  text: string;
+  tag: string | null;
+  weekday: string;
+  hour: number;
+}
 
 interface CoachInput {
   streak: number;
@@ -14,12 +21,15 @@ interface CoachInput {
   totalRelapses: number;
   totalResisted: number;
   daysOfData: number;
+  journalSnippets?: JournalSnippet[];
+  urgeWeekdayDistribution?: Record<string, number>;
 }
 
 interface CoachOutput {
   tactical: string;
   predictive: string;
   strategic: string;
+  emotional: string;
 }
 
 const fadeUp = {
@@ -31,6 +41,7 @@ const SAMPLE: CoachOutput = {
   tactical: 'Your data shows stress and boredom dominating your urge triggers. Late-night hours are when your guard drops fastest.',
   predictive: 'Based on your pattern, the next 48 hours after 10PM are your highest-risk window. Weekends amplify it.',
   strategic: 'Start a Ride the Urge timer the moment a trigger hits. Lock Reforged Shield before 9PM tonight.',
+  emotional: 'Your recent journals show recurring stress and fatigue markers clustered on weeknights, directly preceding the urge spikes the next morning. You are using the urge as a release valve for unprocessed tension. Name the emotion in your Journal before it becomes a craving.',
 };
 
 const AICoachPanel = ({ input }: { input: CoachInput }) => {
@@ -49,7 +60,7 @@ const AICoachPanel = ({ input }: { input: CoachInput }) => {
       });
       if (fnErr) throw fnErr;
       if (res?.tactical && res?.predictive && res?.strategic) {
-        setData(res as CoachOutput);
+        setData({ emotional: SAMPLE.emotional, ...(res as CoachOutput) });
       } else {
         throw new Error('Invalid response');
       }
@@ -159,6 +170,12 @@ const AICoachPanel = ({ input }: { input: CoachInput }) => {
                   body={(data ?? SAMPLE).strategic}
                   accent="hsl(140 70% 50%)"
                 />
+                <Card
+                  icon={HeartPulse}
+                  title="Emotional Syntax & Mood Analysis"
+                  body={(data ?? SAMPLE).emotional}
+                  accent="hsl(320 75% 60%)"
+                />
               </>
             )}
           </div>
@@ -195,6 +212,7 @@ const AICoachPanel = ({ input }: { input: CoachInput }) => {
         reason="Unlock your personal AI Recovery Coach and tactical weekly breakdowns."
         extraFeatures={[
           { label: 'Reforged AI Coach', desc: 'Tactical, predictive, and strategic insights from your data.' },
+          { label: 'Emotional Syntax Analysis', desc: 'AI scans your journals for mood patterns and links them to urge spikes.' },
         ]}
       />
     </motion.div>

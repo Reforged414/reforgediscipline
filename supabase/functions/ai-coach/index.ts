@@ -6,6 +6,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface JournalSnippet {
+  text: string;
+  tag: string | null;
+  weekday: string; // e.g. "Tuesday"
+  hour: number;
+}
+
 interface CoachInput {
   streak: number;
   successRate: number | null;
@@ -15,6 +22,8 @@ interface CoachInput {
   totalRelapses: number;
   totalResisted: number;
   daysOfData: number;
+  journalSnippets?: JournalSnippet[];
+  urgeWeekdayDistribution?: Record<string, number>;
 }
 
 Deno.serve(async (req) => {
@@ -27,12 +36,28 @@ Deno.serve(async (req) => {
 
     const system = `You are the Reforged AI Coach, an elite recovery strategist for men battling addiction (porn, substance, doom-scrolling). You speak in a calm, direct, masculine tone — like a trusted mentor. Never moralize. Never use cliches. Be tactical and specific. Reference the user's actual data.
 
+For the "emotional" field: scan the user's journal entries for recurring emotional keywords (stress, loneliness, boredom, fatigue, anger, shame, anxiety, frustration). Bridge their emotional state to their urge pattern. Reference specific weekdays/times when possible. Example tone: "Your recent journals show an increase in stress and fatigue markers on Tuesday nights, which directly correlates with your elevated urge frequency on Wednesday mornings. You are using the urge as a stress release." If no journals exist, say so plainly and recommend journaling.
+
 Return STRICT JSON only, no prose, no code fences, matching:
 {
   "tactical": "2-3 sentence weekly tactical breakdown referencing their top triggers and peak time",
   "predictive": "2-3 sentence predictive shield warning about upcoming high-risk windows based on their pattern",
-  "strategic": "2-3 sentence action plan that NAMES specific in-app tools: 'Ride the Urge' timer, 'Reforged Shield' blocker, 'Daily Check-In', or 'Journal'"
+  "strategic": "2-3 sentence action plan that NAMES specific in-app tools: 'Ride the Urge' timer, 'Reforged Shield' blocker, 'Daily Check-In', or 'Journal'",
+  "emotional": "3-4 sentence Emotional Syntax & Mood Analysis bridging journal emotions to urge patterns"
 }`;
+
+    const journals = (data.journalSnippets ?? []).slice(0, 15);
+    const journalText = journals.length
+      ? journals
+          .map((j, i) => `[${i + 1}] (${j.weekday} ${j.hour}:00${j.tag ? `, tag=${j.tag}` : ""}) ${j.text.slice(0, 240)}`)
+          .join("\n")
+      : "(no journal entries logged)";
+
+    const urgeDist = data.urgeWeekdayDistribution
+      ? Object.entries(data.urgeWeekdayDistribution)
+          .map(([d, n]) => `${d}: ${n}`)
+          .join(", ")
+      : "n/a";
 
     const userPrompt = `User data:
 - Current streak: ${data.streak} days
@@ -43,8 +68,12 @@ Return STRICT JSON only, no prose, no code fences, matching:
 - Success rate: ${data.successRate ?? "insufficient data"}%
 - Peak vulnerability time: ${data.peakLabel}
 - Top triggers: ${data.topTriggers.map((t) => `${t.label} (${t.pct}%)`).join(", ") || "none logged"}
+- Urge weekday distribution: ${urgeDist}
 
-Generate the three insights now.`;
+Recent journal entries:
+${journalText}
+
+Generate the four insights now.`;
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

@@ -22,11 +22,12 @@ import TutorialOverlay from '@/components/TutorialOverlay';
 import SettingsScreen from '@/components/SettingsScreen';
 import GuestTransferPrompt from '@/components/GuestTransferPrompt';
 import ReforgedShield from '@/components/ReforgedShield';
+import MirrorShield from '@/components/MirrorShield';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCloudSync } from '@/hooks/useCloudSync';
 
-type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'journal' | 'milestone' | 'settings';
+type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'mirror' | 'journal' | 'milestone' | 'settings';
 type EntryScreen = 'welcome' | 'onboarding' | 'login' | 'dashboard';
 
 interface RewardCtx {

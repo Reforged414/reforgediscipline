@@ -95,28 +95,34 @@ const ReforgedShield = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background px-5 pt-12 pb-32">
-      <div className="flex items-center justify-between mb-8">
+    <motion.div
+      className="min-h-screen bg-background px-5 pt-12 pb-32"
+      variants={stagger}
+      initial="hidden"
+      animate="show"
+    >
+      <motion.div variants={fadeUp} className="flex items-center justify-between mb-8">
         <h1 className="font-display text-xl tracking-widest text-primary">SHIELD</h1>
         {isPremium && (
           <span className="flex items-center gap-1 text-[9px] tracking-widest uppercase text-primary">
             <Sparkles size={10} /> Premium
           </span>
         )}
-      </div>
+      </motion.div>
 
-      <p className="text-center text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-2">
+      <motion.p variants={fadeUp} className="text-center text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-2">
         Reforged Shield
-      </p>
-      <h2 className="text-center font-display text-3xl tracking-wider text-foreground mb-2">
+      </motion.p>
+      <motion.h2 variants={fadeUp} className="text-center font-display text-3xl tracking-wider text-foreground mb-2">
         Device Protection
-      </h2>
-      <p className="text-center text-sm text-muted-foreground mb-10 max-w-xs mx-auto">
+      </motion.h2>
+      <motion.p variants={fadeUp} className="text-center text-sm text-muted-foreground mb-10 max-w-xs mx-auto">
         Block adult content across your entire device. One switch, total discipline.
-      </p>
+      </motion.p>
 
       {/* Master toggle */}
-      <div className="flex flex-col items-center mb-10">
+      <motion.div variants={fadeUp} className="flex flex-col items-center mb-10">
+
         <motion.button
           onClick={handleMasterToggle}
           disabled={busy}

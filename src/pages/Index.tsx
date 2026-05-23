@@ -260,6 +260,16 @@ const Index = () => {
               onBack={() => navigateTo('ride')}
               onRideUrge={() => navigateTo('ride')}
               onDashboard={handleContinue}
+              onMirrorShield={() => navigateTo('mirror')}
+            />
+          </PageWrap>
+        );
+      case 'mirror':
+        return (
+          <PageWrap variant={fade} screenKey="mirror">
+            <MirrorShield
+              onBack={() => goBack('emergency')}
+              onDeescalated={handleContinue}
             />
           </PageWrap>
         );

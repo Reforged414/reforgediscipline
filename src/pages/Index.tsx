@@ -9,8 +9,7 @@ import LogUrge from '@/components/LogUrge';
 import LogRelapse from '@/components/LogRelapse';
 import RecoveryScreen from '@/components/RecoveryScreen';
 import ProfilePlaceholder from '@/components/ProfilePlaceholder';
-import ComingSoonPlaceholder from '@/components/ComingSoonPlaceholder';
-void ComingSoonPlaceholder;
+// ComingSoonPlaceholder no longer used after Shield replaced Community tab
 import InsightsScreen from '@/components/InsightsScreen';
 import DailyCheckIn from '@/components/DailyCheckIn';
 import EmergencyHelp from '@/components/EmergencyHelp';

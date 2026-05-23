@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Check, Infinity as InfinityIcon, Brain, BarChart3, Flame } from 'lucide-react';
+import { X, Check, Infinity as InfinityIcon, Brain, BarChart3, Flame, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { setMockPremium } from '@/hooks/usePremium';
 
@@ -8,18 +8,24 @@ interface PaywallModalProps {
   onClose: () => void;
   /** Optional title context, e.g. "Unlock unlimited goals" */
   reason?: string;
+  /** Extra feature bullets to highlight (e.g. Shield blocker) — rendered first. */
+  extraFeatures?: { label: string; desc: string }[];
 }
 
 type Plan = 'annual' | 'monthly';
 
-const FEATURES = [
+const BASE_FEATURES = [
   { icon: InfinityIcon, label: 'Unlimited Discipline Goals', desc: 'Build the life you want, no limits.' },
   { icon: Brain, label: 'AI Trigger Analysis', desc: 'Understand the patterns behind your urges.' },
   { icon: BarChart3, label: 'Weekly Recovery Insights', desc: 'See your progress, week after week.' },
 ];
 
-const PaywallModal = ({ open, onClose, reason }: PaywallModalProps) => {
+const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModalProps) => {
   const [plan, setPlan] = useState<Plan>('annual');
+  const FEATURES = [
+    ...extraFeatures.map((f) => ({ icon: Sparkles, ...f })),
+    ...BASE_FEATURES,
+  ];
 
   const handlePurchase = () => {
     // TODO (native): trigger RevenueCat Purchases.purchasePackage(...)

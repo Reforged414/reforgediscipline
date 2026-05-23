@@ -21,7 +21,6 @@ const DailyCheckIn = ({ onBack, onComplete }: DailyCheckInProps) => {
   const [mood, setMood] = useState('');
   const [urgeLevel, setUrgeLevel] = useState('');
   const [reflection, setReflection] = useState('');
-  const [submitted, setSubmitted] = useState(false);
   const { completeDailyCheckIn, dailyDiscipline } = useAppStore();
 
   const canSubmit = mood && urgeLevel && !dailyDiscipline.checkedIn;
@@ -29,26 +28,8 @@ const DailyCheckIn = ({ onBack, onComplete }: DailyCheckInProps) => {
   const handleSubmit = () => {
     if (!canSubmit) return;
     completeDailyCheckIn();
-    setSubmitted(true);
-    setTimeout(() => {
-      onComplete();
-    }, 1500);
+    onComplete();
   };
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-8 animate-fade-in">
-        <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-6">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-            <path d="M5 13l4 4L19 7" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-        <p className="text-foreground text-lg font-medium mb-1">Check-in complete.</p>
-        <p className="text-muted-foreground text-sm mb-2">Stay consistent.</p>
-        <p className="text-primary font-display text-xl tracking-wider">+15 XP</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background px-5 pt-10 pb-10 max-w-md mx-auto">

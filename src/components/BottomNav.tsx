@@ -1,4 +1,4 @@
-import { LayoutDashboard, Shield, MessageCircle, User } from 'lucide-react';
+import { LayoutDashboard, BarChart3, ShieldCheck, User } from 'lucide-react';
 
 interface BottomNavProps {
   activeTab: string;
@@ -38,20 +38,20 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
               activeTab === 'insights' ? 'text-primary' : 'text-muted-foreground'
             }`}
           >
-            <Shield size={20} />
+            <BarChart3 size={20} />
             <span className="text-[10px] uppercase tracking-widest">Insights</span>
           </button>
 
           <div className="w-14" /> {/* spacer for plus button */}
 
           <button
-            onClick={() => onTabChange('community')}
+            onClick={() => onTabChange('shield')}
             className={`flex flex-col items-center gap-1 transition-colors ${
-              activeTab === 'community' ? 'text-primary' : 'text-muted-foreground'
+              activeTab === 'shield' ? 'text-primary' : 'text-muted-foreground'
             }`}
           >
-            <MessageCircle size={20} />
-            <span className="text-[10px] uppercase tracking-widest">Community</span>
+            <ShieldCheck size={20} />
+            <span className="text-[10px] uppercase tracking-widest">Shield</span>
           </button>
 
           <button

@@ -9,7 +9,7 @@ import LogUrge from '@/components/LogUrge';
 import LogRelapse from '@/components/LogRelapse';
 import RecoveryScreen from '@/components/RecoveryScreen';
 import ProfilePlaceholder from '@/components/ProfilePlaceholder';
-import ComingSoonPlaceholder from '@/components/ComingSoonPlaceholder';
+// ComingSoonPlaceholder no longer used after Shield replaced Community tab
 import InsightsScreen from '@/components/InsightsScreen';
 import DailyCheckIn from '@/components/DailyCheckIn';
 import EmergencyHelp from '@/components/EmergencyHelp';
@@ -21,12 +21,26 @@ import WelcomeGate from '@/components/WelcomeGate';
 import TutorialOverlay from '@/components/TutorialOverlay';
 import SettingsScreen from '@/components/SettingsScreen';
 import GuestTransferPrompt from '@/components/GuestTransferPrompt';
+import ReforgedShield from '@/components/ReforgedShield';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCloudSync } from '@/hooks/useCloudSync';
 
 type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'journal' | 'milestone' | 'settings';
 type EntryScreen = 'welcome' | 'onboarding' | 'login' | 'dashboard';
+
+interface RewardCtx {
+  title: string;
+  subtitle: string;
+  xp: number;
+  showStreak: boolean;
+}
+const DEFAULT_REWARD: RewardCtx = {
+  title: 'YOU STAYED IN CONTROL',
+  subtitle: 'Resistance is Mastery',
+  xp: 15,
+  showStreak: true,
+};
 
 type Variant = { initial: Record<string, any>; animate: Record<string, any>; exit: Record<string, any> };
 
@@ -71,6 +85,7 @@ const Index = () => {
   const [screen, setScreen] = useState<Screen>('dashboard');
   const [actionHubOpen, setActionHubOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [rewardCtx, setRewardCtx] = useState<RewardCtx>(DEFAULT_REWARD);
   const prevScreen = useRef<Screen>('dashboard');
   const { streak, resistUrge, completeOnboarding, pendingMilestone, dismissMilestone } = useAppStore();
 
@@ -185,6 +200,32 @@ const Index = () => {
 
   const handleResisted = () => {
     resistUrge();
+    setRewardCtx({
+      title: 'YOU STAYED IN CONTROL',
+      subtitle: 'Resistance is Mastery',
+      xp: 15,
+      showStreak: true,
+    });
+    navigateTo('reward');
+  };
+
+  const handleCheckInComplete = () => {
+    setRewardCtx({
+      title: 'CHECK-IN COMPLETE',
+      subtitle: 'Consistency Compounds',
+      xp: 10,
+      showStreak: true,
+    });
+    navigateTo('reward');
+  };
+
+  const handleJournalSaved = () => {
+    setRewardCtx({
+      title: 'REFLECTION LOGGED',
+      subtitle: 'Awareness Forges Discipline',
+      xp: 15,
+      showStreak: false,
+    });
     navigateTo('reward');
   };
 
@@ -202,13 +243,13 @@ const Index = () => {
       case 'journal':
         return (
           <PageWrap variant={slideRight} screenKey="journal">
-            <JournalEntry onBack={handleContinue} />
+            <JournalEntry onBack={handleContinue} onSaved={handleJournalSaved} />
           </PageWrap>
         );
       case 'checkin':
         return (
           <PageWrap variant={slideRight} screenKey="checkin">
-            <DailyCheckIn onBack={handleContinue} onComplete={handleContinue} />
+            <DailyCheckIn onBack={handleContinue} onComplete={handleCheckInComplete} />
           </PageWrap>
         );
       case 'emergency':
@@ -267,7 +308,14 @@ const Index = () => {
       case 'reward':
         return (
           <PageWrap variant={fade} screenKey="reward">
-            <RewardScreen streak={streak} onContinue={handleContinue} />
+            <RewardScreen
+              streak={streak}
+              onContinue={handleContinue}
+              title={rewardCtx.title}
+              subtitle={rewardCtx.subtitle}
+              xp={rewardCtx.xp}
+              showStreak={rewardCtx.showStreak}
+            />
           </PageWrap>
         );
       case 'settings':
@@ -290,7 +338,7 @@ const Index = () => {
                 />
               )}
               {activeTab === 'insights' && <InsightsScreen />}
-              {activeTab === 'community' && <ComingSoonPlaceholder title="Community" />}
+              {activeTab === 'shield' && <ReforgedShield />}
               {activeTab === 'profile' && <ProfilePlaceholder onOpenSettings={() => navigateTo('settings')} />}
             </div>
           </PageWrap>

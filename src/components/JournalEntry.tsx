@@ -1,18 +1,18 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
 interface JournalEntryProps {
   onBack: () => void;
+  onSaved?: () => void;
 }
 
 const TAGS = ['Good Day', 'Struggle', 'Win'] as const;
 
-const JournalEntry = ({ onBack }: JournalEntryProps) => {
+const JournalEntry = ({ onBack, onSaved }: JournalEntryProps) => {
   const [text, setText] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [showConfirm, setShowConfirm] = useState(false);
   const { saveJournalEntry } = useAppStore();
 
   const canSubmit = text.trim().length > 0;
@@ -20,8 +20,8 @@ const JournalEntry = ({ onBack }: JournalEntryProps) => {
   const handleSave = () => {
     if (!canSubmit) return;
     saveJournalEntry({ text: text.trim(), tag: selectedTag });
-    setShowConfirm(true);
-    setTimeout(() => onBack(), 1600);
+    if (onSaved) onSaved();
+    else onBack();
   };
 
   return (
@@ -94,28 +94,6 @@ const JournalEntry = ({ onBack }: JournalEntryProps) => {
         </button>
       </div>
 
-      {/* Confirmation overlay */}
-      <AnimatePresence>
-        {showConfirm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-background/90"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="text-center"
-            >
-              <p className="font-display text-2xl tracking-wider text-foreground mb-2">
-                Entry saved. Keep going.
-              </p>
-              <p className="text-primary text-lg font-display">+10 XP</p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

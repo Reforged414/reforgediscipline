@@ -17,7 +17,21 @@ const EmptyHint = ({ children }: { children: React.ReactNode }) => (
 );
 
 const InsightsScreen = () => {
-  const { streak, urgeLogs, relapseLogs, resistedTimestamps, onboardingData } = useAppStore();
+  const { streak, urgeLogs, relapseLogs, resistedTimestamps, onboardingData, journalLogs } = useAppStore();
+
+  const WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const journalSnippets = [...journalLogs]
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 15)
+    .map((j) => {
+      const d = new Date(j.timestamp);
+      return { text: j.text, tag: j.tag, weekday: WEEKDAYS[d.getDay()], hour: d.getHours() };
+    });
+  const urgeWeekdayDistribution = urgeLogs.reduce<Record<string, number>>((acc, u) => {
+    const d = WEEKDAYS[new Date(u.timestamp).getDay()];
+    acc[d] = (acc[d] || 0) + 1;
+    return acc;
+  }, {});
 
   // Determine days of logged data: based on first activity in app
   const firstLogTimestamp = [...urgeLogs, ...relapseLogs, ...resistedTimestamps.map((t) => ({ timestamp: t }))]

@@ -5,6 +5,7 @@ interface EmergencyHelpProps {
   onBack: () => void;
   onRideUrge: () => void;
   onDashboard: () => void;
+  onMirrorShield?: () => void;
 }
 
 const BREATH_DURATION = 4000; // 4 seconds per phase

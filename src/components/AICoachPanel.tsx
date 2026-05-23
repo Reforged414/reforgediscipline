@@ -212,6 +212,7 @@ const AICoachPanel = ({ input }: { input: CoachInput }) => {
         reason="Unlock your personal AI Recovery Coach and tactical weekly breakdowns."
         extraFeatures={[
           { label: 'Reforged AI Coach', desc: 'Tactical, predictive, and strategic insights from your data.' },
+          { label: 'Emotional Syntax Analysis', desc: 'AI scans your journals for mood patterns and links them to urge spikes.' },
         ]}
       />
     </motion.div>

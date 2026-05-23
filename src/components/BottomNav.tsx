@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart3, ShieldCheck, User } from 'lucide-react';
+import { LayoutDashboard, BarChart3, ShieldCheck, Users, User } from 'lucide-react';
 
 interface BottomNavProps {
   activeTab: string;
@@ -53,6 +53,18 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
             <ShieldCheck size={20} />
             <span className="text-[10px] uppercase tracking-widest">Shield</span>
           </button>
+
+          <button
+            onClick={() => onTabChange('community')}
+            className={`flex flex-col items-center gap-1 transition-colors ${
+              activeTab === 'community' ? 'text-primary' : 'text-muted-foreground'
+            }`}
+          >
+            <Users size={20} />
+            <span className="text-[10px] uppercase tracking-widest">Community</span>
+          </button>
+
+
 
           <button
             data-tutorial="profile-tab"

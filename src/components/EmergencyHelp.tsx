@@ -11,7 +11,7 @@ interface EmergencyHelpProps {
 const BREATH_DURATION = 4000; // 4 seconds per phase
 const TOTAL_DURATION = 60; // 60 seconds total
 
-const EmergencyHelp = ({ onBack, onRideUrge, onDashboard }: EmergencyHelpProps) => {
+const EmergencyHelp = ({ onBack, onRideUrge, onDashboard, onMirrorShield }: EmergencyHelpProps) => {
   const [breathing, setBreathing] = useState(false);
   const [breathPhase, setBreathPhase] = useState<'inhale' | 'exhale'>('inhale');
   const [breathSeconds, setBreathSeconds] = useState(TOTAL_DURATION);

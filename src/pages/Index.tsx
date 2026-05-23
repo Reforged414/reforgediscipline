@@ -85,6 +85,7 @@ const Index = () => {
   const [screen, setScreen] = useState<Screen>('dashboard');
   const [actionHubOpen, setActionHubOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [rewardCtx, setRewardCtx] = useState<RewardCtx>(DEFAULT_REWARD);
   const prevScreen = useRef<Screen>('dashboard');
   const { streak, resistUrge, completeOnboarding, pendingMilestone, dismissMilestone } = useAppStore();
 

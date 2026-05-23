@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Settings } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import RetentionBanner from '@/components/RetentionBanner';
+import DisciplineGoals from '@/components/DisciplineGoals';
 
 const stagger = {
   hidden: {},
@@ -146,9 +147,9 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
         </div>
       </motion.div>
 
-      {/* Daily Discipline */}
+      {/* Core Daily Shields */}
       <motion.div variants={fadeUp} className="mb-8" data-tutorial="daily-checkin">
-        <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-4">Daily Discipline</p>
+        <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-4">Core Daily Shields</p>
         <div className="space-y-3">
           {[
             { label: 'Daily check-in', xp: '+15 XP', done: dailyDiscipline.checkedIn, action: onDailyCheckIn },
@@ -178,6 +179,11 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
             </div>
           ))}
         </div>
+      </motion.div>
+
+      {/* Personalized Discipline Goals */}
+      <motion.div variants={fadeUp} className="mb-8">
+        <DisciplineGoals />
       </motion.div>
 
       {/* Next Milestone */}

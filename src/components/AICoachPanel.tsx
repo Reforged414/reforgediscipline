@@ -60,7 +60,7 @@ const AICoachPanel = ({ input }: { input: CoachInput }) => {
       });
       if (fnErr) throw fnErr;
       if (res?.tactical && res?.predictive && res?.strategic) {
-        setData(res as CoachOutput);
+        setData({ emotional: SAMPLE.emotional, ...(res as CoachOutput) });
       } else {
         throw new Error('Invalid response');
       }

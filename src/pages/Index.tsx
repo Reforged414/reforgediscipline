@@ -10,6 +10,7 @@ import LogRelapse from '@/components/LogRelapse';
 import RecoveryScreen from '@/components/RecoveryScreen';
 import ProfilePlaceholder from '@/components/ProfilePlaceholder';
 import ComingSoonPlaceholder from '@/components/ComingSoonPlaceholder';
+void ComingSoonPlaceholder;
 import InsightsScreen from '@/components/InsightsScreen';
 import DailyCheckIn from '@/components/DailyCheckIn';
 import EmergencyHelp from '@/components/EmergencyHelp';

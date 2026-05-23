@@ -1,18 +1,35 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Lock, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 import { useDisciplineGoals } from '@/hooks/useDisciplineGoals';
 import { usePremium } from '@/hooks/usePremium';
+import { useAppStore } from '@/store/useAppStore';
 import PaywallModal from '@/components/PaywallModal';
 
 const FREE_LIMIT = 3;
+const GOAL_XP = 5;
 
 const DisciplineGoals = () => {
   const { goals, addGoal, toggleGoal, deleteGoal } = useDisciplineGoals();
   const { isPremium } = usePremium();
+  const awardXp = useAppStore((s) => s.awardXp);
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState('');
   const [paywallOpen, setPaywallOpen] = useState(false);
+
+  const handleToggle = async (id: string) => {
+    const target = goals.find((g) => g.id === id);
+    if (!target) return;
+    const willComplete = !target.is_completed;
+    await toggleGoal(id);
+    if (willComplete) {
+      awardXp(GOAL_XP);
+      toast.success(`Goal complete · +${GOAL_XP} XP`, { duration: 2200 });
+    } else {
+      awardXp(-GOAL_XP);
+    }
+  };
 
   const atLimit = !isPremium && goals.length >= FREE_LIMIT;
 
@@ -70,7 +87,7 @@ const DisciplineGoals = () => {
               className="group flex items-center gap-3 bg-secondary rounded-xl px-4 py-3"
             >
               <button
-                onClick={() => toggleGoal(goal.id)}
+                onClick={() => handleToggle(goal.id)}
                 className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
                   goal.is_completed ? 'bg-primary border-primary' : 'border-muted-foreground/40'
                 }`}

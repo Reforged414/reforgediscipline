@@ -94,28 +94,6 @@ const JournalEntry = ({ onBack, onSaved }: JournalEntryProps) => {
         </button>
       </div>
 
-      {/* Confirmation overlay */}
-      <AnimatePresence>
-        {showConfirm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-background/90"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="text-center"
-            >
-              <p className="font-display text-2xl tracking-wider text-foreground mb-2">
-                Entry saved. Keep going.
-              </p>
-              <p className="text-primary text-lg font-display">+10 XP</p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

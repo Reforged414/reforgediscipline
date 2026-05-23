@@ -5,6 +5,17 @@ import { toast } from 'sonner';
 import { usePremium } from '@/hooks/usePremium';
 import PaywallModal from '@/components/PaywallModal';
 
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } },
+};
+const fadeUp = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] } },
+};
+
+import PaywallModal from '@/components/PaywallModal';
+
 /**
  * Reforged Shield — device-level adult content blocker.
  *

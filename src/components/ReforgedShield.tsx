@@ -181,13 +181,13 @@ const ReforgedShield = () => {
         <p className="text-[11px] text-muted-foreground mt-2">
           {config.active ? 'Tap to deactivate' : 'Tap the shield to enable'}
         </p>
-      </div>
+      </motion.div>
 
       {/* Sub-toggles */}
-      <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
+      <motion.p variants={fadeUp} className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
         Protection Layers
-      </p>
-      <div className="space-y-3 mb-6">
+      </motion.p>
+      <motion.div variants={fadeUp} className="space-y-3 mb-6">
         <SubToggle
           icon={<Globe size={18} />}
           label="Block Adult Websites"
@@ -204,12 +204,12 @@ const ReforgedShield = () => {
           onToggle={(v) => update({ enforceSafeSearch: v })}
           disabled={!config.active}
         />
-      </div>
+      </motion.div>
 
-      <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
+      <motion.p variants={fadeUp} className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
         Commitment Lock
-      </p>
-      <div className="bg-secondary rounded-xl p-5">
+      </motion.p>
+      <motion.div variants={fadeUp} className="bg-secondary rounded-xl p-5">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center">
             <Lock size={18} className="text-primary" />
@@ -241,7 +241,7 @@ const ReforgedShield = () => {
             Mock timer — native lock enforcement coming soon.
           </p>
         )}
-      </div>
+      </motion.div>
 
       <PaywallModal
         open={paywallOpen}
@@ -249,9 +249,10 @@ const ReforgedShield = () => {
         reason="Reforged Shield is a Premium feature. Block adult content system-wide."
         extraFeatures={[{ label: 'System-Wide Adult Content Blocker', desc: 'Stop temptation at the source — across every app.' }]}
       />
-    </div>
+    </motion.div>
   );
 };
+
 
 interface SubToggleProps {
   icon: React.ReactNode;

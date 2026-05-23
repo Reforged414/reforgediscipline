@@ -74,6 +74,7 @@ interface AppState {
   updateOnboardingData: (data: Partial<OnboardingData>) => void;
   updateNotificationPrefs: (prefs: Partial<NotificationPrefs>) => void;
   resetAllLocalData: () => void;
+  awardXp: (amount: number) => void;
 }
 
 const LEVELS = [
@@ -211,9 +212,16 @@ export const useAppStore = create<AppState>()(
         }));
       },
 
+      awardXp: (amount) =>
+        set((state) => {
+          const newXp = Math.max(0, state.xp + amount);
+          const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
+          return { xp: newXp, level, levelName, xpForNextLevel };
+        }),
+
       resistUrge: () =>
         set((state) => {
-          const newXp = state.xp + 10;
+          const newXp = state.xp + 15;
           const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
           const now = new Date().toISOString();
           return {

@@ -287,7 +287,7 @@ const ReforgedShield = () => {
           desc="Network-level domain filtering"
           enabled={config.blockWebsites}
           onToggle={(v) => update({ blockWebsites: v })}
-          disabled={!config.active}
+          disabled={!config.active || (config.active && (isLocked || inCooldown))}
         />
         <SubToggle
           icon={<Search size={18} />}
@@ -295,7 +295,7 @@ const ReforgedShield = () => {
           desc="Locks SafeSearch on across Google"
           enabled={config.enforceSafeSearch}
           onToggle={(v) => update({ enforceSafeSearch: v })}
-          disabled={!config.active}
+          disabled={!config.active || (config.active && (isLocked || inCooldown))}
         />
       </motion.div>
 

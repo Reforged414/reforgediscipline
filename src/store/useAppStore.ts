@@ -273,7 +273,7 @@ export const useAppStore = create<AppState>()(
         set((state) => {
           if (state.dailyDiscipline.checkedIn) return {};
           const today = getTodayString();
-          const newXp = state.xp + 15;
+          const newXp = state.xp + 10;
           const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
 
           // Increment streak only once per day, and only if no relapse today.
@@ -306,7 +306,7 @@ export const useAppStore = create<AppState>()(
 
       saveJournalEntry: (entry) =>
         set((state) => {
-          const newXp = state.xp + 10;
+          const newXp = state.xp + 15;
           const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
           return {
             xp: newXp, level, levelName, xpForNextLevel,

@@ -5,12 +5,13 @@ interface EmergencyHelpProps {
   onBack: () => void;
   onRideUrge: () => void;
   onDashboard: () => void;
+  onMirrorShield?: () => void;
 }
 
 const BREATH_DURATION = 4000; // 4 seconds per phase
 const TOTAL_DURATION = 60; // 60 seconds total
 
-const EmergencyHelp = ({ onBack, onRideUrge, onDashboard }: EmergencyHelpProps) => {
+const EmergencyHelp = ({ onBack, onRideUrge, onDashboard, onMirrorShield }: EmergencyHelpProps) => {
   const [breathing, setBreathing] = useState(false);
   const [breathPhase, setBreathPhase] = useState<'inhale' | 'exhale'>('inhale');
   const [breathSeconds, setBreathSeconds] = useState(TOTAL_DURATION);
@@ -156,6 +157,21 @@ const EmergencyHelp = ({ onBack, onRideUrge, onDashboard }: EmergencyHelpProps) 
       </button>
 
       <div className="flex-1" />
+
+      {/* Break Glass: Mirror Shield */}
+      {onMirrorShield && (
+        <button
+          onClick={onMirrorShield}
+          className="relative w-full py-4 rounded-xl mb-3 font-display text-sm tracking-[0.2em] text-white active:scale-[0.97] transition-transform overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, hsl(0 80% 40%), hsl(0 90% 22%))',
+            boxShadow: '0 0 24px hsl(0 90% 40% / 0.45), inset 0 0 20px hsl(0 90% 20% / 0.5)',
+            border: '1px solid hsl(0 80% 50% / 0.5)',
+          }}
+        >
+          <span className="relative z-10">🚨 BREAK GLASS: ACTIVATE MIRROR SHIELD</span>
+        </button>
+      )}
 
       {/* Back to Dashboard */}
       <button

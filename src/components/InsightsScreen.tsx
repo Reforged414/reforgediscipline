@@ -164,6 +164,8 @@ const InsightsScreen = () => {
           totalRelapses,
           totalResisted,
           daysOfData,
+          journalSnippets,
+          urgeWeekdayDistribution,
         }}
       />
 

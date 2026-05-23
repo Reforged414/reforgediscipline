@@ -170,6 +170,12 @@ const AICoachPanel = ({ input }: { input: CoachInput }) => {
                   body={(data ?? SAMPLE).strategic}
                   accent="hsl(140 70% 50%)"
                 />
+                <Card
+                  icon={HeartPulse}
+                  title="Emotional Syntax & Mood Analysis"
+                  body={(data ?? SAMPLE).emotional}
+                  accent="hsl(320 75% 60%)"
+                />
               </>
             )}
           </div>

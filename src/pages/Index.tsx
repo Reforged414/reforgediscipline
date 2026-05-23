@@ -21,12 +21,26 @@ import WelcomeGate from '@/components/WelcomeGate';
 import TutorialOverlay from '@/components/TutorialOverlay';
 import SettingsScreen from '@/components/SettingsScreen';
 import GuestTransferPrompt from '@/components/GuestTransferPrompt';
+import ReforgedShield from '@/components/ReforgedShield';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCloudSync } from '@/hooks/useCloudSync';
 
 type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'journal' | 'milestone' | 'settings';
 type EntryScreen = 'welcome' | 'onboarding' | 'login' | 'dashboard';
+
+interface RewardCtx {
+  title: string;
+  subtitle: string;
+  xp: number;
+  showStreak: boolean;
+}
+const DEFAULT_REWARD: RewardCtx = {
+  title: 'YOU STAYED IN CONTROL',
+  subtitle: 'Resistance is Mastery',
+  xp: 15,
+  showStreak: true,
+};
 
 type Variant = { initial: Record<string, any>; animate: Record<string, any>; exit: Record<string, any> };
 

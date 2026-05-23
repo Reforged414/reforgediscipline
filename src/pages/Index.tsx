@@ -200,6 +200,32 @@ const Index = () => {
 
   const handleResisted = () => {
     resistUrge();
+    setRewardCtx({
+      title: 'YOU STAYED IN CONTROL',
+      subtitle: 'Resistance is Mastery',
+      xp: 15,
+      showStreak: true,
+    });
+    navigateTo('reward');
+  };
+
+  const handleCheckInComplete = () => {
+    setRewardCtx({
+      title: 'CHECK-IN COMPLETE',
+      subtitle: 'Consistency Compounds',
+      xp: 10,
+      showStreak: true,
+    });
+    navigateTo('reward');
+  };
+
+  const handleJournalSaved = () => {
+    setRewardCtx({
+      title: 'REFLECTION LOGGED',
+      subtitle: 'Awareness Forges Discipline',
+      xp: 15,
+      showStreak: false,
+    });
     navigateTo('reward');
   };
 
@@ -217,13 +243,13 @@ const Index = () => {
       case 'journal':
         return (
           <PageWrap variant={slideRight} screenKey="journal">
-            <JournalEntry onBack={handleContinue} />
+            <JournalEntry onBack={handleContinue} onSaved={handleJournalSaved} />
           </PageWrap>
         );
       case 'checkin':
         return (
           <PageWrap variant={slideRight} screenKey="checkin">
-            <DailyCheckIn onBack={handleContinue} onComplete={handleContinue} />
+            <DailyCheckIn onBack={handleContinue} onComplete={handleCheckInComplete} />
           </PageWrap>
         );
       case 'emergency':
@@ -282,7 +308,14 @@ const Index = () => {
       case 'reward':
         return (
           <PageWrap variant={fade} screenKey="reward">
-            <RewardScreen streak={streak} onContinue={handleContinue} />
+            <RewardScreen
+              streak={streak}
+              onContinue={handleContinue}
+              title={rewardCtx.title}
+              subtitle={rewardCtx.subtitle}
+              xp={rewardCtx.xp}
+              showStreak={rewardCtx.showStreak}
+            />
           </PageWrap>
         );
       case 'settings':
@@ -305,7 +338,7 @@ const Index = () => {
                 />
               )}
               {activeTab === 'insights' && <InsightsScreen />}
-              {activeTab === 'community' && <ComingSoonPlaceholder title="Community" />}
+              {activeTab === 'shield' && <ReforgedShield />}
               {activeTab === 'profile' && <ProfilePlaceholder onOpenSettings={() => navigateTo('settings')} />}
             </div>
           </PageWrap>

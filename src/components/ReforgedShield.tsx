@@ -5,7 +5,17 @@ import { toast } from 'sonner';
 import { usePremium } from '@/hooks/usePremium';
 import PaywallModal from '@/components/PaywallModal';
 
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } },
+};
+const fadeUp = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] } },
+};
+
 /**
+
  * Reforged Shield — device-level adult content blocker.
  *
  * The toggle state is held locally and is intentionally decoupled from any
@@ -85,28 +95,34 @@ const ReforgedShield = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background px-5 pt-12 pb-32">
-      <div className="flex items-center justify-between mb-8">
+    <motion.div
+      className="min-h-screen bg-background px-5 pt-12 pb-32"
+      variants={stagger}
+      initial="hidden"
+      animate="show"
+    >
+      <motion.div variants={fadeUp} className="flex items-center justify-between mb-8">
         <h1 className="font-display text-xl tracking-widest text-primary">SHIELD</h1>
         {isPremium && (
           <span className="flex items-center gap-1 text-[9px] tracking-widest uppercase text-primary">
             <Sparkles size={10} /> Premium
           </span>
         )}
-      </div>
+      </motion.div>
 
-      <p className="text-center text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-2">
+      <motion.p variants={fadeUp} className="text-center text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-2">
         Reforged Shield
-      </p>
-      <h2 className="text-center font-display text-3xl tracking-wider text-foreground mb-2">
+      </motion.p>
+      <motion.h2 variants={fadeUp} className="text-center font-display text-3xl tracking-wider text-foreground mb-2">
         Device Protection
-      </h2>
-      <p className="text-center text-sm text-muted-foreground mb-10 max-w-xs mx-auto">
+      </motion.h2>
+      <motion.p variants={fadeUp} className="text-center text-sm text-muted-foreground mb-10 max-w-xs mx-auto">
         Block adult content across your entire device. One switch, total discipline.
-      </p>
+      </motion.p>
 
       {/* Master toggle */}
-      <div className="flex flex-col items-center mb-10">
+      <motion.div variants={fadeUp} className="flex flex-col items-center mb-10">
+
         <motion.button
           onClick={handleMasterToggle}
           disabled={busy}
@@ -165,13 +181,13 @@ const ReforgedShield = () => {
         <p className="text-[11px] text-muted-foreground mt-2">
           {config.active ? 'Tap to deactivate' : 'Tap the shield to enable'}
         </p>
-      </div>
+      </motion.div>
 
       {/* Sub-toggles */}
-      <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
+      <motion.p variants={fadeUp} className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
         Protection Layers
-      </p>
-      <div className="space-y-3 mb-6">
+      </motion.p>
+      <motion.div variants={fadeUp} className="space-y-3 mb-6">
         <SubToggle
           icon={<Globe size={18} />}
           label="Block Adult Websites"
@@ -188,12 +204,12 @@ const ReforgedShield = () => {
           onToggle={(v) => update({ enforceSafeSearch: v })}
           disabled={!config.active}
         />
-      </div>
+      </motion.div>
 
-      <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
+      <motion.p variants={fadeUp} className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
         Commitment Lock
-      </p>
-      <div className="bg-secondary rounded-xl p-5">
+      </motion.p>
+      <motion.div variants={fadeUp} className="bg-secondary rounded-xl p-5">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center">
             <Lock size={18} className="text-primary" />
@@ -225,7 +241,7 @@ const ReforgedShield = () => {
             Mock timer — native lock enforcement coming soon.
           </p>
         )}
-      </div>
+      </motion.div>
 
       <PaywallModal
         open={paywallOpen}
@@ -233,9 +249,10 @@ const ReforgedShield = () => {
         reason="Reforged Shield is a Premium feature. Block adult content system-wide."
         extraFeatures={[{ label: 'System-Wide Adult Content Blocker', desc: 'Stop temptation at the source — across every app.' }]}
       />
-    </div>
+    </motion.div>
   );
 };
+
 
 interface SubToggleProps {
   icon: React.ReactNode;

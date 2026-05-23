@@ -1,18 +1,18 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
 interface JournalEntryProps {
   onBack: () => void;
+  onSaved?: () => void;
 }
 
 const TAGS = ['Good Day', 'Struggle', 'Win'] as const;
 
-const JournalEntry = ({ onBack }: JournalEntryProps) => {
+const JournalEntry = ({ onBack, onSaved }: JournalEntryProps) => {
   const [text, setText] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [showConfirm, setShowConfirm] = useState(false);
   const { saveJournalEntry } = useAppStore();
 
   const canSubmit = text.trim().length > 0;
@@ -20,8 +20,8 @@ const JournalEntry = ({ onBack }: JournalEntryProps) => {
   const handleSave = () => {
     if (!canSubmit) return;
     saveJournalEntry({ text: text.trim(), tag: selectedTag });
-    setShowConfirm(true);
-    setTimeout(() => onBack(), 1600);
+    if (onSaved) onSaved();
+    else onBack();
   };
 
   return (

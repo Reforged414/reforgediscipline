@@ -21,8 +21,6 @@ const DailyCheckIn = ({ onBack, onComplete }: DailyCheckInProps) => {
   const [mood, setMood] = useState('');
   const [urgeLevel, setUrgeLevel] = useState('');
   const [reflection, setReflection] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [_unused, _setUnused] = useState(false);
   const { completeDailyCheckIn, dailyDiscipline } = useAppStore();
 
   const canSubmit = mood && urgeLevel && !dailyDiscipline.checkedIn;

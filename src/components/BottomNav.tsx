@@ -28,7 +28,7 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
             }`}
           >
             <LayoutDashboard size={20} />
-            <span className="text-[10px] uppercase tracking-widest">Dashboard</span>
+            <span className="hidden sm:block text-[10px] uppercase tracking-widest">Dashboard</span>
           </button>
 
           <button
@@ -39,7 +39,7 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
             }`}
           >
             <BarChart3 size={20} />
-            <span className="text-[10px] uppercase tracking-widest">Insights</span>
+            <span className="hidden sm:block text-[10px] uppercase tracking-widest">Insights</span>
           </button>
 
           <div className="w-14" /> {/* spacer for plus button */}
@@ -51,7 +51,7 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
             }`}
           >
             <ShieldCheck size={20} />
-            <span className="text-[10px] uppercase tracking-widest">Shield</span>
+            <span className="hidden sm:block text-[10px] uppercase tracking-widest">Shield</span>
           </button>
 
           <button
@@ -61,7 +61,7 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
             }`}
           >
             <Users size={20} />
-            <span className="text-[10px] uppercase tracking-widest">Community</span>
+            <span className="hidden sm:block text-[10px] uppercase tracking-widest">Community</span>
           </button>
 
 
@@ -74,7 +74,7 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
             }`}
           >
             <User size={20} />
-            <span className="text-[10px] uppercase tracking-widest">Profile</span>
+            <span className="hidden sm:block text-[10px] uppercase tracking-widest">Profile</span>
           </button>
         </div>
       </nav>

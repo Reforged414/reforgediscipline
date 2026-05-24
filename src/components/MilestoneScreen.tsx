@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion';
 import { X, Share2, Flame } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
 import { useAppStore } from '@/store/useAppStore';
+import { toast } from '@/hooks/use-toast';
 
 interface MilestoneScreenProps {
   milestone: number;
@@ -11,12 +14,33 @@ const MilestoneScreen = ({ milestone, onContinue }: MilestoneScreenProps) => {
   const { streak, resistedTimestamps } = useAppStore();
   const totalUrgesDefeated = resistedTimestamps.length;
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'Reforged – Milestone Reached',
-        text: `I just hit ${milestone} days clean on Reforged! 🔥`,
-      }).catch(() => {});
+  const handleShare = async () => {
+    const payload = {
+      title: 'Reforged – Milestone Reached',
+      text: `I just hit ${milestone} days clean on Reforged! 🔥 Building discipline, one day at a time.`,
+      dialogTitle: 'Share your milestone',
+    };
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const { value } = await Share.canShare();
+        if (value) {
+          await Share.share(payload);
+          return;
+        }
+      }
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({ title: payload.title, text: payload.text });
+        return;
+      }
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(payload.text);
+        toast({ title: 'Copied to clipboard', description: 'Share it with your crew.' });
+      }
+    } catch (err: any) {
+      if (err?.message && !/cancel/i.test(err.message)) {
+        toast({ title: 'Unable to share', description: err.message });
+      }
     }
   };
 

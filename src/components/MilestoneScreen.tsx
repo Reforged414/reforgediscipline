@@ -137,28 +137,30 @@ const MilestoneScreen = ({ milestone, onContinue }: MilestoneScreenProps) => {
         </div>
       </motion.div>
 
-      {/* Continue button */}
-      <motion.button
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        onClick={onContinue}
-        className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-display text-lg tracking-wider active:scale-[0.97] transition-transform mb-4"
-      >
-        CONTINUE →
-      </motion.button>
+      {/* Action buttons */}
+      <div className="w-full flex flex-col gap-3">
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          onClick={onContinue}
+          className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-display text-base sm:text-lg tracking-wider active:scale-[0.97] transition-transform"
+        >
+          CONTINUE →
+        </motion.button>
 
-      {/* Share */}
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.7 }}
-        onClick={handleShare}
-        className="flex items-center gap-2 text-muted-foreground text-sm active:scale-95 transition-transform"
-      >
-        <Share2 size={14} />
-        <span className="tracking-widest uppercase text-xs">Share Achievement</span>
-      </motion.button>
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          onClick={handleShare}
+          className="w-full py-3.5 rounded-xl bg-secondary border border-border text-foreground flex items-center justify-center gap-2 active:scale-[0.97] transition-transform"
+        >
+          <Share2 size={16} className="text-primary" />
+          <span className="font-display tracking-widest uppercase text-xs sm:text-sm">Share Achievement</span>
+        </motion.button>
+      </div>
+
     </div>
   );
 };

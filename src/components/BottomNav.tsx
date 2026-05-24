@@ -19,8 +19,8 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
         </button>
       </div>
 
-      <nav className="bg-card/95 backdrop-blur-md border-t border-border px-6 pb-6 pt-3">
-        <div className="flex justify-around items-center max-w-md mx-auto">
+      <nav className="bg-card/95 backdrop-blur-md border-t border-border px-2 sm:px-6 pb-6 pt-3">
+        <div className="flex justify-around items-center max-w-md mx-auto gap-1">
           <button
             onClick={() => onTabChange('dashboard')}
             className={`flex flex-col items-center gap-1 transition-colors ${

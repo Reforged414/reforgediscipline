@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion';
 import { X, Share2, Flame } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
 import { useAppStore } from '@/store/useAppStore';
+import { toast } from '@/hooks/use-toast';
 
 interface MilestoneScreenProps {
   milestone: number;
@@ -11,12 +14,33 @@ const MilestoneScreen = ({ milestone, onContinue }: MilestoneScreenProps) => {
   const { streak, resistedTimestamps } = useAppStore();
   const totalUrgesDefeated = resistedTimestamps.length;
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'Reforged – Milestone Reached',
-        text: `I just hit ${milestone} days clean on Reforged! 🔥`,
-      }).catch(() => {});
+  const handleShare = async () => {
+    const payload = {
+      title: 'Reforged – Milestone Reached',
+      text: `I just hit ${milestone} days clean on Reforged! 🔥 Building discipline, one day at a time.`,
+      dialogTitle: 'Share your milestone',
+    };
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const { value } = await Share.canShare();
+        if (value) {
+          await Share.share(payload);
+          return;
+        }
+      }
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({ title: payload.title, text: payload.text });
+        return;
+      }
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(payload.text);
+        toast({ title: 'Copied to clipboard', description: 'Share it with your crew.' });
+      }
+    } catch (err: any) {
+      if (err?.message && !/cancel/i.test(err.message)) {
+        toast({ title: 'Unable to share', description: err.message });
+      }
     }
   };
 
@@ -113,28 +137,30 @@ const MilestoneScreen = ({ milestone, onContinue }: MilestoneScreenProps) => {
         </div>
       </motion.div>
 
-      {/* Continue button */}
-      <motion.button
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        onClick={onContinue}
-        className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-display text-lg tracking-wider active:scale-[0.97] transition-transform mb-4"
-      >
-        CONTINUE →
-      </motion.button>
+      {/* Action buttons */}
+      <div className="w-full flex flex-col gap-3">
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          onClick={onContinue}
+          className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-display text-base sm:text-lg tracking-wider active:scale-[0.97] transition-transform"
+        >
+          CONTINUE →
+        </motion.button>
 
-      {/* Share */}
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.7 }}
-        onClick={handleShare}
-        className="flex items-center gap-2 text-muted-foreground text-sm active:scale-95 transition-transform"
-      >
-        <Share2 size={14} />
-        <span className="tracking-widest uppercase text-xs">Share Achievement</span>
-      </motion.button>
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          onClick={handleShare}
+          className="w-full py-3.5 rounded-xl bg-secondary border border-border text-foreground flex items-center justify-center gap-2 active:scale-[0.97] transition-transform"
+        >
+          <Share2 size={16} className="text-primary" />
+          <span className="font-display tracking-widest uppercase text-xs sm:text-sm">Share Achievement</span>
+        </motion.button>
+      </div>
+
     </div>
   );
 };

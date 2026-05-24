@@ -90,12 +90,15 @@ const Index = () => {
   const prevScreen = useRef<Screen>('dashboard');
   const { streak, resistUrge, completeOnboarding, pendingMilestone, dismissMilestone } = useAppStore();
 
-  // Auto-navigate to milestone screen when a pending milestone exists
+  // Auto-navigate to milestone screen when a pending milestone exists.
+  // NOTE: use setScreen directly — navigateTo is declared below the early
+  // returns, so referencing it here would TDZ-crash in production builds.
   useEffect(() => {
     if (pendingMilestone && screen === 'dashboard') {
-      navigateTo('milestone');
+      prevScreen.current = 'dashboard';
+      setScreen('milestone');
     }
-  }, [pendingMilestone]);
+  }, [pendingMilestone, screen]);
 
   // Keep the explicit entry state aligned only for app bootstrap/sign-out cases.
   useEffect(() => {

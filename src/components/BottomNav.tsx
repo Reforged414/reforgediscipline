@@ -19,8 +19,8 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
         </button>
       </div>
 
-      <nav className="bg-card/95 backdrop-blur-md border-t border-border px-6 pb-6 pt-3">
-        <div className="flex justify-around items-center max-w-md mx-auto">
+      <nav className="bg-card/95 backdrop-blur-md border-t border-border px-2 sm:px-6 pb-6 pt-3">
+        <div className="flex justify-around items-center max-w-md mx-auto gap-1">
           <button
             onClick={() => onTabChange('dashboard')}
             className={`flex flex-col items-center gap-1 transition-colors ${
@@ -28,7 +28,7 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
             }`}
           >
             <LayoutDashboard size={20} />
-            <span className="text-[10px] uppercase tracking-widest">Dashboard</span>
+            <span className="hidden sm:block text-[10px] uppercase tracking-widest">Dashboard</span>
           </button>
 
           <button
@@ -39,7 +39,7 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
             }`}
           >
             <BarChart3 size={20} />
-            <span className="text-[10px] uppercase tracking-widest">Insights</span>
+            <span className="hidden sm:block text-[10px] uppercase tracking-widest">Insights</span>
           </button>
 
           <div className="w-14" /> {/* spacer for plus button */}
@@ -51,7 +51,7 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
             }`}
           >
             <ShieldCheck size={20} />
-            <span className="text-[10px] uppercase tracking-widest">Shield</span>
+            <span className="hidden sm:block text-[10px] uppercase tracking-widest">Shield</span>
           </button>
 
           <button
@@ -61,7 +61,7 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
             }`}
           >
             <Users size={20} />
-            <span className="text-[10px] uppercase tracking-widest">Community</span>
+            <span className="hidden sm:block text-[10px] uppercase tracking-widest">Community</span>
           </button>
 
 
@@ -74,7 +74,7 @@ const BottomNav = ({ activeTab, onTabChange, onPlusPress }: BottomNavProps) => {
             }`}
           >
             <User size={20} />
-            <span className="text-[10px] uppercase tracking-widest">Profile</span>
+            <span className="hidden sm:block text-[10px] uppercase tracking-widest">Profile</span>
           </button>
         </div>
       </nav>

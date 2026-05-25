@@ -27,7 +27,11 @@ const AuthCallback = () => {
 };
 
 const queryClient = new QueryClient();
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    initRevenueCat();
+  }, []);
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>

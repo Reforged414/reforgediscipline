@@ -234,14 +234,20 @@ const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModa
 
               <motion.button
                 onClick={handlePurchase}
+                disabled={busy}
                 whileTap={{ scale: 0.97 }}
-                className="w-full py-4 rounded-2xl font-display text-lg tracking-wider text-primary-foreground"
+                className="w-full py-4 rounded-2xl font-display text-lg tracking-wider text-primary-foreground flex items-center justify-center gap-2 disabled:opacity-70"
                 style={{
                   background: 'linear-gradient(135deg, hsl(25 95% 53%), hsl(30 100% 60%))',
                   boxShadow: '0 10px 30px -10px hsl(25 95% 53% / 0.6)',
                 }}
               >
-                {plan === 'annual' ? 'START — $29.99/yr' : 'START — $4.99/mo'}
+                {busy && <Loader2 size={18} className="animate-spin" />}
+                {busy
+                  ? 'PROCESSING…'
+                  : plan === 'annual'
+                  ? 'START — $29.99/yr'
+                  : 'START — $4.99/mo'}
               </motion.button>
 
               <p className="text-center text-[10px] tracking-wider uppercase text-muted-foreground mt-3">
@@ -250,10 +256,12 @@ const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModa
 
               <button
                 onClick={handleRestore}
-                className="w-full mt-4 text-xs text-muted-foreground underline-offset-4 hover:underline hover:text-foreground"
+                disabled={busy}
+                className="w-full mt-4 text-xs text-muted-foreground underline-offset-4 hover:underline hover:text-foreground disabled:opacity-50"
               >
                 Already subscribed? Restore Purchases
               </button>
+
             </div>
           </motion.div>
         </>

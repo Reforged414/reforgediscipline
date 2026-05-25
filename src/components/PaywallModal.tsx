@@ -30,23 +30,90 @@ const BASE_FEATURES = [
 
 const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModalProps) => {
   const [plan, setPlan] = useState<Plan>('annual');
+  const [packages, setPackages] = useState<PurchasesPackage[]>([]);
+  const [busy, setBusy] = useState(false);
+  const isNative = Capacitor.isNativePlatform();
+
   const FEATURES = [
     ...extraFeatures.map((f) => ({ icon: Sparkles, ...f })),
     ...BASE_FEATURES,
   ];
 
-  const handlePurchase = () => {
-    // TODO (native): trigger RevenueCat Purchases.purchasePackage(...)
-    // For preview/testing, mock-grant premium so the gate unlocks.
-    setMockPremium(true);
-    onClose();
+  useEffect(() => {
+    if (!open || !isNative) return;
+    fetchOfferingPackages().then(setPackages);
+  }, [open, isNative]);
+
+  const pickPackage = (): PurchasesPackage | undefined => {
+    if (!packages.length) return undefined;
+    const want = plan === 'annual' ? 'ANNUAL' : 'MONTHLY';
+    return (
+      packages.find((p) => p.packageType === want) ??
+      packages.find((p) =>
+        plan === 'annual'
+          ? /annual|year/i.test(p.identifier)
+          : /month/i.test(p.identifier),
+      ) ??
+      packages[0]
+    );
   };
 
-  const handleRestore = () => {
-    // TODO (native): Purchases.restorePurchases()
-    setMockPremium(true);
-    onClose();
+  const handlePurchase = async () => {
+    if (busy) return;
+    if (!isNative) {
+      // Web preview fallback — mock-grant premium so the gate unlocks for testing.
+      setMockPremium(true);
+      onClose();
+      return;
+    }
+    const pkg = pickPackage();
+    if (!pkg) {
+      toast.error('No subscription packages available. Please try again later.');
+      return;
+    }
+    setBusy(true);
+    try {
+      const active = await purchasePackage(pkg);
+      if (active) {
+        toast.success('Premium unlocked — welcome to the inner circle.');
+        onClose();
+      } else {
+        toast.error('Purchase completed but premium is not active yet.');
+      }
+    } catch (err: any) {
+      if (!err?.userCancelled) {
+        console.error('[Paywall] purchase failed', err);
+        toast.error(err?.message || 'Purchase failed. Please try again.');
+      }
+    } finally {
+      setBusy(false);
+    }
   };
+
+  const handleRestore = async () => {
+    if (busy) return;
+    if (!isNative) {
+      setMockPremium(true);
+      onClose();
+      return;
+    }
+    setBusy(true);
+    try {
+      const active = await restorePurchases();
+      if (active) {
+        toast.success('Purchases restored.');
+        onClose();
+      } else {
+        toast('No active subscription found.');
+      }
+    } catch (err: any) {
+      console.error('[Paywall] restore failed', err);
+      toast.error(err?.message || 'Could not restore purchases.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
 
   return (
     <AnimatePresence>

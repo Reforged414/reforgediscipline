@@ -8,6 +8,7 @@ import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { initRevenueCat } from "@/hooks/usePremium";
 import { useNavigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 
@@ -26,7 +27,11 @@ const AuthCallback = () => {
 };
 
 const queryClient = new QueryClient();
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    initRevenueCat();
+  }, []);
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
@@ -44,5 +49,6 @@ const App = () => (
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
-);
+  );
+};
 export default App;

@@ -1,7 +1,15 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Check, Infinity as InfinityIcon, Brain, BarChart3, Flame, Sparkles } from 'lucide-react';
-import { useState } from 'react';
-import { setMockPremium } from '@/hooks/usePremium';
+import { X, Check, Infinity as InfinityIcon, Brain, BarChart3, Flame, Sparkles, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
+import type { PurchasesPackage } from '@revenuecat/purchases-capacitor';
+import {
+  setMockPremium,
+  fetchOfferingPackages,
+  purchasePackage,
+  restorePurchases,
+} from '@/hooks/usePremium';
+import { toast } from 'sonner';
 
 interface PaywallModalProps {
   open: boolean;
@@ -22,23 +30,90 @@ const BASE_FEATURES = [
 
 const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModalProps) => {
   const [plan, setPlan] = useState<Plan>('annual');
+  const [packages, setPackages] = useState<PurchasesPackage[]>([]);
+  const [busy, setBusy] = useState(false);
+  const isNative = Capacitor.isNativePlatform();
+
   const FEATURES = [
     ...extraFeatures.map((f) => ({ icon: Sparkles, ...f })),
     ...BASE_FEATURES,
   ];
 
-  const handlePurchase = () => {
-    // TODO (native): trigger RevenueCat Purchases.purchasePackage(...)
-    // For preview/testing, mock-grant premium so the gate unlocks.
-    setMockPremium(true);
-    onClose();
+  useEffect(() => {
+    if (!open || !isNative) return;
+    fetchOfferingPackages().then(setPackages);
+  }, [open, isNative]);
+
+  const pickPackage = (): PurchasesPackage | undefined => {
+    if (!packages.length) return undefined;
+    const want = plan === 'annual' ? 'ANNUAL' : 'MONTHLY';
+    return (
+      packages.find((p) => p.packageType === want) ??
+      packages.find((p) =>
+        plan === 'annual'
+          ? /annual|year/i.test(p.identifier)
+          : /month/i.test(p.identifier),
+      ) ??
+      packages[0]
+    );
   };
 
-  const handleRestore = () => {
-    // TODO (native): Purchases.restorePurchases()
-    setMockPremium(true);
-    onClose();
+  const handlePurchase = async () => {
+    if (busy) return;
+    if (!isNative) {
+      // Web preview fallback — mock-grant premium so the gate unlocks for testing.
+      setMockPremium(true);
+      onClose();
+      return;
+    }
+    const pkg = pickPackage();
+    if (!pkg) {
+      toast.error('No subscription packages available. Please try again later.');
+      return;
+    }
+    setBusy(true);
+    try {
+      const active = await purchasePackage(pkg);
+      if (active) {
+        toast.success('Premium unlocked — welcome to the inner circle.');
+        onClose();
+      } else {
+        toast.error('Purchase completed but premium is not active yet.');
+      }
+    } catch (err: any) {
+      if (!err?.userCancelled) {
+        console.error('[Paywall] purchase failed', err);
+        toast.error(err?.message || 'Purchase failed. Please try again.');
+      }
+    } finally {
+      setBusy(false);
+    }
   };
+
+  const handleRestore = async () => {
+    if (busy) return;
+    if (!isNative) {
+      setMockPremium(true);
+      onClose();
+      return;
+    }
+    setBusy(true);
+    try {
+      const active = await restorePurchases();
+      if (active) {
+        toast.success('Purchases restored.');
+        onClose();
+      } else {
+        toast('No active subscription found.');
+      }
+    } catch (err: any) {
+      console.error('[Paywall] restore failed', err);
+      toast.error(err?.message || 'Could not restore purchases.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
 
   return (
     <AnimatePresence>
@@ -159,14 +234,20 @@ const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModa
 
               <motion.button
                 onClick={handlePurchase}
+                disabled={busy}
                 whileTap={{ scale: 0.97 }}
-                className="w-full py-4 rounded-2xl font-display text-lg tracking-wider text-primary-foreground"
+                className="w-full py-4 rounded-2xl font-display text-lg tracking-wider text-primary-foreground flex items-center justify-center gap-2 disabled:opacity-70"
                 style={{
                   background: 'linear-gradient(135deg, hsl(25 95% 53%), hsl(30 100% 60%))',
                   boxShadow: '0 10px 30px -10px hsl(25 95% 53% / 0.6)',
                 }}
               >
-                {plan === 'annual' ? 'START — $29.99/yr' : 'START — $4.99/mo'}
+                {busy && <Loader2 size={18} className="animate-spin" />}
+                {busy
+                  ? 'PROCESSING…'
+                  : plan === 'annual'
+                  ? 'START — $29.99/yr'
+                  : 'START — $4.99/mo'}
               </motion.button>
 
               <p className="text-center text-[10px] tracking-wider uppercase text-muted-foreground mt-3">
@@ -175,10 +256,12 @@ const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModa
 
               <button
                 onClick={handleRestore}
-                className="w-full mt-4 text-xs text-muted-foreground underline-offset-4 hover:underline hover:text-foreground"
+                disabled={busy}
+                className="w-full mt-4 text-xs text-muted-foreground underline-offset-4 hover:underline hover:text-foreground disabled:opacity-50"
               >
                 Already subscribed? Restore Purchases
               </button>
+
             </div>
           </motion.div>
         </>

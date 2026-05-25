@@ -8,6 +8,7 @@ import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { initRevenueCat } from "@/hooks/usePremium";
 import { useNavigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 

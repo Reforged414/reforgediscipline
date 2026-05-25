@@ -1,7 +1,15 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Check, Infinity as InfinityIcon, Brain, BarChart3, Flame, Sparkles } from 'lucide-react';
-import { useState } from 'react';
-import { setMockPremium } from '@/hooks/usePremium';
+import { X, Check, Infinity as InfinityIcon, Brain, BarChart3, Flame, Sparkles, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
+import type { PurchasesPackage } from '@revenuecat/purchases-capacitor';
+import {
+  setMockPremium,
+  fetchOfferingPackages,
+  purchasePackage,
+  restorePurchases,
+} from '@/hooks/usePremium';
+import { toast } from 'sonner';
 
 interface PaywallModalProps {
   open: boolean;

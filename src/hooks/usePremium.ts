@@ -14,8 +14,11 @@ import { Purchases, LOG_LEVEL, type PurchasesPackage } from '@revenuecat/purchas
  *   localStorage.removeItem('reforged-premium-mock');       // revoke
  *   window.dispatchEvent(new Event('reforged-premium-changed'));
  */
-export const REVENUECAT_API_KEY = 'app9c4de3c19b';
-export const PREMIUM_ENTITLEMENT_ID = 'premium';
+export const REVENUECAT_API_KEY_IOS = 'appl_wzGPtevzTtXqjroAwnmnNVnQpde';
+export const REVENUECAT_API_KEY_ANDROID = 'goog_uJSgGrbNyysXIsCzsvSPKyVlvFP';
+/** Legacy alias kept for backwards-compat with older imports. */
+export const REVENUECAT_API_KEY = REVENUECAT_API_KEY_IOS;
+export const PREMIUM_ENTITLEMENT_ID = 'reforged_pro';
 
 const STORAGE_KEY = 'reforged-premium-mock';
 const CHANGE_EVENT = 'reforged-premium-changed';
@@ -26,7 +29,9 @@ export async function initRevenueCat() {
   if (!Capacitor.isNativePlatform() || rcConfigured) return;
   try {
     await Purchases.setLogLevel({ level: LOG_LEVEL.WARN });
-    await Purchases.configure({ apiKey: REVENUECAT_API_KEY });
+    const platform = Capacitor.getPlatform();
+    const apiKey = platform === 'ios' ? REVENUECAT_API_KEY_IOS : REVENUECAT_API_KEY_ANDROID;
+    await Purchases.configure({ apiKey });
     rcConfigured = true;
   } catch (err) {
     console.error('[RevenueCat] configure failed', err);
@@ -39,7 +44,7 @@ export async function checkPremiumStatus(): Promise<boolean> {
       await initRevenueCat();
       const { customerInfo } = await Purchases.getCustomerInfo();
       const entitlements = customerInfo?.entitlements?.active ?? {};
-      return Object.keys(entitlements).length > 0;
+      return !!entitlements[PREMIUM_ENTITLEMENT_ID];
     } catch (err) {
       console.error('[RevenueCat] getCustomerInfo failed', err);
       return false;
@@ -84,8 +89,7 @@ export async function fetchOfferingPackages(): Promise<PurchasesPackage[]> {
 export async function purchasePackage(pkg: PurchasesPackage): Promise<boolean> {
   await initRevenueCat();
   const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
-  const active = !!customerInfo?.entitlements?.active?.[PREMIUM_ENTITLEMENT_ID]
-    || Object.keys(customerInfo?.entitlements?.active ?? {}).length > 0;
+  const active = !!customerInfo?.entitlements?.active?.[PREMIUM_ENTITLEMENT_ID];
   notifyPremiumChanged();
   return active;
 }
@@ -96,7 +100,7 @@ export async function restorePurchases(): Promise<boolean> {
   }
   await initRevenueCat();
   const { customerInfo } = await Purchases.restorePurchases();
-  const active = Object.keys(customerInfo?.entitlements?.active ?? {}).length > 0;
+  const active = !!customerInfo?.entitlements?.active?.[PREMIUM_ENTITLEMENT_ID];
   notifyPremiumChanged();
   return active;
 }

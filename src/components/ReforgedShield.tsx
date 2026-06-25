@@ -134,7 +134,17 @@ const ReforgedShield = () => {
         setPaywallOpen(true);
         return;
       }
-      // Premium: ask for Iron Lock duration before activating.
+      // Premium: request native blocker permissions BEFORE engaging.
+      if (blocker.isNative) {
+        setBusy(true);
+        const perm = await blocker.requestAuthorization();
+        setBusy(false);
+        if (perm.status !== 'authorized' && perm.status !== 'unsupported') {
+          setPermError(perm);
+          return;
+        }
+        setPermError(null);
+      }
       setDurationPickerOpen(true);
       return;
     }

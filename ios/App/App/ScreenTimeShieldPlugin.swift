@@ -30,15 +30,45 @@ public class ScreenTimeShieldPlugin: CAPPlugin {
             Task {
                 do {
                     try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
-                    call.resolve(["status": "authorized"])
+                    let status = AuthorizationCenter.shared.authorizationStatus
+                    call.resolve([
+                        "status": status == .approved ? "authorized" : "denied",
+                    ])
                 } catch {
-                    call.reject("FamilyControls authorization failed: \(error.localizedDescription)")
+                    call.resolve([
+                        "status": "denied",
+                        "error": error.localizedDescription,
+                    ])
                 }
             }
             return
         }
         #endif
         call.resolve(["status": "unsupported"])
+    }
+
+    @objc func checkPermissions(_ call: CAPPluginCall) {
+        #if canImport(FamilyControls)
+        if #available(iOS 16.0, *) {
+            let status = AuthorizationCenter.shared.authorizationStatus
+            call.resolve([
+                "status": status == .approved ? "authorized" :
+                          status == .denied ? "denied" : "notDetermined",
+                "familyControls": status == .approved,
+            ])
+            return
+        }
+        #endif
+        call.resolve(["status": "unsupported", "familyControls": false])
+    }
+
+    @objc func openAccessibilitySettings(_ call: CAPPluginCall) {
+        // iOS has no Accessibility-blocker equivalent; no-op for parity.
+        call.resolve(["opened": false])
+    }
+
+    @objc func openUsageAccessSettings(_ call: CAPPluginCall) {
+        call.resolve(["opened": false])
     }
 
     @objc func activateShield(_ call: CAPPluginCall) {

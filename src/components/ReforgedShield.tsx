@@ -90,12 +90,14 @@ function formatRemaining(ms: number) {
 
 const ReforgedShield = () => {
   const { isPremium } = usePremium();
+  const blocker = useScreenTimeBlocker();
   const [config, setConfig] = useState<ShieldConfig>(() => readConfig());
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [durationPickerOpen, setDurationPickerOpen] = useState(false);
   const [ironLockOpen, setIronLockOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [permError, setPermError] = useState<PermissionState | null>(null);
 
   // tick clock once per second so countdown UI updates
   useEffect(() => {

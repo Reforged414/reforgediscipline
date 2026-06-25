@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, ShieldCheck, Globe, Search, Lock, Sparkles, AlertTriangle, X } from 'lucide-react';
+import { Shield, ShieldCheck, Globe, Search, Lock, Sparkles, AlertTriangle, X, Settings as SettingsIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePremium } from '@/hooks/usePremium';
+import { useScreenTimeBlocker, type PermissionState } from '@/hooks/useScreenTimeBlocker';
 import PaywallModal from '@/components/PaywallModal';
 
 const stagger = {

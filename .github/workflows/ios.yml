@@ -85,8 +85,16 @@ jobs:
             -exportPath $RUNNER_TEMP/export \
             -allowProvisioningUpdates
 
-      - name: Upload IPA
+      - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
           name: signed-ipa
           path: ${{ runner.temp }}/export/*.ipa
+
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: ${{ runner.temp }}/export/App.ipa
+          issuer-id: ${{ secrets.APPLE_STORE_CONNECT_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPLE_STORE_CONNECT_KEY_ID }}
+          api-private-key: ${{ secrets.APPLE_STORE_CONNECT_PRIVATE_KEY }}

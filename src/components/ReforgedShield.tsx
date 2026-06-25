@@ -289,6 +289,74 @@ const ReforgedShield = () => {
         )}
       </motion.div>
 
+      {/* Inline permission error banner */}
+      <AnimatePresence>
+        {permError && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            className="mb-6 rounded-xl border border-destructive/50 bg-destructive/10 p-4"
+          >
+            <div className="flex items-start gap-3">
+              <AlertTriangle size={18} className="text-destructive shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-destructive mb-1">
+                  {blocker.platform === 'ios'
+                    ? 'Screen Time authorization required'
+                    : 'System permissions required'}
+                </p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  {blocker.platform === 'ios'
+                    ? 'Reforged needs Screen Time authorization to block adult content across browsers and apps. Approve the prompt to engage the Shield.'
+                    : 'Reforged needs Accessibility and Usage Access permissions to block adult content across browsers. Toggle Reforged on in each menu below.'}
+                </p>
+                {blocker.platform === 'android' && (
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => blocker.openAccessibilitySettings()}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-colors ${
+                        permError.accessibility
+                          ? 'border-border bg-secondary text-muted-foreground'
+                          : 'border-destructive/50 bg-destructive/15 text-destructive'
+                      }`}
+                    >
+                      <SettingsIcon size={12} />
+                      Accessibility {permError.accessibility ? '✓' : ''}
+                    </button>
+                    <button
+                      onClick={() => blocker.openUsageAccessSettings()}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-colors ${
+                        permError.usageAccess
+                          ? 'border-border bg-secondary text-muted-foreground'
+                          : 'border-destructive/50 bg-destructive/15 text-destructive'
+                      }`}
+                    >
+                      <SettingsIcon size={12} />
+                      Usage Access {permError.usageAccess ? '✓' : ''}
+                    </button>
+                  </div>
+                )}
+                <button
+                  onClick={async () => {
+                    const next = await blocker.requestAuthorization();
+                    if (next.status === 'authorized') setPermError(null);
+                    else setPermError(next);
+                  }}
+                  className="mt-3 text-[11px] tracking-widest uppercase text-primary"
+                >
+                  Re-check permissions →
+                </button>
+              </div>
+              <button onClick={() => setPermError(null)} className="text-muted-foreground">
+                <X size={16} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+
       {/* Sub-toggles */}
       <motion.p variants={fadeUp} className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
         Protection Layers

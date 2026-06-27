@@ -27,18 +27,23 @@ public class WebBlockerPlugin: CAPPlugin {
     @objc func requestAuthorization(_ call: CAPPluginCall) {
         #if canImport(FamilyControls)
         if #available(iOS 16.0, *) {
-            Task {
-                do {
-                    try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
-                    let status = AuthorizationCenter.shared.authorizationStatus
-                    call.resolve([
-                        "status": status == .approved ? "authorized" : "denied"
-                    ])
-                } catch {
-                    call.resolve([
-                        "status": "denied",
-                        "error": error.localizedDescription
-                    ])
+            // The FamilyControls system prompt MUST be presented from the main
+            // thread, otherwise iOS silently rejects the request and the
+            // popup never appears.
+            DispatchQueue.main.async {
+                Task { @MainActor in
+                    do {
+                        try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+                        let status = AuthorizationCenter.shared.authorizationStatus
+                        call.resolve([
+                            "status": status == .approved ? "authorized" : "denied"
+                        ])
+                    } catch {
+                        call.resolve([
+                            "status": "denied",
+                            "error": error.localizedDescription
+                        ])
+                    }
                 }
             }
             return

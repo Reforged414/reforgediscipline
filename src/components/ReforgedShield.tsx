@@ -137,8 +137,22 @@ const ReforgedShield = () => {
       // Premium: request native blocker permissions BEFORE engaging.
       if (blocker.isNative) {
         setBusy(true);
-        const perm = await blocker.requestAuthorization();
+        let perm: PermissionState;
+        try {
+          perm = await blocker.requestAuthorization();
+        } catch (e: any) {
+          perm = { status: 'denied', error: e?.message || String(e) };
+        }
         setBusy(false);
+        // Surface raw bridge response on-device so we can debug native failures.
+        try {
+          // eslint-disable-next-line no-alert
+          window.alert(
+            `[Shield] platform=${blocker.platform}\nstatus=${perm.status}` +
+              (perm.error ? `\nerror=${perm.error}` : '') +
+              (perm.raw ? `\nraw=${JSON.stringify(perm.raw)}` : '')
+          );
+        } catch {}
         if (perm.status !== 'authorized' && perm.status !== 'unsupported') {
           setPermError(perm);
           return;

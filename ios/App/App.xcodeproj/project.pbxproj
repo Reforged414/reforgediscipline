@@ -16,7 +16,6 @@
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		AA0100000000000000000002 /* WebBlockerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000001 /* WebBlockerPlugin.swift */; };
-		AA0100000000000000000004 /* WebBlockerPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000003 /* WebBlockerPlugin.m */; };
 		AA0100000000000000000006 /* ScreenTimeShieldPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000005 /* ScreenTimeShieldPlugin.swift */; };
 /* End PBXBuildFile section */
 

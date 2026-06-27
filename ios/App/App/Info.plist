@@ -47,6 +47,8 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSCameraUsageDescription</key>
 	<string>Reforged requires camera access to verify your accountability milestones during final stage urges.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

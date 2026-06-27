@@ -6,18 +6,19 @@ import FamilyControls
 import ManagedSettings
 #endif
 
-/// Standard Capacitor @objc plugin bridge for Apple's Screen Time stack.
-///
-/// Companion Objective-C registration lives in `WebBlockerPlugin.m`, which uses
-/// the `CAP_PLUGIN` / `CAP_PLUGIN_METHOD` macros so the Capacitor web runtime
-/// can discover and invoke these methods from JavaScript.
-///
-/// IMPORTANT: The `com.apple.developer.family-controls` entitlement MUST be
-/// present in `App.entitlements` AND the matching capability must be enabled
-/// on the App ID in the Apple Developer portal, otherwise this code will fail
-/// to compile / link against the FamilyControls framework.
+/// Modern Capacitor 6+ Swift-only plugin registration via `CAPBridgedPlugin`.
+/// No Objective-C bridging (.m) file required — registered directly in
+/// `AppDelegate` with `registerPluginInstance(WebBlockerPlugin())`.
 @objc(WebBlockerPlugin)
-public class WebBlockerPlugin: CAPPlugin {
+public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "WebBlockerPlugin"
+    public let jsName = "WebBlockerPlugin"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "requestAuthorization", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "checkAuthorization", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "activateShield", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "deactivateShield", returnType: CAPPluginReturnPromise)
+    ]
 
     #if canImport(FamilyControls)
     @available(iOS 16.0, *)
@@ -27,9 +28,6 @@ public class WebBlockerPlugin: CAPPlugin {
     @objc func requestAuthorization(_ call: CAPPluginCall) {
         #if canImport(FamilyControls)
         if #available(iOS 16.0, *) {
-            // The FamilyControls system prompt MUST be presented from the main
-            // thread, otherwise iOS silently rejects the request and the
-            // popup never appears.
             DispatchQueue.main.async {
                 Task { @MainActor in
                     do {

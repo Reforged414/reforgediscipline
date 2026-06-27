@@ -167,6 +167,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
+				AA0100000000000000000002 /* WebBlockerPlugin.swift in Sources */,
+				AA0100000000000000000004 /* WebBlockerPlugin.m in Sources */,
+				AA0100000000000000000006 /* ScreenTimeShieldPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -41,10 +41,14 @@ interface AndroidShieldPlugin {
 
 const platform = Capacitor.getPlatform();
 
-const iosWebBlocker =
-  platform === 'ios'
-    ? registerPlugin<IOSWebBlockerPlugin>('WebBlockerPlugin')
-    : null;
+// NOTE: Native iOS WebBlockerPlugin is temporarily disabled so the app can
+// build without depending on the native bridge. Re-enable once the native
+// plugin is stable.
+// const iosWebBlocker =
+//   platform === 'ios'
+//     ? registerPlugin<IOSWebBlockerPlugin>('WebBlockerPlugin')
+//     : null;
+const iosWebBlocker: IOSWebBlockerPlugin | null = null;
 
 const androidShield =
   platform === 'android'

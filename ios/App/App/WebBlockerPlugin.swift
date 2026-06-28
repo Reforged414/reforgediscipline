@@ -6,9 +6,8 @@ import FamilyControls
 import ManagedSettings
 #endif
 
-/// Modern Capacitor 6+ Swift-only plugin registration via `CAPBridgedPlugin`.
-/// No Objective-C bridging (.m) file required — registered directly in
-/// `AppDelegate` with `registerPluginInstance(WebBlockerPlugin())`.
+/// Modern Capacitor 6+ Swift-only plugin. No Objective-C bridge required.
+/// Registered in AppDelegate via `registerPluginInstance(WebBlockerPlugin())`.
 @objc(WebBlockerPlugin)
 public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "WebBlockerPlugin"
@@ -33,9 +32,7 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
                     do {
                         try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
                         let status = AuthorizationCenter.shared.authorizationStatus
-                        call.resolve([
-                            "status": status == .approved ? "authorized" : "denied"
-                        ])
+                        call.resolve(["status": status == .approved ? "authorized" : "denied"])
                     } catch {
                         call.resolve([
                             "status": "denied",
@@ -60,10 +57,7 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
             case .denied: mapped = "denied"
             default: mapped = "notDetermined"
             }
-            call.resolve([
-                "status": mapped,
-                "familyControls": status == .approved
-            ])
+            call.resolve(["status": mapped, "familyControls": status == .approved])
             return
         }
         #endif
@@ -73,8 +67,10 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func activateShield(_ call: CAPPluginCall) {
         #if canImport(FamilyControls)
         if #available(iOS 16.0, *) {
-            Self.store.shield.webDomainCategories = .all()
-            call.resolve(["active": true])
+            DispatchQueue.main.async {
+                Self.store.shield.webDomainCategories = .all()
+                call.resolve(["active": true])
+            }
             return
         }
         #endif
@@ -84,8 +80,10 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func deactivateShield(_ call: CAPPluginCall) {
         #if canImport(FamilyControls)
         if #available(iOS 16.0, *) {
-            Self.store.clearAllSettings()
-            call.resolve(["active": false])
+            DispatchQueue.main.async {
+                Self.store.clearAllSettings()
+                call.resolve(["active": false])
+            }
             return
         }
         #endif

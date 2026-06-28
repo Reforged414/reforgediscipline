@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Reforged</string>
+        <string>Reforged Discipline</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -47,13 +47,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>NSCameraUsageDescription</key>
-	<string>Reforged requires camera access to verify your accountability milestones during final stage urges.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Reforged needs photo library access to attach images to your accountability check-ins.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Reforged needs permission to save accountability snapshots to your photo library.</string>
 </dict>
 </plist>

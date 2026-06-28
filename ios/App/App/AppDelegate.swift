@@ -7,8 +7,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Register custom Capacitor plugins (Swift-only, no ObjC bridge file)
-        registerPluginInstance(WebBlockerPlugin())
+        // Override point for customization after application launch.
         return true
     }
 

@@ -7,7 +7,6 @@ import ManagedSettings
 #endif
 
 /// Modern Capacitor 6+ Swift-only plugin. No Objective-C bridge required.
-/// Registered in AppDelegate via `registerPluginInstance(WebBlockerPlugin())`.
 @objc(WebBlockerPlugin)
 public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "WebBlockerPlugin"
@@ -16,7 +15,9 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "requestAuthorization", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "checkAuthorization", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "activateShield", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "deactivateShield", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "deactivateShield", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "blockDomain", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "unblockDomains", returnType: CAPPluginReturnPromise)
     ]
 
     #if canImport(FamilyControls)
@@ -88,5 +89,56 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         #endif
         call.resolve(["active": false])
+    }
+
+    /// Block a single website domain (e.g. "instagram.com").
+    /// Accepts either { domain: "instagram.com" } or { domains: ["a.com","b.com"] }.
+    @objc func blockDomain(_ call: CAPPluginCall) {
+        #if canImport(FamilyControls)
+        if #available(iOS 16.0, *) {
+            var inputs: [String] = []
+            if let single = call.getString("domain"), !single.isEmpty {
+                inputs.append(single)
+            }
+            if let many = call.getArray("domains") as? [String] {
+                inputs.append(contentsOf: many)
+            }
+            let cleaned = inputs
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+                .filter { !$0.isEmpty }
+
+            guard !cleaned.isEmpty else {
+                call.reject("No domain provided")
+                return
+            }
+
+            DispatchQueue.main.async {
+                let store = Self.store
+                let existing = store.shield.webDomains ?? Set<WebDomain>()
+                let added = Set(cleaned.map { WebDomain(domain: $0) })
+                store.shield.webDomains = existing.union(added)
+                call.resolve([
+                    "blocked": true,
+                    "domains": cleaned
+                ])
+            }
+            return
+        }
+        #endif
+        call.resolve(["blocked": false, "reason": "unsupported"])
+    }
+
+    /// Clear the per-domain shield. Setting webDomains to nil removes the restriction.
+    @objc func unblockDomains(_ call: CAPPluginCall) {
+        #if canImport(FamilyControls)
+        if #available(iOS 16.0, *) {
+            DispatchQueue.main.async {
+                Self.store.shield.webDomains = nil
+                call.resolve(["blocked": false])
+            }
+            return
+        }
+        #endif
+        call.resolve(["blocked": false])
     }
 }

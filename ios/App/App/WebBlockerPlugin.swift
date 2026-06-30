@@ -113,10 +113,9 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
             }
 
             DispatchQueue.main.async {
-                let store = Self.store
-                let existing = store.shield.webDomains ?? Set<WebDomain>()
-                let added = Set(cleaned.map { WebDomain(domain: $0) })
-                store.shield.webDomains = existing.union(added)
+                let store = ManagedSettingsStore()
+                let webDomains = Set(cleaned.map { WebDomain(domain: $0) })
+                store.webContent.blockedByFilter = .specific(webDomains)
                 call.resolve([
                     "blocked": true,
                     "domains": cleaned
@@ -128,12 +127,13 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         call.resolve(["blocked": false, "reason": "unsupported"])
     }
 
-    /// Clear the per-domain shield. Setting webDomains to nil removes the restriction.
+    /// Clear the per-domain shield.
     @objc func unblockDomains(_ call: CAPPluginCall) {
         #if canImport(FamilyControls)
         if #available(iOS 16.0, *) {
             DispatchQueue.main.async {
-                Self.store.shield.webDomains = nil
+                let store = ManagedSettingsStore()
+                store.webContent.blockedByFilter = nil
                 call.resolve(["blocked": false])
             }
             return

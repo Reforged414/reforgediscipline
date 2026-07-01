@@ -27,7 +27,9 @@ interface IOSWebBlockerPlugin {
   checkAuthorization(): Promise<{ status: string; familyControls?: boolean }>;
   activateShield(): Promise<{ active: boolean; reason?: string }>;
   deactivateShield(): Promise<{ active: boolean }>;
+  openSettings(): Promise<{ opened?: boolean }>;
 }
+
 
 /** Android plugin — matches @CapacitorPlugin(name = "ScreenTimeShield") */
 interface AndroidShieldPlugin {

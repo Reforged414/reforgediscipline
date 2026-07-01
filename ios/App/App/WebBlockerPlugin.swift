@@ -74,9 +74,10 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         if #available(iOS 16.0, *) {
             DispatchQueue.main.async {
                 let store = ManagedSettingsStore()
-                store.webContent.blockedByFilter = .auto()
+                store.webContent.blockedByFilter = .auto([], except: [])
                 call.resolve(["active": true, "mode": "autoFilter"])
             }
+
             return
         }
         #endif

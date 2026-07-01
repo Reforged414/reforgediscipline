@@ -1,5 +1,7 @@
 import Foundation
+import UIKit
 import Capacitor
+
 
 #if canImport(FamilyControls)
 import FamilyControls

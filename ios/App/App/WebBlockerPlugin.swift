@@ -148,4 +148,20 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         #endif
         call.resolve(["blocked": false])
     }
+
+    /// Bounce the user directly into the iOS Settings app so they can
+    /// approve Screen Time / Family Controls when authorization is denied.
+    @objc func openSettings(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                if UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                    call.resolve(["opened": true])
+                    return
+                }
+            }
+            call.reject("Could not open settings")
+        }
+    }
 }
+

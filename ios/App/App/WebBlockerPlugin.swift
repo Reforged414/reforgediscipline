@@ -19,8 +19,10 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "activateShield", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "deactivateShield", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "blockDomain", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "unblockDomains", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "unblockDomains", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "openSettings", returnType: CAPPluginReturnPromise)
     ]
+
 
     #if canImport(FamilyControls)
     @available(iOS 16.0, *)

@@ -1,5 +1,8 @@
 import UIKit
 import Capacitor
+#if canImport(FamilyControls)
+import FamilyControls
+#endif
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -7,6 +10,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        #if canImport(FamilyControls)
+        if #available(iOS 16.0, *) {
+            Task { @MainActor in
+                do {
+                    try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+                } catch {
+                    print("FamilyControls authorization request failed: \(error.localizedDescription)")
+                }
+            }
+        }
+        #endif
         return true
     }
 

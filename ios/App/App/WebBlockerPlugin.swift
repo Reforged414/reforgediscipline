@@ -69,8 +69,9 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         #if canImport(FamilyControls)
         if #available(iOS 16.0, *) {
             DispatchQueue.main.async {
-                Self.store.shield.webDomainCategories = .all()
-                call.resolve(["active": true])
+                let store = ManagedSettingsStore()
+                store.webContent.blockedByFilter = .auto()
+                call.resolve(["active": true, "mode": "autoFilter"])
             }
             return
         }
@@ -82,7 +83,8 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         #if canImport(FamilyControls)
         if #available(iOS 16.0, *) {
             DispatchQueue.main.async {
-                Self.store.clearAllSettings()
+                let store = ManagedSettingsStore()
+                store.webContent.blockedByFilter = nil
                 call.resolve(["active": false])
             }
             return

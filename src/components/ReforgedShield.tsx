@@ -351,16 +351,30 @@ const ReforgedShield = () => {
                     </button>
                   </div>
                 )}
-                <button
-                  onClick={async () => {
-                    const next = await blocker.requestAuthorization();
-                    if (next.status === 'authorized') setPermError(null);
-                    else setPermError(next);
-                  }}
-                  className="mt-3 text-[11px] tracking-widest uppercase text-primary"
-                >
-                  Re-check permissions →
-                </button>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={async () => {
+                      // First bounce the user into the system Settings app
+                      // so they can approve Screen Time / Family Controls.
+                      await blocker.openSystemSettings().catch(() => undefined);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-primary/50 bg-primary/15 text-primary"
+                  >
+                    <SettingsIcon size={12} />
+                    Open Settings
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const next = await blocker.requestAuthorization();
+                      if (next.status === 'authorized') setPermError(null);
+                      else setPermError(next);
+                    }}
+                    className="text-[11px] tracking-widest uppercase text-primary"
+                  >
+                    Re-check permissions →
+                  </button>
+                </div>
+
               </div>
               <button onClick={() => setPermError(null)} className="text-muted-foreground">
                 <X size={16} />

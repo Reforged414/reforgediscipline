@@ -27,7 +27,9 @@ interface IOSWebBlockerPlugin {
   checkAuthorization(): Promise<{ status: string; familyControls?: boolean }>;
   activateShield(): Promise<{ active: boolean; reason?: string }>;
   deactivateShield(): Promise<{ active: boolean }>;
+  openSettings(): Promise<{ opened?: boolean }>;
 }
+
 
 /** Android plugin — matches @CapacitorPlugin(name = "ScreenTimeShield") */
 interface AndroidShieldPlugin {
@@ -118,6 +120,18 @@ async function openUsageAccessImpl() {
   return { opened: false };
 }
 
+async function openSystemSettingsImpl() {
+  if (iosWebBlocker) {
+    try {
+      return await iosWebBlocker.openSettings();
+    } catch (e: any) {
+      return { opened: false, error: e?.message || String(e) };
+    }
+  }
+  if (androidShield) return androidShield.openAccessibilitySettings();
+  return { opened: false };
+}
+
 export async function ensureBlockerPermissions(): Promise<PermissionState> {
   const result = await requestAuthorizationImpl();
   if (platform === 'android' && result.status !== 'authorized') {
@@ -135,6 +149,7 @@ export function useScreenTimeBlocker() {
   const checkPermissions = useCallback(() => checkPermissionsImpl(), []);
   const openAccessibilitySettings = useCallback(() => openAccessibilityImpl(), []);
   const openUsageAccessSettings = useCallback(() => openUsageAccessImpl(), []);
+  const openSystemSettings = useCallback(() => openSystemSettingsImpl(), []);
   const activate = useCallback(() => activateImpl(), []);
   const deactivate = useCallback(() => deactivateImpl(), []);
 
@@ -145,7 +160,9 @@ export function useScreenTimeBlocker() {
     checkPermissions,
     openAccessibilitySettings,
     openUsageAccessSettings,
+    openSystemSettings,
     activate,
     deactivate,
   };
 }
+

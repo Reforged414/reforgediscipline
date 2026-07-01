@@ -1,5 +1,7 @@
 import Foundation
+import UIKit
 import Capacitor
+
 
 #if canImport(FamilyControls)
 import FamilyControls
@@ -17,8 +19,10 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "activateShield", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "deactivateShield", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "blockDomain", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "unblockDomains", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "unblockDomains", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "openSettings", returnType: CAPPluginReturnPromise)
     ]
+
 
     #if canImport(FamilyControls)
     @available(iOS 16.0, *)
@@ -70,9 +74,10 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         if #available(iOS 16.0, *) {
             DispatchQueue.main.async {
                 let store = ManagedSettingsStore()
-                store.webContent.blockedByFilter = .auto()
+                store.webContent.blockedByFilter = .auto([], except: [])
                 call.resolve(["active": true, "mode": "autoFilter"])
             }
+
             return
         }
         #endif
@@ -143,4 +148,20 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         #endif
         call.resolve(["blocked": false])
     }
+
+    /// Bounce the user directly into the iOS Settings app so they can
+    /// approve Screen Time / Family Controls when authorization is denied.
+    @objc func openSettings(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                if UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                    call.resolve(["opened": true])
+                    return
+                }
+            }
+            call.reject("Could not open settings")
+        }
+    }
 }
+

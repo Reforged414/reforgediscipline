@@ -40,14 +40,13 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func openSettings(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
-            if let url = URL(string: UIApplication.openSettingsURLString) {
-                if UIApplication.shared.canOpenURL(url) {
-                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                    call.resolve()
-                    return
-                }
+            guard let url = URL(string: UIApplication.openSettingsURLString),
+                  UIApplication.shared.canOpenURL(url) else {
+                call.reject("Could not open settings URL")
+                return
             }
-            call.reject("Could not open settings")
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            call.resolve()
         }
     }
 }

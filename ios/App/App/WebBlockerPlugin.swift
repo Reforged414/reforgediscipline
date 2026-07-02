@@ -30,7 +30,7 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         let enabled = call.getBoolean("enabled", true)
 
         if enabled {
-            store.webContent.blockedByFilter = .auto([], except: [])
+            store.webContent.blockedByFilter = .auto(Set<WebDomain>(), except: Set<WebDomain>())
             call.resolve(["status": "blocked"])
         } else {
             store.webContent.blockedByFilter = nil

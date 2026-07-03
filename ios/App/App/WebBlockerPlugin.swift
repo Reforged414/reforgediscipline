@@ -4,7 +4,6 @@ import Capacitor
 import FamilyControls
 import ManagedSettings
 
-@available(iOS 16.0, *)
 @objc(WebBlockerPlugin)
 public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "WebBlockerPlugin"
@@ -16,26 +15,34 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     @objc func requestAuthorization(_ call: CAPPluginCall) {
-        Task {
-            do {
-                try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
-                call.resolve(["status": "approved"])
-            } catch {
-                call.reject("Authorization failed: \(error.localizedDescription)")
+        if #available(iOS 16.0, *) {
+            Task {
+                do {
+                    try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+                    call.resolve(["status": "approved"])
+                } catch {
+                    call.reject("Authorization failed: \(error.localizedDescription)")
+                }
             }
+        } else {
+            call.reject("Screen Time APIs require iOS 16.0 or later")
         }
     }
 
     @objc func block(_ call: CAPPluginCall) {
-        let store = ManagedSettingsStore()
-        let enabled = call.getBoolean("enabled", true)
+        if #available(iOS 16.0, *) {
+            let store = ManagedSettingsStore()
+            let enabled = call.getBoolean("enabled", true)
 
-        if enabled {
-            store.webContent.blockedByFilter = .auto(Set<WebDomain>(), except: Set<WebDomain>())
-            call.resolve(["status": "blocked"])
+            if enabled {
+                store.webContent.blockedByFilter = .auto(Set<WebDomain>(), except: Set<WebDomain>())
+                call.resolve(["status": "blocked"])
+            } else {
+                store.webContent.blockedByFilter = nil
+                call.resolve(["status": "unblocked"])
+            }
         } else {
-            store.webContent.blockedByFilter = nil
-            call.resolve(["status": "unblocked"])
+            call.reject("Screen Time APIs require iOS 16.0 or later")
         }
     }
 

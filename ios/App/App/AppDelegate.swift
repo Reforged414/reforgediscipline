@@ -22,9 +22,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         #endif
 
-        // Force-register custom Capacitor plugin so the JS bridge sees it
-        // even if auto-registration via CAPBridgedPlugin didn't run in CI builds.
-        self.registerPlugin(WebBlockerPlugin.self)
+        // Force the linker to include WebBlockerPlugin so Capacitor's
+        // Objective-C runtime lookup (via @objc(WebBlockerPlugin)) can find it.
+        // Without this reference, dead-code stripping in Release/CI builds can
+        // drop the class and cause UNIMPLEMENTED at runtime on the JS side.
+        _ = WebBlockerPlugin.self
 
         return true
     }

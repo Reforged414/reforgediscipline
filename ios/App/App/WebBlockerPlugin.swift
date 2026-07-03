@@ -32,7 +32,7 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func block(_ call: CAPPluginCall) {
         if #available(iOS 16.0, *) {
             let store = ManagedSettingsStore()
-            let enabled = call.getBoolean("enabled", true)
+            let enabled = call.getBool("enabled", true)
 
             if enabled {
                 store.webContent.blockedByFilter = .auto(Set<WebDomain>(), except: Set<WebDomain>())

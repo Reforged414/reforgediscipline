@@ -4,6 +4,7 @@ import Capacitor
 import FamilyControls
 import ManagedSettings
 
+@available(iOS 16.0, *)
 @objc(WebBlockerPlugin)
 public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "WebBlockerPlugin"

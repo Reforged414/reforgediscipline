@@ -77,7 +77,7 @@ jobs:
             <key>provisioningProfiles</key>
             <dict>
               <key>com.reforged.discipline</key>
-              <string>Reforged Discipline Distribution 3</string>
+              <string>Reforged Discipline Distribution 4</string>
             </dict>
           </dict>
           </plist>

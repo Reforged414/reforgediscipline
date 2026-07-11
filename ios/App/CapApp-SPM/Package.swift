@@ -19,7 +19,7 @@ let package = Package(
         .package(name: "CapawesomeCapacitorGoogleSignIn", path: "../../../node_modules/@capawesome/capacitor-google-sign-in"),
         .package(name: "RevenuecatPurchasesCapacitor", path: "../../../node_modules/@revenuecat/purchases-capacitor"),
         .package(name: "RevenuecatPurchasesCapacitorUi", path: "../../../node_modules/@revenuecat/purchases-capacitor-ui"),
-        .package(name: "WebblockerPlugin", path: "../../../../webblocker-plugin")
+        .package(name: "WebblockerPlugin", path: "../../../packages/webblocker-plugin")
     ],
     targets: [
         .target(

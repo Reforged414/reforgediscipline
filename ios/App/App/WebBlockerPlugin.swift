@@ -66,7 +66,7 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
                 // the same intelligence behind Settings > Screen Time > "Limit Adult Websites".
                 // No manual domain list needed. You can optionally add extra domains to
                 // block or exempt on top of it via the two parameters below.
-                store.webContent.blockedByFilter = .auto(blocked: [], exceptions: [])
+                store.webContent.blockedByFilter = .auto([], except: [])
                 call.resolve(["active": true, "status": "blocked"])
             } else {
                 store.webContent.blockedByFilter = nil

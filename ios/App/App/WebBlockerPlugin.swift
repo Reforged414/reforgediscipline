@@ -17,6 +17,8 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "openSettings", returnType: CAPPluginReturnPromise)
     ]
 
+    private let store = ManagedSettingsStore()
+
     @objc func requestAuthorization(_ call: CAPPluginCall) {
         if #available(iOS 16.0, *) {
             Task {
@@ -37,9 +39,8 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func checkAuthorization(_ call: CAPPluginCall) {
         if #available(iOS 16.0, *) {
-            let center = AuthorizationCenter.shared
             let status: String
-            switch center.authorizationStatus {
+            switch AuthorizationCenter.shared.authorizationStatus {
             case .approved:
                 status = "authorized"
             case .denied:
@@ -60,9 +61,12 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
 
     private func applyShield(enabled: Bool, call: CAPPluginCall) {
         if #available(iOS 16.0, *) {
-            let store = ManagedSettingsStore()
             if enabled {
-                store.webContent.blockedByFilter = .auto(Set<WebDomain>(), except: Set<WebDomain>())
+                // .auto() uses Apple's own built-in adult content classifier —
+                // the same intelligence behind Settings > Screen Time > "Limit Adult Websites".
+                // No manual domain list needed. You can optionally add extra domains to
+                // block or exempt on top of it via the two parameters below.
+                store.webContent.blockedByFilter = .auto([], except: [])
                 call.resolve(["active": true, "status": "blocked"])
             } else {
                 store.webContent.blockedByFilter = nil
@@ -74,7 +78,7 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func block(_ call: CAPPluginCall) {
-        let enabled = call.getBool("enabled", true)
+        let enabled = call.getBool("enabled") ?? true
         applyShield(enabled: enabled, call: call)
     }
 
@@ -88,7 +92,6 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func openSettings(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
-            // Use a robust URL fallback scheme to ensure Settings opens
             let settingsUrlString = "App-Prefs:root"
             if let url = URL(string: settingsUrlString), UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url, options: [:], completionHandler: nil)

@@ -92,13 +92,10 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func openSettings(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
-            let settingsUrlString = "App-Prefs:root"
-            if let url = URL(string: settingsUrlString), UIApplication.shared.canOpenURL(url) {
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                call.resolve(["opened": true])
-            } else if let fallbackUrl = URL(string: UIApplication.openSettingsURLString) {
-                UIApplication.shared.open(fallbackUrl, options: [:], completionHandler: nil)
-                call.resolve(["opened": true])
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url, options: [:]) { success in
+                    call.resolve(["opened": success])
+                }
             } else {
                 call.reject("Unable to open device settings application")
             }

@@ -5,7 +5,7 @@ import { useAppStore } from '@/store/useAppStore';
 
 interface DailyCheckInProps {
   onBack: () => void;
-  onComplete: () => void;
+  onComplete: (earnedXp: number) => void;
 }
 
 const moods = [
@@ -27,8 +27,8 @@ const DailyCheckIn = ({ onBack, onComplete }: DailyCheckInProps) => {
 
   const handleSubmit = () => {
     if (!canSubmit) return;
-    completeDailyCheckIn();
-    onComplete();
+    const earnedXp = completeDailyCheckIn({ mood, urgeLevel, reflection });
+    onComplete(earnedXp);
   };
 
   return (

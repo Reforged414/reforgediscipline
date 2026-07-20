@@ -144,15 +144,6 @@ const ReforgedShield = () => {
           perm = { status: 'denied', error: e?.message || String(e) };
         }
         setBusy(false);
-        // Surface raw bridge response on-device so we can debug native failures.
-        try {
-          // eslint-disable-next-line no-alert
-          window.alert(
-            `[Shield] platform=${blocker.platform}\nstatus=${perm.status}` +
-              (perm.error ? `\nerror=${perm.error}` : '') +
-              (perm.raw ? `\nraw=${JSON.stringify(perm.raw)}` : '')
-          );
-        } catch {}
         if (perm.status !== 'authorized' && perm.status !== 'unsupported') {
           setPermError(perm);
           return;
@@ -396,7 +387,7 @@ const ReforgedShield = () => {
           desc="Network-level domain filtering"
           enabled={config.blockWebsites}
           onToggle={(v) => update({ blockWebsites: v })}
-          disabled={!config.active || (config.active && (isLocked || inCooldown))}
+          disabled={config.active && (isLocked || inCooldown)}
         />
         <SubToggle
           icon={<Search size={18} />}
@@ -404,7 +395,7 @@ const ReforgedShield = () => {
           desc="Locks SafeSearch on across Google"
           enabled={config.enforceSafeSearch}
           onToggle={(v) => update({ enforceSafeSearch: v })}
-          disabled={!config.active || (config.active && (isLocked || inCooldown))}
+          disabled={config.active && (isLocked || inCooldown)}
         />
       </motion.div>
 

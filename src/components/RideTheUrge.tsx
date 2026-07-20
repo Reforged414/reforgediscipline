@@ -91,7 +91,7 @@ const RideTheUrge = ({ onResisted, onBack, onStillStruggling }: RideTheUrgeProps
 
       {/* Timer ring with breathing animation */}
       <div className="flex-1 flex items-center justify-center">
-        <div className="relative w-64 h-264">
+        <div className="relative w-64 h-64">
           {/* Breathing glow circle behind timer */}
           <motion.div
             className="absolute inset-0 rounded-full"
@@ -131,7 +131,7 @@ const RideTheUrge = ({ onResisted, onBack, onStillStruggling }: RideTheUrgeProps
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-5xl font-light text-foreground tracking-wider">{timeStr}</span>
               <span className="text-xs text-primary tracking-widest uppercase mt-1">
-                {running ? 'Breathe' : 'Remaining'}
+                {running ? 'Breathe' : seconds === 0 ? 'You made it' : 'Paused'}
               </span>
             </div>
           </div>
@@ -140,7 +140,7 @@ const RideTheUrge = ({ onResisted, onBack, onStillStruggling }: RideTheUrgeProps
 
       {/* XP hint */}
       <p className="text-center text-primary text-xs tracking-wider mb-4">
-        +10 DISCIPLINE POINTS IF COMPLETED
+        +15 DISCIPLINE POINTS IF COMPLETED
       </p>
 
       {/* Motivational text */}

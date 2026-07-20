@@ -3,6 +3,41 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppStore } from '@/store/useAppStore';
 /**
+ * Fetches the user's cloud row and applies it to the local store.
+ * Returns true when cloud data existed and was applied.
+ */
+export async function loadCloudDataIntoStore(userId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('user_data')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+
+  if (error || !data) return false;
+
+  const store = useAppStore.getState();
+  useAppStore.setState({
+    onboardingComplete: data.onboarding_complete,
+    onboardingData: data.onboarding_data as any,
+    streak: data.streak,
+    xp: data.xp,
+    level: data.level,
+    levelName: data.level_name,
+    xpForNextLevel: data.xp_for_next_level,
+    dailyDiscipline: (data.daily_discipline as any) ?? store.dailyDiscipline,
+    resistedTimestamps: (data.resisted_timestamps as any) ?? [],
+    urgeLogs: (data.urge_logs as any) ?? [],
+    relapseLogs: (data.relapse_logs as any) ?? [],
+    journalLogs: (data.journal_logs as any) ?? [],
+    shownMilestones: (data.shown_milestones as any) ?? [],
+    pendingMilestone: data.pending_milestone,
+    hasCompletedTutorial: (data as any).has_completed_tutorial ?? false,
+    hasSeenTutorial: (data as any).has_completed_tutorial ?? false,
+  });
+  return true;
+}
+
+/**
  * Syncs Zustand local state with Supabase user_data table for authenticated users.
  * - On login: loads cloud data into local store (returns `loading` until done)
  * - On state change: saves to cloud (debounced)
@@ -33,38 +68,7 @@ export function useCloudSync() {
       }
       isLoadingFromCloud.current = true;
       try {
-        const { data, error } = await supabase
-          .from('user_data')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (error || !data) {
-          isLoadingFromCloud.current = false;
-          hasLoaded.current = true;
-          return;
-        }
-
-        // Apply cloud data to local store
-        const store = useAppStore.getState();
-        useAppStore.setState({
-          onboardingComplete: data.onboarding_complete,
-          onboardingData: data.onboarding_data as any,
-          streak: data.streak,
-          xp: data.xp,
-          level: data.level,
-          levelName: data.level_name,
-          xpForNextLevel: data.xp_for_next_level,
-          dailyDiscipline: (data.daily_discipline as any) ?? store.dailyDiscipline,
-          resistedTimestamps: (data.resisted_timestamps as any) ?? [],
-          urgeLogs: (data.urge_logs as any) ?? [],
-          relapseLogs: (data.relapse_logs as any) ?? [],
-          journalLogs: (data.journal_logs as any) ?? [],
-          shownMilestones: (data.shown_milestones as any) ?? [],
-          pendingMilestone: data.pending_milestone,
-          hasCompletedTutorial: (data as any).has_completed_tutorial ?? false,
-          hasSeenTutorial: (data as any).has_completed_tutorial ?? false,
-        });
+        await loadCloudDataIntoStore(user.id);
       } catch (err) {
         console.error('Failed to load cloud data:', err);
       } finally {
@@ -83,6 +87,9 @@ export function useCloudSync() {
 
     const unsubscribe = useAppStore.subscribe((state) => {
       if (isLoadingFromCloud.current || !hasLoaded.current) return;
+      // While a guest-to-account transfer decision is pending, never push local
+      // (guest) state to the cloud — it would overwrite the account's data.
+      if (localStorage.getItem('reforged-pending-transfer') === 'true') return;
 
       if (saveTimer.current) clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(async () => {

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import OnboardingHeader from './OnboardingHeader';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface OnboardingData {
   goals: string[];
@@ -32,6 +33,7 @@ const getInitialStreak = (lastRelapse: string): number => {
 };
 
 const AccountScreen = ({ step, total, onBack, onSignedUp, onboardingData }: Props) => {
+  const { continueAsGuest } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -65,17 +67,22 @@ const AccountScreen = ({ step, total, onBack, onSignedUp, onboardingData }: Prop
       if (error) throw error;
       if (!data.user) throw new Error('Account creation did not return a user. Please try again.');
 
-      const initialStreak = getInitialStreak(onboardingData.lastRelapse);
-      const { error: profileError } = await supabase
-        .from('user_data')
-        .upsert({
-          user_id: data.user.id,
-          onboarding_complete: true,
-          onboarding_data: onboardingData as any,
-          streak: initialStreak,
-        } as any, { onConflict: 'user_id' });
+      // Only write to user_data when a session exists — with email confirmation
+      // enabled there is no session yet and the RLS-protected upsert would fail.
+      // Local state persists either way and syncs after the first sign-in.
+      if (data.session) {
+        const initialStreak = getInitialStreak(onboardingData.lastRelapse);
+        const { error: profileError } = await supabase
+          .from('user_data')
+          .upsert({
+            user_id: data.user.id,
+            onboarding_complete: true,
+            onboarding_data: onboardingData as any,
+            streak: initialStreak,
+          } as any, { onConflict: 'user_id' });
 
-      if (profileError) throw profileError;
+        if (profileError) throw profileError;
+      }
       await onSignedUp();
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
@@ -159,6 +166,18 @@ const AccountScreen = ({ step, total, onBack, onSignedUp, onboardingData }: Prop
               </>
             )}
           </motion.button>
+
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => {
+              continueAsGuest();
+              onSignedUp();
+            }}
+            className="w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Continue without an account
+          </button>
         </form>
       </div>
       <div className="text-center pb-8 px-8">

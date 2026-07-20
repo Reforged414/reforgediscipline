@@ -1,4 +1,4 @@
-import { X, Moon, Sun, Cloud } from 'lucide-react';
+import { Moon, Sun, Cloud } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
 import AICoachPanel from './AICoachPanel';
@@ -35,7 +35,7 @@ const InsightsScreen = () => {
 
   // Determine days of logged data: based on first activity in app
   const firstLogTimestamp = [...urgeLogs, ...relapseLogs, ...resistedTimestamps.map((t) => ({ timestamp: t }))]
-    .map((l: any) => new Date(l.timestamp).getTime())
+    .map((l: { timestamp: string }) => new Date(l.timestamp).getTime())
     .sort((a, b) => a - b)[0];
   const daysOfData = firstLogTimestamp
     ? Math.floor((Date.now() - firstLogTimestamp) / (1000 * 60 * 60 * 24))
@@ -99,10 +99,8 @@ const InsightsScreen = () => {
       initial="hidden"
       animate="show"
     >
-      <motion.div variants={fadeUp} className="flex items-center justify-between mb-2">
-        <button className="text-muted-foreground"><X size={20} /></button>
+      <motion.div variants={fadeUp} className="flex items-center justify-center mb-2">
         <h1 className="font-display text-sm tracking-widest text-primary">REFORGED</h1>
-        <div className="w-5" />
       </motion.div>
 
       <motion.h2 variants={fadeUp} className="text-3xl font-display tracking-wider text-foreground text-center mb-1">Recovery</motion.h2>

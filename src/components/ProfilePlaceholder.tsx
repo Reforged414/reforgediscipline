@@ -48,10 +48,12 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
 
   const quote = useMemo(() => {
     const goals = onboardingData?.goals || [];
-    if (goals.includes('control')) return 'Rebuilding control daily';
-    if (goals.includes('clarity')) return 'Seeking clarity each day';
-    if (goals.includes('confidence')) return 'Forging confidence within';
-    if (goals.includes('relationships')) return 'Healing what matters most';
+    const identity = onboardingData?.identity || [];
+    if (goals.includes('quit')) return 'Breaking free, one day at a time';
+    if (goals.includes('control') || identity.includes('self-control')) return 'Rebuilding control daily';
+    if (goals.includes('discipline') || identity.includes('disciplined')) return 'Forging discipline daily';
+    if (goals.includes('focus') || identity.includes('clearer-mind')) return 'Seeking clarity each day';
+    if (identity.includes('confident')) return 'Forging confidence within';
     return 'One day at a time';
   }, [onboardingData]);
 

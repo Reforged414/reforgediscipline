@@ -26,6 +26,8 @@ import MirrorShield from '@/components/MirrorShield';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCloudSync } from '@/hooks/useCloudSync';
+import { useGuestNudge } from '@/hooks/useGuestNudge';
+import { useDailyReminder } from '@/hooks/useDailyReminder';
 
 type Screen = 'dashboard' | 'profile' | 'ride' | 'reward' | 'log' | 'relapse' | 'recovery' | 'checkin' | 'emergency' | 'mirror' | 'journal' | 'milestone' | 'settings';
 type EntryScreen = 'welcome' | 'onboarding' | 'login' | 'dashboard';
@@ -79,9 +81,17 @@ const PageWrap = ({ children, variant, screenKey }: { children: React.ReactNode;
 );
 
 const Index = () => {
-  const { session, loading } = useAuth();
+  const { session, loading, isGuest } = useAuth();
   const { loading: cloudLoading } = useCloudSync();
-  const [currentScreen, setCurrentScreen] = useState<EntryScreen>(() => 'welcome');
+  useGuestNudge();
+  useDailyReminder();
+  const [currentScreen, setCurrentScreen] = useState<EntryScreen>(() => {
+    // Returning guest with completed onboarding goes straight to their dashboard —
+    // showing the Welcome gate again would funnel them into re-onboarding and wipe progress.
+    const guest = localStorage.getItem('reforged-guest') === 'true';
+    if (guest && useAppStore.getState().onboardingComplete) return 'dashboard';
+    return 'welcome';
+  });
 
   const [screen, setScreen] = useState<Screen>('dashboard');
   const [actionHubOpen, setActionHubOpen] = useState(false);
@@ -106,10 +116,11 @@ const Index = () => {
     if (session && currentScreen === 'welcome') {
       setCurrentScreen('dashboard');
     }
-    if (!session && currentScreen === 'dashboard') {
+    // Guests legitimately live on the dashboard without a session — don't bounce them.
+    if (!session && !isGuest && currentScreen === 'dashboard') {
       setCurrentScreen('welcome');
     }
-  }, [loading, session, currentScreen]);
+  }, [loading, session, isGuest, currentScreen]);
 
   // 1. Auth bootstrap or cloud hydration in progress — show splash to avoid onboarding flash
   if (loading || (session && currentScreen === 'welcome') || (currentScreen === 'dashboard' && session && cloudLoading)) {
@@ -213,11 +224,11 @@ const Index = () => {
     navigateTo('reward');
   };
 
-  const handleCheckInComplete = () => {
+  const handleCheckInComplete = (earnedXp: number) => {
     setRewardCtx({
       title: 'CHECK-IN COMPLETE',
       subtitle: 'Consistency Compounds',
-      xp: 10,
+      xp: earnedXp || 10,
       showStreak: true,
     });
     navigateTo('reward');

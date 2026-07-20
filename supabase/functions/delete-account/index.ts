@@ -42,6 +42,7 @@ Deno.serve(async (req) => {
 
     // Delete user-owned rows
     await admin.from("user_data").delete().eq("user_id", userId);
+    await admin.from("discipline_goals").delete().eq("user_id", userId);
     await admin.from("profiles").delete().eq("user_id", userId);
 
     // Delete the auth user itself

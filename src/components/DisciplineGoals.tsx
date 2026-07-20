@@ -113,7 +113,7 @@ const DisciplineGoals = () => {
               </span>
               <button
                 onClick={() => deleteGoal(goal.id)}
-                className="text-muted-foreground/50 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                className="p-1.5 -m-1 text-muted-foreground/60 hover:text-destructive active:text-destructive transition-colors"
                 aria-label="Delete goal"
               >
                 <Trash2 size={14} />

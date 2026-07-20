@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Settings } from 'lucide-react';
-import { useAppStore } from '@/store/useAppStore';
+import { useAppStore, LEVELS, MILESTONES } from '@/store/useAppStore';
 import RetentionBanner from '@/components/RetentionBanner';
 import DisciplineGoals from '@/components/DisciplineGoals';
 
@@ -27,6 +27,17 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
 
   React.useEffect(() => {
     checkNewDay();
+    // Also roll the day over if the app stays open past midnight or is
+    // resumed from the background.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') checkNewDay();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
   }, [checkNewDay]);
 
   const insightMessage = useMemo(() => {
@@ -49,11 +60,19 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
     if (!dailyDiscipline.checkedIn) {
       return 'Complete your check-in to keep your streak alive';
     }
+    if (streak === 0) {
+      return 'Checked in. Day 1 starts fresh tomorrow.';
+    }
     return `Day ${streak} — streak locked in. Come back tomorrow.`;
   }, [streak, dailyDiscipline.checkedIn]);
 
-  const prevLevelXp = xpForNextLevel - 1000;
-  const xpProgress = Math.min(((xp - Math.max(prevLevelXp, 0)) / (xpForNextLevel - Math.max(prevLevelXp, 0))) * 100, 100);
+  const currentLevelBaseXp = LEVELS[level - 1]?.xpRequired ?? 0;
+  const xpProgress = Math.min(
+    Math.max(((xp - currentLevelBaseXp) / (xpForNextLevel - currentLevelBaseXp)) * 100, 0),
+    100
+  );
+
+  const nextMilestone = MILESTONES.find((m) => m > streak) ?? null;
 
   return (
     <motion.div
@@ -152,9 +171,9 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-4">Core Daily Shields</p>
         <div className="space-y-3">
           {[
-            { label: 'Daily check-in', xp: '+15 XP', done: dailyDiscipline.checkedIn, action: onDailyCheckIn },
-            { label: 'Resist one urge', xp: '+10 XP', done: dailyDiscipline.resistedUrge },
-            { label: 'Write a reflection', xp: '+10 XP', done: dailyDiscipline.wroteReflection, action: onJournal },
+            { label: 'Daily check-in', xp: '+10 XP', done: dailyDiscipline.checkedIn, action: onDailyCheckIn },
+            { label: 'Resist one urge', xp: '+15 XP', done: dailyDiscipline.resistedUrge, action: onRideUrge },
+            { label: 'Write a reflection', xp: '+15 XP', done: dailyDiscipline.wroteReflection, action: onJournal },
           ].map((task) => (
             <div
               key={task.label}
@@ -191,14 +210,14 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs text-muted-foreground tracking-widest uppercase">Next Milestone</p>
           <p className="text-lg italic text-foreground font-semibold">
-            {streak < 21 ? '21' : streak < 60 ? '60' : '90'} Days Clean
+            {nextMilestone ? `${nextMilestone} Days Clean` : 'Beyond 365 — Legend'}
           </p>
         </div>
         <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-primary rounded-full"
             initial={{ width: 0 }}
-            animate={{ width: `${Math.min((streak / (streak < 21 ? 21 : streak < 60 ? 60 : 90)) * 100, 100)}%` }}
+            animate={{ width: `${nextMilestone ? Math.min((streak / nextMilestone) * 100, 100) : 100}%` }}
             transition={{ duration: 0.8, ease: 'easeOut', delay: 0.5 }}
           />
         </div>

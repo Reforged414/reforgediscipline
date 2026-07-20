@@ -29,6 +29,14 @@ interface DailyDiscipline {
   checkedIn: boolean;
   resistedUrge: boolean;
   wroteReflection: boolean;
+  mood?: string;
+  urgeLevel?: string;
+}
+
+export interface CheckInDetails {
+  mood?: string;
+  urgeLevel?: string;
+  reflection?: string;
 }
 
 interface JournalLog {
@@ -67,7 +75,7 @@ interface AppState {
   logRelapse: (log: Omit<RelapseLog, 'timestamp'>) => void;
   resetStreak: () => void;
   checkNewDay: () => void;
-  completeDailyCheckIn: () => void;
+  completeDailyCheckIn: (details?: CheckInDetails) => number;
   saveJournalEntry: (entry: Omit<JournalLog, 'timestamp'>) => void;
   dismissMilestone: () => void;
   markTutorialSeen: () => void;
@@ -77,7 +85,7 @@ interface AppState {
   awardXp: (amount: number) => void;
 }
 
-const LEVELS = [
+export const LEVELS = [
   { name: 'Initiate', xpRequired: 0 },
   { name: 'Apprentice', xpRequired: 100 },
   { name: 'Warrior', xpRequired: 250 },
@@ -131,7 +139,7 @@ function freshDailyDiscipline(): DailyDiscipline {
   };
 }
 
-const MILESTONES = [3, 7, 14, 30, 45, 60, 90, 120, 180, 365];
+export const MILESTONES = [3, 7, 14, 30, 45, 60, 90, 120, 180, 365];
 
 function checkMilestone(newStreak: number, shownMilestones: number[]): { pending: number | null; toMark: number[] } {
   // Find all milestones the user has reached but not yet been shown
@@ -269,11 +277,16 @@ export const useAppStore = create<AppState>()(
 
       dismissMilestone: () => set({ pendingMilestone: null }),
 
-      completeDailyCheckIn: () =>
+      completeDailyCheckIn: (details) => {
+        let earnedXp = 0;
         set((state) => {
           if (state.dailyDiscipline.checkedIn) return {};
           const today = getTodayString();
-          const newXp = state.xp + 10;
+          const reflection = details?.reflection?.trim() ?? '';
+          // +10 for the check-in itself, +15 more when a reflection is written
+          // (same reward as a standalone journal entry).
+          earnedXp = 10 + (reflection ? 15 : 0);
+          const newXp = state.xp + earnedXp;
           const { level, levelName, xpForNextLevel } = getLevelInfo(newXp);
 
           // Increment streak only once per day, and only if no relapse today.
@@ -300,9 +313,21 @@ export const useAppStore = create<AppState>()(
             lastStreakIncrementDate: newLastIncrement,
             pendingMilestone: pending,
             shownMilestones: shown,
-            dailyDiscipline: { ...state.dailyDiscipline, date: today, checkedIn: true },
+            journalLogs: reflection
+              ? [...state.journalLogs, { text: reflection, tag: 'Check-In', timestamp: new Date().toISOString() }]
+              : state.journalLogs,
+            dailyDiscipline: {
+              ...state.dailyDiscipline,
+              date: today,
+              checkedIn: true,
+              wroteReflection: state.dailyDiscipline.wroteReflection || !!reflection,
+              mood: details?.mood ?? state.dailyDiscipline.mood,
+              urgeLevel: details?.urgeLevel ?? state.dailyDiscipline.urgeLevel,
+            },
           };
-        }),
+        });
+        return earnedXp;
+      },
 
       saveJournalEntry: (entry) =>
         set((state) => {

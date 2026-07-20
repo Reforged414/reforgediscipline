@@ -16,7 +16,7 @@ const RetentionBanner = () => {
   let highlight = false;
 
   if (hadRelapseYesterday && streak === 0) {
-    message = "You missed yesterday. Start again today.";
+    message = 'Yesterday was a setback. Today is Day 1 — start again.';
   } else if (streak > 0) {
     message = `You're on a ${streak}-day streak. Keep going.`;
   }

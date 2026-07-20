@@ -73,6 +73,11 @@ const TutorialOverlay = () => {
         height: r.height + PADDING * 2,
       });
     };
+    // The target may be below the fold (e.g. the check-in card on a long
+    // dashboard) — bring it into view first, otherwise the spotlight and
+    // tooltip render off-screen.
+    const target = document.querySelector(step.selector) as HTMLElement | null;
+    if (target) target.scrollIntoView({ block: 'center', behavior: 'auto' });
     measure();
     window.addEventListener('resize', measure);
     window.addEventListener('scroll', measure, true);

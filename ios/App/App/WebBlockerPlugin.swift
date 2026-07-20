@@ -102,3 +102,13 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 }
+
+// Since Capacitor 5, plugins that live inside the app target (rather than an
+// npm package listed in packageClassList) are only loaded if they are handed
+// to the bridge explicitly from a CAPBridgeViewController subclass.
+// Main.storyboard instantiates this class instead of CAPBridgeViewController.
+class MainViewController: CAPBridgeViewController {
+    override open func capacitorDidLoad() {
+        bridge?.registerPluginInstance(WebBlockerPlugin())
+    }
+}

@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
 import { supabase } from '@/integrations/supabase/client';
+import { loadCloudDataIntoStore } from '@/hooks/useCloudSync';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { Upload, X } from 'lucide-react';
@@ -65,9 +66,20 @@ const GuestTransferPrompt = () => {
     }
   };
 
-  const handleDiscard = () => {
-    useAppStore.getState().resetAllLocalData();
-    finish();
+  // Discarding guest progress means the account's cloud data is authoritative:
+  // pull it into the local store. Wiping local state here would get synced back
+  // up and erase the account's real data.
+  const handleDiscard = async () => {
+    setBusy(true);
+    try {
+      const loaded = await loadCloudDataIntoStore(user.id);
+      if (!loaded) useAppStore.getState().resetAllLocalData();
+    } catch (e) {
+      console.error('Failed to load account data', e);
+    } finally {
+      setBusy(false);
+      finish();
+    }
   };
 
   return (
@@ -84,7 +96,8 @@ const GuestTransferPrompt = () => {
           animate={{ scale: 1, opacity: 1 }}
         >
           <button
-            onClick={finish}
+            onClick={handleDiscard}
+            disabled={busy}
             className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
             aria-label="Close"
           >

@@ -61,6 +61,13 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
+- name: Debug - Inspect entitlements and symbols
+        run: |
+          echo "=== Entitlements in built app ==="
+          codesign -d --entitlements :- $RUNNER_TEMP/App.xcarchive/Products/Applications/App.app
+          echo "=== Checking for WebBlockerPlugin symbol in binary ==="
+          nm $RUNNER_TEMP/App.xcarchive/Products/Applications/App.app/App | grep -i webblocker || echo "SYMBOL NOT FOUND"
+
       - name: Export IPA
         run: |
           cat > $RUNNER_TEMP/ExportOptions.plist << 'PLIST'
@@ -77,7 +84,7 @@ jobs:
             <key>provisioningProfiles</key>
             <dict>
               <key>com.reforged.discipline</key>
-              <string>Reforged Discipline Distribution 4</string>
+              <string>Reforged Discipline Distribution 5</string>
             </dict>
           </dict>
           </plist>

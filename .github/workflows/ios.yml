@@ -61,13 +61,6 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Debug - Inspect entitlements and symbols
-        run: |
-          echo "=== Entitlements in built app ==="
-          codesign -d --entitlements :- $RUNNER_TEMP/App.xcarchive/Products/Applications/App.app
-          echo "=== Checking for WebBlockerPlugin symbol in binary ==="
-          nm $RUNNER_TEMP/App.xcarchive/Products/Applications/App.app/App | grep -i webblocker || echo "SYMBOL NOT FOUND"
-
       - name: Export IPA
         run: |
           cat > $RUNNER_TEMP/ExportOptions.plist << 'PLIST'
@@ -94,6 +87,16 @@ jobs:
             -exportOptionsPlist $RUNNER_TEMP/ExportOptions.plist \
             -exportPath $RUNNER_TEMP/export \
             -allowProvisioningUpdates
+
+      - name: Debug - Inspect entitlements and symbols
+        run: |
+          mkdir -p /tmp/ipa_inspect
+          cd /tmp/ipa_inspect
+          unzip -q $RUNNER_TEMP/export/App.ipa
+          echo "=== Entitlements in exported app ==="
+          codesign -d --entitlements :- Payload/App.app
+          echo "=== Checking for WebBlockerPlugin symbol in binary ==="
+          nm Payload/App.app/App | grep -i webblocker || echo "SYMBOL NOT FOUND"
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4

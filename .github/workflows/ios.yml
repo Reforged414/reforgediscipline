@@ -58,8 +58,7 @@ jobs:
             -configuration Release \
             -archivePath $RUNNER_TEMP/App.xcarchive \
             archive \
-            DEVELOPMENT_TEAM=3N2S3HGDZ8 \
-            -allowProvisioningUpdates
+            DEVELOPMENT_TEAM=3N2S3HGDZ8
 
       - name: Export IPA
         run: |

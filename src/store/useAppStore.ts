@@ -63,6 +63,7 @@ interface AppState {
   resistedTimestamps: string[];
   journalLogs: JournalLog[];
   dailyDiscipline: DailyDiscipline;
+  checkInDates: string[];
   shownMilestones: number[];
   pendingMilestone: number | null;
   hasSeenTutorial: boolean;
@@ -164,6 +165,7 @@ export const useAppStore = create<AppState>()(
       relapseLogs: [],
       journalLogs: [],
       dailyDiscipline: freshDailyDiscipline(),
+      checkInDates: [],
       shownMilestones: [],
       pendingMilestone: null,
       hasSeenTutorial: false,
@@ -195,6 +197,7 @@ export const useAppStore = create<AppState>()(
           resistedTimestamps: [],
           journalLogs: [],
           dailyDiscipline: freshDailyDiscipline(),
+          checkInDates: [],
           shownMilestones: [],
           pendingMilestone: null,
           hasSeenTutorial: false,
@@ -309,6 +312,9 @@ export const useAppStore = create<AppState>()(
 
           return {
             xp: newXp, level, levelName, xpForNextLevel,
+            checkInDates: state.checkInDates.includes(today)
+              ? state.checkInDates
+              : [...state.checkInDates, today],
             streak: newStreak,
             lastStreakIncrementDate: newLastIncrement,
             pendingMilestone: pending,

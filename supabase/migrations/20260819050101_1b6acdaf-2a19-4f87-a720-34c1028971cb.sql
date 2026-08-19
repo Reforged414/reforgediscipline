@@ -1,0 +1,1 @@
+ALTER TABLE public.discipline_goals ADD COLUMN IF NOT EXISTS icon_name text NOT NULL DEFAULT 'Target';

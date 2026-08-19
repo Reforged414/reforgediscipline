@@ -264,14 +264,10 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
             {nextMilestone ? `${nextMilestone} Days Clean` : 'Beyond 365 — Legend'}
           </p>
         </div>
-        <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
-          <motion.div
-            className="h-full bg-primary rounded-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${nextMilestone ? Math.min((streak / nextMilestone) * 100, 100) : 100}%` }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-          />
-        </div>
+        <GlowProgressBar
+          value={nextMilestone ? Math.min((streak / nextMilestone) * 100, 100) : 100}
+          height={8}
+        />
       </motion.div>
     </motion.div>
   );

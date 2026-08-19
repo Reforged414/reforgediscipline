@@ -1,9 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings } from 'lucide-react';
+import { Settings, CheckCircle2, Shield, NotebookPen } from 'lucide-react';
 import { useAppStore, LEVELS, MILESTONES } from '@/store/useAppStore';
 import RetentionBanner from '@/components/RetentionBanner';
 import DisciplineGoals from '@/components/DisciplineGoals';
+import CountUpNumber from '@/components/dashboard/CountUpNumber';
+import WeekStrip from '@/components/dashboard/WeekStrip';
+import HistorySection from '@/components/dashboard/HistorySection';
 
 const stagger = {
   hidden: {},
@@ -11,7 +14,7 @@ const stagger = {
 };
 const fadeUp = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] } },
 };
 
 interface DashboardProps {
@@ -23,7 +26,11 @@ interface DashboardProps {
 }
 
 const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSettings }: DashboardProps) => {
-  const { streak, xp, level, levelName, xpForNextLevel, dailyDiscipline, checkNewDay, urgeLogs, relapseLogs } = useAppStore();
+  const {
+    streak, xp, level, levelName, xpForNextLevel, dailyDiscipline, checkNewDay,
+    urgeLogs, relapseLogs, checkInDates,
+  } = useAppStore();
+  const [numberLanded, setNumberLanded] = useState(false);
 
   React.useEffect(() => {
     checkNewDay();
@@ -66,6 +73,11 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
     return `Day ${streak} — streak locked in. Come back tomorrow.`;
   }, [streak, dailyDiscipline.checkedIn]);
 
+  const relapseDates = useMemo(
+    () => relapseLogs.map((r) => r.timestamp.split('T')[0]),
+    [relapseLogs]
+  );
+
   const currentLevelBaseXp = LEVELS[level - 1]?.xpRequired ?? 0;
   const xpProgress = Math.min(
     Math.max(((xp - currentLevelBaseXp) / (xpForNextLevel - currentLevelBaseXp)) * 100, 0),
@@ -73,6 +85,12 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
   );
 
   const nextMilestone = MILESTONES.find((m) => m > streak) ?? null;
+
+  const tasks = [
+    { label: 'Daily check-in', xp: '+10 XP', icon: CheckCircle2, done: dailyDiscipline.checkedIn, action: onDailyCheckIn },
+    { label: 'Resist one urge', xp: '+15 XP', icon: Shield, done: dailyDiscipline.resistedUrge, action: onRideUrge },
+    { label: 'Write a reflection', xp: '+15 XP', icon: NotebookPen, done: dailyDiscipline.wroteReflection, action: onJournal },
+  ];
 
   return (
     <motion.div
@@ -84,29 +102,52 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
       {/* Header */}
       <motion.div variants={fadeUp} className="flex items-center justify-between mb-10">
         <h1 className="font-display text-xl tracking-widest text-primary">REFORGED</h1>
-        <button onClick={onOpenSettings} aria-label="Settings" className="text-muted-foreground hover:text-foreground transition-colors">
+        <motion.button
+          onClick={onOpenSettings}
+          whileTap={{ scale: 0.97 }}
+          aria-label="Settings"
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
           <Settings size={20} />
-        </button>
+        </motion.button>
       </motion.div>
 
-      {/* Retention Banner */}
+      {/* Check-in reminder (only when not checked in) */}
       <motion.div variants={fadeUp}>
         <RetentionBanner />
       </motion.div>
 
       {/* Streak */}
-      <motion.div variants={fadeUp} className="text-center mb-10">
+      <motion.div variants={fadeUp} className="text-center mb-8">
         <p className="text-muted-foreground text-[10px] tracking-[0.3em] uppercase mb-2">Current Streak</p>
-        <div className="flex items-baseline justify-center gap-2">
-          <span className="text-7xl font-light text-foreground">{streak}</span>
-          <span className="text-3xl font-display text-primary">Days</span>
+        <div className="relative flex items-baseline justify-center gap-2">
+          <div
+            className="absolute inset-0 -z-10 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle at 50% 55%, hsl(var(--primary) / 0.22) 0%, transparent 65%)',
+            }}
+          />
+          <span className="text-7xl font-bold text-foreground tracking-tight">
+            <CountUpNumber value={streak} duration={800} onDone={() => setNumberLanded(true)} />
+          </span>
+          <motion.span
+            className="text-3xl font-display text-primary"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={numberLanded ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+          >
+            Days
+          </motion.span>
         </div>
         <p className="text-4xl font-light text-foreground -mt-1">Clean</p>
-        <p className="text-muted-foreground text-[10px] tracking-[0.3em] uppercase mt-3">Your discipline is growing.</p>
+        <p className="text-muted-foreground text-[10px] tracking-[0.3em] uppercase mt-3 mb-6">Your discipline is growing.</p>
+
+        {/* 7-day consistency strip */}
+        <WeekStrip checkInDates={checkInDates} />
       </motion.div>
 
       {/* Level */}
-      <motion.div variants={fadeUp} className="mb-10">
+      <motion.div variants={fadeUp} className="mt-10 mb-10">
         <div className="flex items-baseline justify-between mb-2">
           <p className="text-lg italic text-foreground">
             <span className="font-semibold">Level {level}</span> – {levelName}
@@ -118,8 +159,8 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
             className="h-full bg-primary rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${xpProgress}%` }}
-            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
-            style={{ boxShadow: '0 0 10px hsl(25 95% 53% / 0.5)' }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            style={{ boxShadow: '0 0 10px hsl(var(--primary) / 0.5)' }}
           />
         </div>
       </motion.div>
@@ -170,34 +211,43 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
       <motion.div variants={fadeUp} className="mb-8" data-tutorial="daily-checkin">
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-4">Core Daily Shields</p>
         <div className="space-y-3">
-          {[
-            { label: 'Daily check-in', xp: '+10 XP', done: dailyDiscipline.checkedIn, action: onDailyCheckIn },
-            { label: 'Resist one urge', xp: '+15 XP', done: dailyDiscipline.resistedUrge, action: onRideUrge },
-            { label: 'Write a reflection', xp: '+15 XP', done: dailyDiscipline.wroteReflection, action: onJournal },
-          ].map((task) => (
-            <div
-              key={task.label}
-              onClick={task.action && !task.done ? task.action : undefined}
-              className={`flex items-center gap-3 bg-secondary rounded-xl px-4 py-3 ${
-                task.action && !task.done ? 'cursor-pointer active:scale-[0.97] transition-transform' : ''
-              }`}
+          {tasks.map(({ label, xp: xpLabel, icon: Icon, done, action }) => (
+            <motion.div
+              key={label}
+              onClick={action && !done ? action : undefined}
+              whileTap={action && !done ? { scale: 0.97 } : undefined}
+              className="flex items-center gap-3 bg-secondary/70 border border-border/60 rounded-xl px-4 py-3 shadow-[0_2px_12px_hsl(0_0%_0%_/_0.35)]"
+              style={action && !done ? { cursor: 'pointer' } : undefined}
             >
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                  done ? 'bg-primary/25 text-primary' : 'bg-primary/10 text-primary/70'
+                }`}
+                style={done ? { boxShadow: '0 0 14px hsl(var(--primary) / 0.35)' } : undefined}
+              >
+                <Icon size={18} />
+              </div>
+              <span className={`flex-1 text-sm ${done ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                {label}
+              </span>
+              <span className="text-primary text-xs mr-1">{xpLabel}</span>
               <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                task.done ? 'bg-primary border-primary animate-glow-once' : 'border-muted-foreground/40'
+                done ? 'bg-primary border-primary animate-glow-once' : 'border-muted-foreground/40'
               }`}>
-                {task.done && (
+                {done && (
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="animate-check-pop">
                     <path d="M2 6L5 9L10 3" stroke="hsl(var(--primary-foreground))" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 )}
               </div>
-              <span className={`flex-1 text-sm ${task.done ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                {task.label}
-              </span>
-              <span className="text-primary text-xs">{task.xp}</span>
-            </div>
+            </motion.div>
           ))}
         </div>
+      </motion.div>
+
+      {/* History heatmap */}
+      <motion.div variants={fadeUp} className="mb-8">
+        <HistorySection checkInDates={checkInDates} relapseDates={relapseDates} />
       </motion.div>
 
       {/* Personalized Discipline Goals */}
@@ -206,7 +256,11 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
       </motion.div>
 
       {/* Next Milestone */}
-      <motion.div variants={fadeUp} className="bg-secondary rounded-xl p-5">
+      <motion.div
+        variants={fadeUp}
+        whileTap={{ scale: 0.97 }}
+        className="bg-secondary/70 border border-border/60 rounded-xl p-5 shadow-[0_2px_12px_hsl(0_0%_0%_/_0.35)]"
+      >
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs text-muted-foreground tracking-widest uppercase">Next Milestone</p>
           <p className="text-lg italic text-foreground font-semibold">
@@ -218,7 +272,7 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
             className="h-full bg-primary rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${nextMilestone ? Math.min((streak / nextMilestone) * 100, 100) : 100}%` }}
-            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.5 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
           />
         </div>
       </motion.div>

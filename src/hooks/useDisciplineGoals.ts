@@ -1,12 +1,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { resolveGoalIconName } from '@/lib/goalIcons';
 
 export interface DisciplineGoal {
   id: string;
   user_id: string;
   goal_name: string;
   is_completed: boolean;
+  icon_name?: string | null;
   created_at: string;
 }
 
@@ -53,6 +55,7 @@ export function useDisciplineGoals() {
     async (goal_name: string) => {
       const trimmed = goal_name.trim();
       if (!trimmed) return null;
+      const icon_name = resolveGoalIconName(trimmed);
 
       if (isGuest || !user) {
         const newGoal: DisciplineGoal = {
@@ -60,6 +63,7 @@ export function useDisciplineGoals() {
           user_id: 'guest',
           goal_name: trimmed,
           is_completed: false,
+          icon_name,
           created_at: new Date().toISOString(),
         };
         const next = [...readGuestGoals(), newGoal];
@@ -70,7 +74,7 @@ export function useDisciplineGoals() {
 
       const { data, error } = await supabase
         .from('discipline_goals')
-        .insert({ user_id: user.id, goal_name: trimmed })
+        .insert({ user_id: user.id, goal_name: trimmed, icon_name })
         .select()
         .single();
       if (error || !data) return null;

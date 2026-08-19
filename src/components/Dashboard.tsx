@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, CheckCircle2, Shield, NotebookPen } from 'lucide-react';
+import { Settings, CheckCircle2, Shield, NotebookPen, Activity, PlusCircle } from 'lucide-react';
 import { useAppStore, LEVELS, MILESTONES } from '@/store/useAppStore';
 import RetentionBanner from '@/components/RetentionBanner';
 import DisciplineGoals from '@/components/DisciplineGoals';
 import CountUpNumber from '@/components/dashboard/CountUpNumber';
 import WeekStrip from '@/components/dashboard/WeekStrip';
 import HistorySection from '@/components/dashboard/HistorySection';
+import GlowProgressBar from '@/components/dashboard/GlowProgressBar';
 
 const stagger = {
   hidden: {},

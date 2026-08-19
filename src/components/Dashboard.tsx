@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, CheckCircle2, Shield, NotebookPen } from 'lucide-react';
+import { Settings, CheckCircle2, Shield, NotebookPen, Activity, PlusCircle } from 'lucide-react';
 import { useAppStore, LEVELS, MILESTONES } from '@/store/useAppStore';
 import RetentionBanner from '@/components/RetentionBanner';
 import DisciplineGoals from '@/components/DisciplineGoals';
 import CountUpNumber from '@/components/dashboard/CountUpNumber';
 import WeekStrip from '@/components/dashboard/WeekStrip';
 import HistorySection from '@/components/dashboard/HistorySection';
+import GlowProgressBar from '@/components/dashboard/GlowProgressBar';
 
 const stagger = {
   hidden: {},
@@ -154,15 +155,7 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
           </p>
           <p className="text-[10px] text-muted-foreground tracking-wider">{xp} / {xpForNextLevel} XP</p>
         </div>
-        <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-          <motion.div
-            className="h-full bg-primary rounded-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${xpProgress}%` }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-            style={{ boxShadow: '0 0 10px hsl(var(--primary) / 0.5)' }}
-          />
-        </div>
+        <GlowProgressBar value={xpProgress} height={10} />
       </motion.div>
 
       {/* Streak Status (subtle text below XP bar) */}
@@ -183,9 +176,10 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
         <div>
           <motion.button
             onClick={onRideUrge}
-            className="w-full py-4 rounded-xl bg-primary text-center"
-            whileTap={{ scale: 0.97 }}
+            className="cta-glow-pulse w-full py-4 rounded-full bg-primary flex items-center justify-center gap-2.5"
+            whileTap={{ scale: 0.96 }}
           >
+            <Activity size={20} className="text-primary-foreground" />
             <span className="font-display text-lg tracking-wider text-primary-foreground">RIDE THE URGE</span>
           </motion.button>
           <p className="text-center text-[11px] text-muted-foreground mt-1.5">
@@ -196,9 +190,12 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
           <motion.button
             data-tutorial="log-urge"
             onClick={onLogUrge}
-            className="w-full py-4 rounded-xl border border-border text-center"
-            whileTap={{ scale: 0.97 }}
+            className="w-full py-4 rounded-full border border-border flex items-center justify-center gap-2.5"
+            initial={{ backgroundColor: 'hsl(var(--secondary) / 0)' }}
+            whileTap={{ scale: 0.96, backgroundColor: 'hsl(var(--secondary) / 0.9)' }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
           >
+            <PlusCircle size={18} className="text-foreground" />
             <span className="font-display text-sm tracking-wider text-foreground">LOG URGE</span>
           </motion.button>
           <p className="text-center text-[11px] text-muted-foreground mt-1.5">
@@ -267,14 +264,10 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
             {nextMilestone ? `${nextMilestone} Days Clean` : 'Beyond 365 — Legend'}
           </p>
         </div>
-        <div className="w-full h-1.5 bg-background rounded-full overflow-hidden">
-          <motion.div
-            className="h-full bg-primary rounded-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${nextMilestone ? Math.min((streak / nextMilestone) * 100, 100) : 100}%` }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-          />
-        </div>
+        <GlowProgressBar
+          value={nextMilestone ? Math.min((streak / nextMilestone) * 100, 100) : 100}
+          height={8}
+        />
       </motion.div>
     </motion.div>
   );

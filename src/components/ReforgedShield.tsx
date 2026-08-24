@@ -228,6 +228,79 @@ const ReforgedShield = () => {
     toast('12-hour cooldown started. Shield remains active.');
   };
 
+  // ── App blocking ─────────────────────────────────────────────────────────
+  const handleAppBlockToggle = async (v: boolean) => {
+    if (appBusy) return;
+    setAppBusy(true);
+    try {
+      if (!v) {
+        await blocker.deactivateAppShield();
+        update({ blockApps: false });
+      } else {
+        let selection = await blocker.checkAppSelection();
+        if (!selection.hasSelection) {
+          const picked = await blocker.showAppPicker();
+          if (!picked.selected) {
+            toast('No apps selected.');
+            return;
+          }
+          selection = await blocker.checkAppSelection();
+        }
+        const res = await blocker.activateAppShield();
+        if (!res.active) {
+          toast.error('Could not activate app blocking.');
+          return;
+        }
+        setAppCount(selection.appCount + selection.categoryCount);
+        update({ blockApps: true });
+        toast.success('Distracting apps blocked.');
+      }
+    } finally {
+      setAppBusy(false);
+    }
+  };
+
+  const editAppSelection = async () => {
+    if (appBusy) return;
+    setAppBusy(true);
+    try {
+      const picked = await blocker.showAppPicker();
+      if (!picked.selected) return;
+      const selection = await blocker.checkAppSelection();
+      setAppCount(selection.appCount + selection.categoryCount);
+      await blocker.activateAppShield();
+      toast.success('Selection updated.');
+    } finally {
+      setAppBusy(false);
+    }
+  };
+
+  // ── Schedule: auto-activate the enabled protection layers ────────────────
+  const scheduleFiredRef = useRef<number | null>(null);
+  const nextScheduled = config.scheduleEnabled ? nextOccurrence(config.scheduleStart, now) : null;
+
+  useEffect(() => {
+    if (!config.scheduleEnabled) {
+      scheduleFiredRef.current = null;
+      return;
+    }
+    const due = nextOccurrence(config.scheduleStart, now) - 24 * 60 * 60 * 1000;
+    // due = the most recent occurrence of the start time
+    if (now - due >= 0 && now - due < 60_000 && scheduleFiredRef.current !== due) {
+      scheduleFiredRef.current = due;
+      (async () => {
+        if (config.blockWebsites) await blocker.activate().catch(() => undefined);
+        if (config.blockApps) await blocker.activateAppShield().catch(() => undefined);
+        if (!config.active) {
+          await activateShield({ ...config, active: true });
+          update({ active: true });
+        }
+        toast('Scheduled Shield activated.');
+      })();
+    }
+  }, [now, config.scheduleEnabled, config.scheduleStart, config.blockWebsites, config.blockApps]);
+
+
   return (
     <motion.div
       className="min-h-screen bg-background px-5 pt-12 pb-32"

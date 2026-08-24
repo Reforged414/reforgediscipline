@@ -667,7 +667,125 @@ const ReforgedShield = () => {
         onConfirm={startCooldown}
         remainingLockMs={config.lockUntil ? config.lockUntil - now : 0}
       />
+
+      <TimeRangeModal
+        open={timePickerOpen}
+        start={config.scheduleStart}
+        end={config.scheduleEnd}
+        onClose={() => setTimePickerOpen(false)}
+        onSave={(start, end) => {
+          update({ scheduleStart: start, scheduleEnd: end });
+          setTimePickerOpen(false);
+        }}
+      />
     </motion.div>
+  );
+};
+
+/** Smoothly ticking countdown — the trailing unit fades/slides on each change. */
+const TickingRemaining = ({ ms }: { ms: number }) => {
+  const text = formatRemaining(ms);
+  const parts = text.split(' ');
+  const head = parts.slice(0, -1).join(' ');
+  const tail = parts[parts.length - 1];
+  return (
+    <span className="inline-flex items-baseline gap-1 tabular-nums">
+      {head && <span>{head}</span>}
+      <span className="relative inline-block overflow-hidden">
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={tail}
+            initial={{ y: 8, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -8, opacity: 0, position: 'absolute' }}
+            transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+            className="inline-block"
+          >
+            {tail}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+    </span>
+  );
+};
+
+/** Simple 24h time-range picker sheet. */
+const TimeRangeModal = ({
+  open,
+  start,
+  end,
+  onClose,
+  onSave,
+}: {
+  open: boolean;
+  start: string;
+  end: string;
+  onClose: () => void;
+  onSave: (start: string, end: string) => void;
+}) => {
+  const [s, setS] = useState(start);
+  const [e, setE] = useState(end);
+  useEffect(() => {
+    if (open) {
+      setS(start);
+      setE(end);
+    }
+  }, [open, start, end]);
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+        >
+          <motion.div
+            className="w-full max-w-md bg-card border border-border rounded-t-3xl sm:rounded-3xl p-6"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+            onClick={(ev) => ev.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-display text-lg tracking-widest text-primary">SCHEDULE</h3>
+              <button onClick={onClose} className="text-muted-foreground">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-4 mb-6">
+              <label className="flex items-center justify-between">
+                <span className="text-sm text-foreground">Start</span>
+                <input
+                  type="time"
+                  value={s}
+                  onChange={(ev) => setS(ev.target.value)}
+                  className="bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground"
+                />
+              </label>
+              <label className="flex items-center justify-between">
+                <span className="text-sm text-foreground">End</span>
+                <input
+                  type="time"
+                  value={e}
+                  onChange={(ev) => setE(ev.target.value)}
+                  className="bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground"
+                />
+              </label>
+            </div>
+            <button
+              onClick={() => onSave(s, e)}
+              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-display tracking-widest text-sm"
+            >
+              SAVE
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
@@ -678,9 +796,10 @@ interface SubToggleProps {
   enabled: boolean;
   onToggle: (v: boolean) => void;
   disabled?: boolean;
+  trailing?: React.ReactNode;
 }
 
-const SubToggle = ({ icon, label, desc, enabled, onToggle, disabled }: SubToggleProps) => (
+const SubToggle = ({ icon, label, desc, enabled, onToggle, disabled, trailing }: SubToggleProps) => (
   <div
     className={`flex items-center gap-3 bg-secondary rounded-xl px-4 py-3 transition-opacity ${
       disabled ? 'opacity-50' : ''
@@ -693,6 +812,8 @@ const SubToggle = ({ icon, label, desc, enabled, onToggle, disabled }: SubToggle
       <p className="text-sm text-foreground">{label}</p>
       <p className="text-xs text-muted-foreground truncate">{desc}</p>
     </div>
+    {trailing}
+
     <button
       onClick={() => !disabled && onToggle(!enabled)}
       disabled={disabled}

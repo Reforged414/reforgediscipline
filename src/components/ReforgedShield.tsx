@@ -415,10 +415,17 @@ const ReforgedShield = () => {
             }`}
           >
             <Lock size={12} />
-            {inCooldown
-              ? `Cooldown · ${formatRemaining(config.cooldownUntil! - now)}`
-              : `Iron Lock · ${formatRemaining(config.lockUntil! - now)} left`}
+            {inCooldown ? (
+              <span className="flex items-center gap-1">
+                Cooldown · <TickingRemaining ms={config.cooldownUntil! - now} />
+              </span>
+            ) : (
+              <span className="flex items-center gap-1">
+                Iron Lock · <TickingRemaining ms={config.lockUntil! - now} /> left
+              </span>
+            )}
           </motion.div>
+
         )}
       </motion.div>
 

@@ -134,6 +134,13 @@ const ReforgedShield = () => {
     return () => clearInterval(id);
   }, []);
 
+  // re-read config when another screen deep-links a schedule suggestion
+  useEffect(() => {
+    const sync = () => setConfig(readConfig());
+    window.addEventListener(SHIELD_CONFIG_EVENT, sync);
+    return () => window.removeEventListener(SHIELD_CONFIG_EVENT, sync);
+  }, []);
+
   // hydrate current native app selection
   useEffect(() => {
     blocker
@@ -141,6 +148,7 @@ const ReforgedShield = () => {
       .then((s) => setAppCount(s.appCount + s.categoryCount))
       .catch(() => undefined);
   }, []);
+
 
 
   // auto-deactivate when cooldown elapses

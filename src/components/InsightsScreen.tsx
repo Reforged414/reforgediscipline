@@ -92,7 +92,59 @@ const InsightsScreen = ({ onGoToShield }: { onGoToShield?: () => void }) => {
   });
   const peakPeriod = Object.entries(timePeriods).sort((a, b) => b[1] - a[1])[0];
   const peakLabel = peakPeriod?.[0] || 'night';
-  const PeakIcon = peakLabel === 'morning' ? Sun : peakLabel === 'afternoon' ? Cloud : Moon;
+
+  // Hourly urge distribution (0-23)
+  const hourCounts = Array.from({ length: 24 }, () => 0);
+  urgeLogs.forEach((u) => {
+    hourCounts[new Date(u.timestamp).getHours()]++;
+  });
+  const hasHourData = urgeLogs.length >= 3;
+  const peakHour = hasHourData
+    ? hourCounts.reduce((best, c, h) => (c > hourCounts[best] ? h : best), 0)
+    : null;
+
+  // Risk window: best 3-hour block + weekday vs weekend skew
+  const riskWindow: RiskWindow | null = (() => {
+    if (urgeLogs.length < 5) return null;
+    let bestStart = 0;
+    let bestSum = -1;
+    for (let h = 0; h < 24; h++) {
+      const sum = hourCounts[h] + hourCounts[(h + 1) % 24] + hourCounts[(h + 2) % 24];
+      if (sum > bestSum) {
+        bestSum = sum;
+        bestStart = h;
+      }
+    }
+    if (bestSum === 0) return null;
+    let weekend = 0;
+    let weekday = 0;
+    urgeLogs.forEach((u) => {
+      const day = new Date(u.timestamp).getDay();
+      if (day === 0 || day === 6) weekend++;
+      else weekday++;
+    });
+    return {
+      rangeLabel: formatHourRange(bestStart, bestStart + 2),
+      dayLabel: weekend > weekday ? 'weekends' : 'weekdays',
+      startHour: bestStart,
+      endHour: (bestStart + 2) % 24,
+    } as RiskWindow & { startHour: number; endHour: number };
+  })();
+
+  const handleSchedule = (layer: ShieldLayer) => {
+    const rw = riskWindow as (RiskWindow & { startHour: number; endHour: number }) | null;
+    if (!rw) return;
+    applyShieldSuggestion({
+      start: hourToClock(rw.startHour),
+      end: hourToClock(rw.endHour + 1),
+      layer,
+    });
+    toast.success(
+      `${layer === 'websites' ? 'Website' : 'App'} blocking scheduled for ${rw.rangeLabel}.`
+    );
+    onGoToShield?.();
+  };
+
 
   const peakInsight = `You're most vulnerable at ${peakLabel}`;
 

@@ -227,6 +227,8 @@ const InsightsScreen = ({ onGoToShield }: { onGoToShield?: () => void }) => {
           journalSnippets,
           urgeWeekdayDistribution,
         }}
+        riskWindow={riskWindow}
+        onSchedule={handleSchedule}
       />
 
       {/* Top Triggers */}
@@ -235,28 +237,10 @@ const InsightsScreen = ({ onGoToShield }: { onGoToShield?: () => void }) => {
           <div className="w-1 h-5 bg-primary rounded-full" />
           <h3 className="text-lg font-semibold text-foreground">Top Triggers</h3>
         </div>
-        {topTriggers.length > 0 ? (
-          <div className="space-y-4">
-            {topTriggers.map((t) => (
-              <div key={t.label}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm text-foreground">{t.label}</span>
-                  <span className="text-sm text-primary">{t.pct}%</span>
-                </div>
-                <div className="w-full h-1 bg-border rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-primary rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${t.pct}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <EmptyHint>Your top triggers will appear here as you log urges.</EmptyHint>
-        )}
+        <TriggerLeaderboard
+          triggers={topTriggers}
+          emptyText="Your top triggers will appear here as you log urges."
+        />
       </motion.div>
 
       {/* Time Pattern */}
@@ -264,18 +248,24 @@ const InsightsScreen = ({ onGoToShield }: { onGoToShield?: () => void }) => {
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-5 bg-primary rounded-full" />
           <h3 className="text-lg font-semibold text-foreground">Time Pattern</h3>
+          <span className="ml-auto text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
+            Urges by hour
+          </span>
         </div>
-        <div className="bg-secondary rounded-2xl p-6 flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/40 to-primary/10 flex items-center justify-center mb-4">
-            <PeakIcon size={28} className="text-primary" />
-          </div>
-          {hasEnoughForPeak ? (
-            <p className="text-sm text-muted-foreground">Urges peak at {peakLabel}.</p>
-          ) : (
-            <EmptyHint>Log a few urges to see time patterns.</EmptyHint>
-          )}
-        </div>
+        <UrgeHourChart
+          counts={hourCounts}
+          hasData={hasHourData}
+          peakHour={peakHour}
+          emptyText="Log a few urges to see time patterns."
+        />
+        {hasHourData && peakHour != null && (
+          <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-2.5">
+            <Clock size={12} className="text-primary" />
+            Urges peak around {formatHourRange(peakHour, peakHour + 1)}.
+          </p>
+        )}
       </motion.div>
+
 
       {/* Personalized Insight */}
       {hasEnoughForPeak && (

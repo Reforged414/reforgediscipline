@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, ShieldCheck, Globe, Search, Lock, Sparkles, AlertTriangle, X, Settings as SettingsIcon } from 'lucide-react';
+import { Shield, ShieldCheck, Globe, Search, Lock, Sparkles, AlertTriangle, X, Settings as SettingsIcon, LayoutGrid, EyeOff, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePremium } from '@/hooks/usePremium';
 import { useScreenTimeBlocker, type PermissionState } from '@/hooks/useScreenTimeBlocker';
 import PaywallModal from '@/components/PaywallModal';
+
 
 const stagger = {
   hidden: {},
@@ -31,23 +32,48 @@ interface ShieldConfig {
   active: boolean;
   blockWebsites: boolean;
   enforceSafeSearch: boolean;
+  blockApps: boolean;
   strictLockHours: number; // legacy quick-pick (informational only)
   lockUntil: number | null; // epoch ms — shield cannot be disarmed before this
   cooldownUntil: number | null; // epoch ms — shield will auto-deactivate at this time
+  scheduleEnabled: boolean;
+  scheduleStart: string; // "22:00"
+  scheduleEnd: string; // "06:00"
 }
 
 const DEFAULT_CONFIG: ShieldConfig = {
   active: false,
   blockWebsites: true,
   enforceSafeSearch: true,
+  blockApps: false,
   strictLockHours: 0,
   lockUntil: null,
   cooldownUntil: null,
+  scheduleEnabled: false,
+  scheduleStart: '22:00',
+  scheduleEnd: '06:00',
 };
 
 const ACCOUNTABILITY_PHRASE =
   'I am actively choosing to lower my defenses. I accept full responsibility for letting down my guard and delaying my recovery.';
 const COOLDOWN_MS = 12 * 60 * 60 * 1000;
+
+function formatClock(hhmm: string) {
+  const [h, m] = hhmm.split(':').map(Number);
+  const suffix = h >= 12 ? 'PM' : 'AM';
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}:${String(m).padStart(2, '0')} ${suffix}`;
+}
+
+/** Next epoch ms at which the given HH:MM occurs (today or tomorrow). */
+function nextOccurrence(hhmm: string, from = Date.now()) {
+  const [h, m] = hhmm.split(':').map(Number);
+  const d = new Date(from);
+  d.setHours(h, m, 0, 0);
+  if (d.getTime() <= from) d.setDate(d.getDate() + 1);
+  return d.getTime();
+}
+
 
 // Hook points for the future native integration.
 async function activateShield(_cfg: ShieldConfig): Promise<boolean> {
@@ -98,12 +124,24 @@ const ReforgedShield = () => {
   const [ironLockOpen, setIronLockOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [permError, setPermError] = useState<PermissionState | null>(null);
+  const [appCount, setAppCount] = useState(0);
+  const [appBusy, setAppBusy] = useState(false);
+  const [timePickerOpen, setTimePickerOpen] = useState(false);
 
-  // tick clock once per second so countdown UI updates
+  // tick clock so countdown UI updates smoothly
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
+    const id = setInterval(() => setNow(Date.now()), 200);
     return () => clearInterval(id);
   }, []);
+
+  // hydrate current native app selection
+  useEffect(() => {
+    blocker
+      .checkAppSelection()
+      .then((s) => setAppCount(s.appCount + s.categoryCount))
+      .catch(() => undefined);
+  }, []);
+
 
   // auto-deactivate when cooldown elapses
   useEffect(() => {
@@ -190,6 +228,79 @@ const ReforgedShield = () => {
     toast('12-hour cooldown started. Shield remains active.');
   };
 
+  // ── App blocking ─────────────────────────────────────────────────────────
+  const handleAppBlockToggle = async (v: boolean) => {
+    if (appBusy) return;
+    setAppBusy(true);
+    try {
+      if (!v) {
+        await blocker.deactivateAppShield();
+        update({ blockApps: false });
+      } else {
+        let selection = await blocker.checkAppSelection();
+        if (!selection.hasSelection) {
+          const picked = await blocker.showAppPicker();
+          if (!picked.selected) {
+            toast('No apps selected.');
+            return;
+          }
+          selection = await blocker.checkAppSelection();
+        }
+        const res = await blocker.activateAppShield();
+        if (!res.active) {
+          toast.error('Could not activate app blocking.');
+          return;
+        }
+        setAppCount(selection.appCount + selection.categoryCount);
+        update({ blockApps: true });
+        toast.success('Distracting apps blocked.');
+      }
+    } finally {
+      setAppBusy(false);
+    }
+  };
+
+  const editAppSelection = async () => {
+    if (appBusy) return;
+    setAppBusy(true);
+    try {
+      const picked = await blocker.showAppPicker();
+      if (!picked.selected) return;
+      const selection = await blocker.checkAppSelection();
+      setAppCount(selection.appCount + selection.categoryCount);
+      await blocker.activateAppShield();
+      toast.success('Selection updated.');
+    } finally {
+      setAppBusy(false);
+    }
+  };
+
+  // ── Schedule: auto-activate the enabled protection layers ────────────────
+  const scheduleFiredRef = useRef<number | null>(null);
+  const nextScheduled = config.scheduleEnabled ? nextOccurrence(config.scheduleStart, now) : null;
+
+  useEffect(() => {
+    if (!config.scheduleEnabled) {
+      scheduleFiredRef.current = null;
+      return;
+    }
+    const due = nextOccurrence(config.scheduleStart, now) - 24 * 60 * 60 * 1000;
+    // due = the most recent occurrence of the start time
+    if (now - due >= 0 && now - due < 60_000 && scheduleFiredRef.current !== due) {
+      scheduleFiredRef.current = due;
+      (async () => {
+        if (config.blockWebsites) await blocker.activate().catch(() => undefined);
+        if (config.blockApps) await blocker.activateAppShield().catch(() => undefined);
+        if (!config.active) {
+          await activateShield({ ...config, active: true });
+          update({ active: true });
+        }
+        toast('Scheduled Shield activated.');
+      })();
+    }
+  }, [now, config.scheduleEnabled, config.scheduleStart, config.blockWebsites, config.blockApps]);
+
+
   return (
     <motion.div
       className="min-h-screen bg-background px-5 pt-12 pb-32"
@@ -222,6 +333,8 @@ const ReforgedShield = () => {
           onClick={handleMasterToggle}
           disabled={busy}
           whileTap={{ scale: 0.96 }}
+          animate={config.active ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 14 }}
           className="relative w-48 h-48 rounded-full flex items-center justify-center"
         >
           <AnimatePresence>
@@ -237,8 +350,8 @@ const ReforgedShield = () => {
             )}
           </AnimatePresence>
           <div
-            className={`relative w-44 h-44 rounded-full flex items-center justify-center border-2 transition-all ${
-              config.active ? 'border-primary bg-primary/20' : 'border-border bg-secondary'
+            className={`relative w-44 h-44 rounded-full flex items-center justify-center border-2 overflow-hidden transition-colors ${
+              config.active ? 'border-primary' : 'border-border bg-secondary'
             }`}
             style={
               config.active
@@ -246,8 +359,22 @@ const ReforgedShield = () => {
                 : undefined
             }
           >
+            {/* Radial wipe fill on activation */}
+            <AnimatePresence>
+              {config.active && (
+                <motion.div
+                  key="fill"
+                  className="absolute inset-0 rounded-full bg-primary/20"
+                  initial={{ clipPath: 'circle(0% at 50% 50%)', opacity: 0.6 }}
+                  animate={{ clipPath: 'circle(75% at 50% 50%)', opacity: 1 }}
+                  exit={{ clipPath: 'circle(0% at 50% 50%)', opacity: 0 }}
+                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                />
+              )}
+            </AnimatePresence>
             <motion.div
               key={config.active ? 'on' : 'off'}
+              className="relative"
               initial={{ scale: 0.7, opacity: 0, rotate: -20 }}
               animate={{ scale: 1, opacity: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 240, damping: 16 }}
@@ -260,6 +387,7 @@ const ReforgedShield = () => {
             </motion.div>
           </div>
         </motion.button>
+
 
         <motion.p
           key={config.active ? 'active-label' : 'inactive-label'}
@@ -287,10 +415,17 @@ const ReforgedShield = () => {
             }`}
           >
             <Lock size={12} />
-            {inCooldown
-              ? `Cooldown · ${formatRemaining(config.cooldownUntil! - now)}`
-              : `Iron Lock · ${formatRemaining(config.lockUntil! - now)} left`}
+            {inCooldown ? (
+              <span className="flex items-center gap-1">
+                Cooldown · <TickingRemaining ms={config.cooldownUntil! - now} />
+              </span>
+            ) : (
+              <span className="flex items-center gap-1">
+                Iron Lock · <TickingRemaining ms={config.lockUntil! - now} /> left
+              </span>
+            )}
           </motion.div>
+
         )}
       </motion.div>
 
@@ -397,7 +532,103 @@ const ReforgedShield = () => {
           onToggle={(v) => update({ enforceSafeSearch: v })}
           disabled={config.active && (isLocked || inCooldown)}
         />
+        <div>
+          <SubToggle
+            icon={<LayoutGrid size={18} />}
+            label="Block Distracting Apps"
+            desc="Shields the apps you select"
+            enabled={config.blockApps}
+            onToggle={handleAppBlockToggle}
+            disabled={appBusy}
+            trailing={
+              config.blockApps ? (
+                <button
+                  onClick={editAppSelection}
+                  className="text-[10px] tracking-widest uppercase text-primary shrink-0"
+                >
+                  Edit Selection
+                </button>
+              ) : undefined
+            }
+          />
+          <AnimatePresence>
+            {config.blockApps && (
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="text-[11px] text-primary/80 mt-1.5 ml-4"
+              >
+                {appCount} apps blocked
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.div>
+
+      {/* Private browsing info */}
+      <motion.div
+        variants={fadeUp}
+        className="flex items-center gap-3 rounded-xl border border-border bg-secondary/50 px-4 py-3 mb-6"
+      >
+        <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+          <EyeOff size={16} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm text-foreground">Private Browsing Disabled</p>
+          <p className="text-xs text-muted-foreground">
+            Safari's private mode is automatically disabled while Shield is active, closing an easy bypass.
+          </p>
+        </div>
+      </motion.div>
+
+      {/* Schedule */}
+      <motion.p variants={fadeUp} className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
+        Schedule
+      </motion.p>
+      <motion.div variants={fadeUp} className="bg-secondary rounded-xl p-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center text-primary shrink-0">
+            <Clock size={18} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-foreground">Auto-activate Shield</p>
+            <button
+              onClick={() => setTimePickerOpen(true)}
+              className="text-xs text-primary tracking-wide"
+            >
+              {formatClock(config.scheduleStart)} – {formatClock(config.scheduleEnd)}
+            </button>
+          </div>
+          <button
+            onClick={() => update({ scheduleEnabled: !config.scheduleEnabled })}
+            className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
+              config.scheduleEnabled ? 'bg-primary' : 'bg-background border border-border'
+            }`}
+            aria-pressed={config.scheduleEnabled}
+          >
+            <motion.span
+              layout
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              className={`absolute top-0.5 ${config.scheduleEnabled ? 'right-0.5' : 'left-0.5'} w-5 h-5 rounded-full bg-foreground`}
+            />
+          </button>
+        </div>
+        <AnimatePresence>
+          {config.scheduleEnabled && nextScheduled && (
+            <motion.p
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="text-[11px] text-muted-foreground mt-3 pl-12"
+            >
+              Next activation in <TickingRemaining ms={nextScheduled - now} /> ·{' '}
+              {formatClock(config.scheduleStart)}
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
 
       <motion.p variants={fadeUp} className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
         Iron Lock
@@ -436,7 +667,125 @@ const ReforgedShield = () => {
         onConfirm={startCooldown}
         remainingLockMs={config.lockUntil ? config.lockUntil - now : 0}
       />
+
+      <TimeRangeModal
+        open={timePickerOpen}
+        start={config.scheduleStart}
+        end={config.scheduleEnd}
+        onClose={() => setTimePickerOpen(false)}
+        onSave={(start, end) => {
+          update({ scheduleStart: start, scheduleEnd: end });
+          setTimePickerOpen(false);
+        }}
+      />
     </motion.div>
+  );
+};
+
+/** Smoothly ticking countdown — the trailing unit fades/slides on each change. */
+const TickingRemaining = ({ ms }: { ms: number }) => {
+  const text = formatRemaining(ms);
+  const parts = text.split(' ');
+  const head = parts.slice(0, -1).join(' ');
+  const tail = parts[parts.length - 1];
+  return (
+    <span className="inline-flex items-baseline gap-1 tabular-nums">
+      {head && <span>{head}</span>}
+      <span className="relative inline-block overflow-hidden">
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={tail}
+            initial={{ y: 8, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -8, opacity: 0, position: 'absolute' }}
+            transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+            className="inline-block"
+          >
+            {tail}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+    </span>
+  );
+};
+
+/** Simple 24h time-range picker sheet. */
+const TimeRangeModal = ({
+  open,
+  start,
+  end,
+  onClose,
+  onSave,
+}: {
+  open: boolean;
+  start: string;
+  end: string;
+  onClose: () => void;
+  onSave: (start: string, end: string) => void;
+}) => {
+  const [s, setS] = useState(start);
+  const [e, setE] = useState(end);
+  useEffect(() => {
+    if (open) {
+      setS(start);
+      setE(end);
+    }
+  }, [open, start, end]);
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+        >
+          <motion.div
+            className="w-full max-w-md bg-card border border-border rounded-t-3xl sm:rounded-3xl p-6"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+            onClick={(ev) => ev.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-display text-lg tracking-widest text-primary">SCHEDULE</h3>
+              <button onClick={onClose} className="text-muted-foreground">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-4 mb-6">
+              <label className="flex items-center justify-between">
+                <span className="text-sm text-foreground">Start</span>
+                <input
+                  type="time"
+                  value={s}
+                  onChange={(ev) => setS(ev.target.value)}
+                  className="bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground"
+                />
+              </label>
+              <label className="flex items-center justify-between">
+                <span className="text-sm text-foreground">End</span>
+                <input
+                  type="time"
+                  value={e}
+                  onChange={(ev) => setE(ev.target.value)}
+                  className="bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground"
+                />
+              </label>
+            </div>
+            <button
+              onClick={() => onSave(s, e)}
+              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-display tracking-widest text-sm"
+            >
+              SAVE
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
@@ -447,9 +796,10 @@ interface SubToggleProps {
   enabled: boolean;
   onToggle: (v: boolean) => void;
   disabled?: boolean;
+  trailing?: React.ReactNode;
 }
 
-const SubToggle = ({ icon, label, desc, enabled, onToggle, disabled }: SubToggleProps) => (
+const SubToggle = ({ icon, label, desc, enabled, onToggle, disabled, trailing }: SubToggleProps) => (
   <div
     className={`flex items-center gap-3 bg-secondary rounded-xl px-4 py-3 transition-opacity ${
       disabled ? 'opacity-50' : ''
@@ -462,6 +812,8 @@ const SubToggle = ({ icon, label, desc, enabled, onToggle, disabled }: SubToggle
       <p className="text-sm text-foreground">{label}</p>
       <p className="text-xs text-muted-foreground truncate">{desc}</p>
     </div>
+    {trailing}
+
     <button
       onClick={() => !disabled && onToggle(!enabled)}
       disabled={disabled}

@@ -129,3 +129,29 @@ button.bg-primary:active,
 .cta-glow-pulse {
   animation: cta-glow-pulse 2s ease-in-out infinite;
 }
+
+/* Premium / AI-generated content: slowly shifting orange-to-pink gradient border */
+.premium-border {
+  position: relative;
+  border-radius: 1rem;
+  padding: 1px;
+  background: linear-gradient(
+    115deg,
+    hsl(25 95% 55% / 0.75),
+    hsl(330 85% 62% / 0.75),
+    hsl(25 95% 55% / 0.75),
+    hsl(330 85% 62% / 0.75)
+  );
+  background-size: 300% 300%;
+  animation: premium-border-shift 9s ease-in-out infinite;
+}
+
+.premium-border > * {
+  border-radius: calc(1rem - 1px);
+}
+
+@keyframes premium-border-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

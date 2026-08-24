@@ -333,6 +333,8 @@ const ReforgedShield = () => {
           onClick={handleMasterToggle}
           disabled={busy}
           whileTap={{ scale: 0.96 }}
+          animate={config.active ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 14 }}
           className="relative w-48 h-48 rounded-full flex items-center justify-center"
         >
           <AnimatePresence>
@@ -348,8 +350,8 @@ const ReforgedShield = () => {
             )}
           </AnimatePresence>
           <div
-            className={`relative w-44 h-44 rounded-full flex items-center justify-center border-2 transition-all ${
-              config.active ? 'border-primary bg-primary/20' : 'border-border bg-secondary'
+            className={`relative w-44 h-44 rounded-full flex items-center justify-center border-2 overflow-hidden transition-colors ${
+              config.active ? 'border-primary' : 'border-border bg-secondary'
             }`}
             style={
               config.active
@@ -357,8 +359,22 @@ const ReforgedShield = () => {
                 : undefined
             }
           >
+            {/* Radial wipe fill on activation */}
+            <AnimatePresence>
+              {config.active && (
+                <motion.div
+                  key="fill"
+                  className="absolute inset-0 rounded-full bg-primary/20"
+                  initial={{ clipPath: 'circle(0% at 50% 50%)', opacity: 0.6 }}
+                  animate={{ clipPath: 'circle(75% at 50% 50%)', opacity: 1 }}
+                  exit={{ clipPath: 'circle(0% at 50% 50%)', opacity: 0 }}
+                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                />
+              )}
+            </AnimatePresence>
             <motion.div
               key={config.active ? 'on' : 'off'}
+              className="relative"
               initial={{ scale: 0.7, opacity: 0, rotate: -20 }}
               animate={{ scale: 1, opacity: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 240, damping: 16 }}
@@ -371,6 +387,7 @@ const ReforgedShield = () => {
             </motion.div>
           </div>
         </motion.button>
+
 
         <motion.p
           key={config.active ? 'active-label' : 'inactive-label'}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { SHIELD_CONFIG_EVENT } from '@/lib/shieldSuggestion';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, ShieldCheck, Globe, Search, Lock, Sparkles, AlertTriangle, X, Settings as SettingsIcon, LayoutGrid, EyeOff, Clock } from 'lucide-react';
 import { toast } from 'sonner';

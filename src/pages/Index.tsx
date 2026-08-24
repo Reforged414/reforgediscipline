@@ -362,7 +362,7 @@ const Index = () => {
                   onOpenSettings={() => navigateTo('settings')}
                 />
               )}
-              {activeTab === 'insights' && <InsightsScreen />}
+              {activeTab === 'insights' && <InsightsScreen onGoToShield={() => setActiveTab('shield')} />}
               {activeTab === 'shield' && <ReforgedShield />}
               {activeTab === 'community' && <ComingSoonPlaceholder title="Community" />}
               {activeTab === 'profile' && <ProfilePlaceholder onOpenSettings={() => navigateTo('settings')} />}

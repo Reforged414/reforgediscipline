@@ -1,7 +1,16 @@
-import { Moon, Sun, Cloud } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
-import AICoachPanel from './AICoachPanel';
+import AICoachPanel, { type RiskWindow } from './AICoachPanel';
+import UrgeHourChart from './insights/UrgeHourChart';
+import TriggerLeaderboard from './insights/TriggerLeaderboard';
+import {
+  applyShieldSuggestion,
+  formatHourRange,
+  hourToClock,
+  type ShieldLayer,
+} from '@/lib/shieldSuggestion';
+import { toast } from 'sonner';
 
 const stagger = {
   hidden: {},
@@ -16,8 +25,9 @@ const EmptyHint = ({ children }: { children: React.ReactNode }) => (
   <p className="text-xs text-muted-foreground italic leading-relaxed">{children}</p>
 );
 
-const InsightsScreen = () => {
+const InsightsScreen = ({ onGoToShield }: { onGoToShield?: () => void }) => {
   const { streak, urgeLogs, relapseLogs, resistedTimestamps, onboardingData, journalLogs } = useAppStore();
+
 
   const WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const journalSnippets = [...journalLogs]
@@ -68,6 +78,7 @@ const InsightsScreen = () => {
     .slice(0, 3)
     .map(([label, count]) => ({
       label,
+      count,
       pct: totalTriggers > 0 ? Math.round((count / totalTriggers) * 100) : 0,
     }));
 
@@ -82,7 +93,59 @@ const InsightsScreen = () => {
   });
   const peakPeriod = Object.entries(timePeriods).sort((a, b) => b[1] - a[1])[0];
   const peakLabel = peakPeriod?.[0] || 'night';
-  const PeakIcon = peakLabel === 'morning' ? Sun : peakLabel === 'afternoon' ? Cloud : Moon;
+
+  // Hourly urge distribution (0-23)
+  const hourCounts = Array.from({ length: 24 }, () => 0);
+  urgeLogs.forEach((u) => {
+    hourCounts[new Date(u.timestamp).getHours()]++;
+  });
+  const hasHourData = urgeLogs.length >= 3;
+  const peakHour = hasHourData
+    ? hourCounts.reduce((best, c, h) => (c > hourCounts[best] ? h : best), 0)
+    : null;
+
+  // Risk window: best 3-hour block + weekday vs weekend skew
+  const riskWindow: RiskWindow | null = (() => {
+    if (urgeLogs.length < 5) return null;
+    let bestStart = 0;
+    let bestSum = -1;
+    for (let h = 0; h < 24; h++) {
+      const sum = hourCounts[h] + hourCounts[(h + 1) % 24] + hourCounts[(h + 2) % 24];
+      if (sum > bestSum) {
+        bestSum = sum;
+        bestStart = h;
+      }
+    }
+    if (bestSum === 0) return null;
+    let weekend = 0;
+    let weekday = 0;
+    urgeLogs.forEach((u) => {
+      const day = new Date(u.timestamp).getDay();
+      if (day === 0 || day === 6) weekend++;
+      else weekday++;
+    });
+    return {
+      rangeLabel: formatHourRange(bestStart, bestStart + 2),
+      dayLabel: weekend > weekday ? 'weekends' : 'weekdays',
+      startHour: bestStart,
+      endHour: (bestStart + 2) % 24,
+    } as RiskWindow & { startHour: number; endHour: number };
+  })();
+
+  const handleSchedule = (layer: ShieldLayer) => {
+    const rw = riskWindow as (RiskWindow & { startHour: number; endHour: number }) | null;
+    if (!rw) return;
+    applyShieldSuggestion({
+      start: hourToClock(rw.startHour),
+      end: hourToClock(rw.endHour + 1),
+      layer,
+    });
+    toast.success(
+      `${layer === 'websites' ? 'Website' : 'App'} blocking scheduled for ${rw.rangeLabel}.`
+    );
+    onGoToShield?.();
+  };
+
 
   const peakInsight = `You're most vulnerable at ${peakLabel}`;
 
@@ -165,6 +228,8 @@ const InsightsScreen = () => {
           journalSnippets,
           urgeWeekdayDistribution,
         }}
+        riskWindow={riskWindow}
+        onSchedule={handleSchedule}
       />
 
       {/* Top Triggers */}
@@ -173,28 +238,10 @@ const InsightsScreen = () => {
           <div className="w-1 h-5 bg-primary rounded-full" />
           <h3 className="text-lg font-semibold text-foreground">Top Triggers</h3>
         </div>
-        {topTriggers.length > 0 ? (
-          <div className="space-y-4">
-            {topTriggers.map((t) => (
-              <div key={t.label}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm text-foreground">{t.label}</span>
-                  <span className="text-sm text-primary">{t.pct}%</span>
-                </div>
-                <div className="w-full h-1 bg-border rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-primary rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${t.pct}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <EmptyHint>Your top triggers will appear here as you log urges.</EmptyHint>
-        )}
+        <TriggerLeaderboard
+          triggers={topTriggers}
+          emptyText="Your top triggers will appear here as you log urges."
+        />
       </motion.div>
 
       {/* Time Pattern */}
@@ -202,18 +249,24 @@ const InsightsScreen = () => {
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-5 bg-primary rounded-full" />
           <h3 className="text-lg font-semibold text-foreground">Time Pattern</h3>
+          <span className="ml-auto text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
+            Urges by hour
+          </span>
         </div>
-        <div className="bg-secondary rounded-2xl p-6 flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/40 to-primary/10 flex items-center justify-center mb-4">
-            <PeakIcon size={28} className="text-primary" />
-          </div>
-          {hasEnoughForPeak ? (
-            <p className="text-sm text-muted-foreground">Urges peak at {peakLabel}.</p>
-          ) : (
-            <EmptyHint>Log a few urges to see time patterns.</EmptyHint>
-          )}
-        </div>
+        <UrgeHourChart
+          counts={hourCounts}
+          hasData={hasHourData}
+          peakHour={peakHour}
+          emptyText="Log a few urges to see time patterns."
+        />
+        {hasHourData && peakHour != null && (
+          <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-2.5">
+            <Clock size={12} className="text-primary" />
+            Urges peak around {formatHourRange(peakHour, peakHour + 1)}.
+          </p>
+        )}
       </motion.div>
+
 
       {/* Personalized Insight */}
       {hasEnoughForPeak && (

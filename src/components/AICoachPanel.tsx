@@ -1,9 +1,23 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Lock, Brain, Shield, Target, Loader2, RefreshCw, HeartPulse } from 'lucide-react';
+import {
+  Sparkles,
+  Lock,
+  Brain,
+  Shield,
+  Target,
+  Loader2,
+  RefreshCw,
+  HeartPulse,
+  AlertTriangle,
+  Globe,
+  Smartphone,
+  CalendarClock,
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePremium } from '@/hooks/usePremium';
 import PaywallModal from './PaywallModal';
+import type { ShieldLayer } from '@/lib/shieldSuggestion';
 
 interface JournalSnippet {
   text: string;
@@ -25,6 +39,13 @@ interface CoachInput {
   urgeWeekdayDistribution?: Record<string, number>;
 }
 
+export interface RiskWindow {
+  /** e.g. "9-11 PM" */
+  rangeLabel: string;
+  /** e.g. "weekdays" or "Saturdays" */
+  dayLabel: string;
+}
+
 interface CoachOutput {
   tactical: string;
   predictive: string;
@@ -44,7 +65,27 @@ const SAMPLE: CoachOutput = {
   emotional: 'Your recent journals show recurring stress and fatigue markers clustered on weeknights, directly preceding the urge spikes the next morning. You are using the urge as a release valve for unprocessed tension. Name the emotion in your Journal before it becomes a craving.',
 };
 
-const AICoachPanel = ({ input }: { input: CoachInput }) => {
+/** Split an AI paragraph into 2-4 short, scannable bullets. */
+function toBullets(text: string): string[] {
+  return text
+    .replace(/\n+/g, ' ')
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 3)
+    .slice(0, 4);
+}
+
+const RISK_WORDS = /risk|avoid|warning|weak|struggl|drop|fail|relaps|danger|vulnerab|trigger/i;
+
+const AICoachPanel = ({
+  input,
+  riskWindow,
+  onSchedule,
+}: {
+  input: CoachInput;
+  riskWindow?: RiskWindow | null;
+  onSchedule?: (layer: ShieldLayer) => void;
+}) => {
   const { isPremium } = usePremium();
   const [data, setData] = useState<CoachOutput | null>(null);
   const [loading, setLoading] = useState(false);
@@ -76,32 +117,96 @@ const AICoachPanel = ({ input }: { input: CoachInput }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPremium]);
 
-  const Card = ({
+  const CardShell = ({
     icon: Icon,
     title,
-    body,
     accent,
+    premium,
+    children,
   }: {
     icon: typeof Brain;
     title: string;
-    body: string;
     accent: string;
-  }) => (
-    <div className="bg-background/60 border border-border rounded-xl p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <div
-          className="w-7 h-7 rounded-lg flex items-center justify-center"
-          style={{ background: `${accent}20`, color: accent }}
-        >
-          <Icon size={14} />
+    premium?: boolean;
+    children: React.ReactNode;
+  }) => {
+    const inner = (
+      <div className="bg-background/70 rounded-[15px] p-4">
+        <div className="flex items-center gap-2 mb-2.5">
+          <div
+            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            style={{ background: `${accent}20`, color: accent }}
+          >
+            <Icon size={14} />
+          </div>
+          <p className="text-[10px] tracking-[0.25em] uppercase font-semibold" style={{ color: accent }}>
+            {title}
+          </p>
         </div>
-        <p className="text-[10px] tracking-[0.25em] uppercase font-semibold" style={{ color: accent }}>
-          {title}
-        </p>
+        {children}
       </div>
-      <p className="text-sm text-foreground leading-relaxed">{body}</p>
-    </div>
+    );
+    if (premium) return <div className="premium-border">{inner}</div>;
+    return <div className="rounded-2xl border border-border overflow-hidden">{inner}</div>;
+  };
+
+  const BulletList = ({ text }: { text: string }) => (
+    <ul className="space-y-2">
+      {toBullets(text).map((b, i) => {
+        const isRisk = RISK_WORDS.test(b);
+        const Icon = isRisk ? AlertTriangle : Target;
+        return (
+          <li key={i} className="flex items-start gap-2">
+            <Icon
+              size={13}
+              className={`mt-[3px] shrink-0 ${isRisk ? 'text-destructive' : 'text-primary'}`}
+            />
+            <span className="text-sm text-foreground leading-snug">{b}</span>
+          </li>
+        );
+      })}
+    </ul>
   );
+
+  const PredictiveBody = () => {
+    if (!riskWindow) {
+      return (
+        <>
+          <p className="text-sm text-foreground leading-relaxed">{(data ?? SAMPLE).predictive}</p>
+          <p className="text-[11px] text-muted-foreground mt-3">
+            Log a few more urges to pinpoint your exact risk window.
+          </p>
+        </>
+      );
+    }
+    return (
+      <>
+        <p className="text-sm text-foreground leading-snug">
+          Your risk window is typically{' '}
+          <span className="text-primary font-semibold">{riskWindow.rangeLabel}</span> on{' '}
+          {riskWindow.dayLabel}. Consider scheduling Shield protection.
+        </p>
+        <div className="grid grid-cols-1 gap-2 mt-3">
+          <button
+            onClick={() => onSchedule?.('websites')}
+            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-primary/15 text-primary text-xs tracking-wide font-semibold active:scale-[0.98] transition-transform"
+          >
+            <Globe size={14} />
+            Schedule Website Blocking
+            <CalendarClock size={13} className="ml-auto opacity-70" />
+          </button>
+          <button
+            onClick={() => onSchedule?.('apps')}
+            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-xs tracking-wide font-semibold active:scale-[0.98] transition-transform"
+          >
+            <Smartphone size={14} />
+            Schedule App Blocking
+            <CalendarClock size={13} className="ml-auto opacity-70" />
+          </button>
+        </div>
+      </>
+    );
+  };
 
   return (
     <motion.div variants={fadeUp} className="mb-8 relative">
@@ -119,15 +224,8 @@ const AICoachPanel = ({ input }: { input: CoachInput }) => {
         )}
       </div>
 
-      <div
-        className="relative rounded-2xl p-[1px] overflow-hidden"
-        style={{
-          background:
-            'linear-gradient(135deg, hsl(25 95% 53% / 0.6), hsl(280 80% 60% / 0.3) 50%, hsl(25 95% 53% / 0.6))',
-          boxShadow: '0 0 32px -8px hsl(25 95% 53% / 0.35)',
-        }}
-      >
-        <div className="rounded-2xl bg-secondary p-5 relative overflow-hidden">
+      <div className="premium-border" style={{ boxShadow: '0 0 32px -8px hsl(25 95% 53% / 0.35)' }}>
+        <div className="rounded-[15px] bg-secondary p-5 relative overflow-hidden">
           <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
 
           <div className="flex items-center gap-2 mb-4 relative">
@@ -152,30 +250,22 @@ const AICoachPanel = ({ input }: { input: CoachInput }) => {
               </div>
             ) : (
               <>
-                <Card
-                  icon={Brain}
-                  title="Weekly Tactical Breakdown"
-                  body={(data ?? SAMPLE).tactical}
-                  accent="hsl(25 95% 53%)"
-                />
-                <Card
-                  icon={Shield}
-                  title="Predictive Shield Warning"
-                  body={(data ?? SAMPLE).predictive}
-                  accent="hsl(0 80% 60%)"
-                />
-                <Card
-                  icon={Target}
-                  title="Strategic Action Plan"
-                  body={(data ?? SAMPLE).strategic}
-                  accent="hsl(140 70% 50%)"
-                />
-                <Card
+                <CardShell icon={Brain} title="Weekly Tactical Breakdown" accent="hsl(25 95% 53%)" premium>
+                  <BulletList text={(data ?? SAMPLE).tactical} />
+                </CardShell>
+                <CardShell icon={Shield} title="Predictive Shield Warning" accent="hsl(0 80% 60%)" premium>
+                  <PredictiveBody />
+                </CardShell>
+                <CardShell icon={Target} title="Strategic Action Plan" accent="hsl(140 70% 50%)">
+                  <p className="text-sm text-foreground leading-relaxed">{(data ?? SAMPLE).strategic}</p>
+                </CardShell>
+                <CardShell
                   icon={HeartPulse}
                   title="Emotional Syntax & Mood Analysis"
-                  body={(data ?? SAMPLE).emotional}
                   accent="hsl(320 75% 60%)"
-                />
+                >
+                  <p className="text-sm text-foreground leading-relaxed">{(data ?? SAMPLE).emotional}</p>
+                </CardShell>
               </>
             )}
           </div>

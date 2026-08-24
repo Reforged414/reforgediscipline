@@ -1,8 +1,28 @@
 import Foundation
 import UIKit
+import SwiftUI
 import Capacitor
 import FamilyControls
 import ManagedSettings
+
+class AppSelectionModel: ObservableObject {
+    @Published var selection = FamilyActivitySelection()
+}
+
+struct AppActivityPickerView: View {
+    @ObservedObject var model: AppSelectionModel
+    var onDone: (FamilyActivitySelection) -> Void
+
+    var body: some View {
+        NavigationView {
+            FamilyActivityPicker(selection: $model.selection)
+                .navigationTitle("Select Apps to Block")
+                .navigationBarItems(trailing: Button("Done") {
+                    onDone(model.selection)
+                })
+        }
+    }
+}
 
 @objc(WebBlockerPlugin)
 public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
@@ -14,10 +34,15 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "block", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "activateShield", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "deactivateShield", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "openSettings", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "openSettings", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "showAppPicker", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "activateAppShield", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "deactivateAppShield", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "checkAppSelection", returnType: CAPPluginReturnPromise)
     ]
 
     private let store = ManagedSettingsStore()
+    private static let appSelectionKey = "webblocker_app_selection"
 
     @objc func requestAuthorization(_ call: CAPPluginCall) {
         if #available(iOS 16.0, *) {
@@ -100,6 +125,85 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
                 call.reject("Unable to open device settings application")
             }
         }
+    }
+
+    // MARK: - App Blocking
+
+    @objc func showAppPicker(_ call: CAPPluginCall) {
+        guard #available(iOS 16.0, *) else {
+            call.reject("Screen Time APIs require iOS 16.0 or later")
+            return
+        }
+        guard let vc = self.bridge?.viewController else {
+            call.reject("No view controller available")
+            return
+        }
+        DispatchQueue.main.async {
+            let model = AppSelectionModel()
+            if let saved = WebBlockerPlugin.loadAppSelection() {
+                model.selection = saved
+            }
+            let pickerView = AppActivityPickerView(model: model) { selection in
+                WebBlockerPlugin.saveAppSelection(selection)
+                vc.dismiss(animated: true) {
+                    call.resolve([
+                        "selected": true,
+                        "appCount": selection.applicationTokens.count,
+                        "categoryCount": selection.categoryTokens.count
+                    ])
+                }
+            }
+            let hosting = UIHostingController(rootView: pickerView)
+            vc.present(hosting, animated: true)
+        }
+    }
+
+    @objc func activateAppShield(_ call: CAPPluginCall) {
+        guard #available(iOS 16.0, *) else {
+            call.reject("Screen Time APIs require iOS 16.0 or later")
+            return
+        }
+        guard let selection = WebBlockerPlugin.loadAppSelection(),
+              !selection.applicationTokens.isEmpty || !selection.categoryTokens.isEmpty else {
+            call.resolve(["active": false, "reason": "no_selection"])
+            return
+        }
+        store.shield.applications = selection.applicationTokens.isEmpty ? nil : selection.applicationTokens
+        store.shield.applicationCategories = selection.categoryTokens.isEmpty
+            ? nil
+            : .specific(selection.categoryTokens)
+        call.resolve(["active": true])
+    }
+
+    @objc func deactivateAppShield(_ call: CAPPluginCall) {
+        store.shield.applications = nil
+        store.shield.applicationCategories = nil
+        call.resolve(["active": false])
+    }
+
+    @objc func checkAppSelection(_ call: CAPPluginCall) {
+        guard let selection = WebBlockerPlugin.loadAppSelection() else {
+            call.resolve(["hasSelection": false, "appCount": 0, "categoryCount": 0])
+            return
+        }
+        call.resolve([
+            "hasSelection": !selection.applicationTokens.isEmpty || !selection.categoryTokens.isEmpty,
+            "appCount": selection.applicationTokens.count,
+            "categoryCount": selection.categoryTokens.count
+        ])
+    }
+
+    @available(iOS 16.0, *)
+    private static func saveAppSelection(_ selection: FamilyActivitySelection) {
+        if let data = try? PropertyListEncoder().encode(selection) {
+            UserDefaults.standard.set(data, forKey: appSelectionKey)
+        }
+    }
+
+    @available(iOS 16.0, *)
+    private static func loadAppSelection() -> FamilyActivitySelection? {
+        guard let data = UserDefaults.standard.data(forKey: appSelectionKey) else { return nil }
+        return try? PropertyListDecoder().decode(FamilyActivitySelection.self, from: data)
     }
 }
 

@@ -21,13 +21,23 @@ export interface PermissionState {
   raw?: unknown;
 }
 
-/** iOS plugin — must match WebBlockerPlugin.m's CAP_PLUGIN(WebBlockerPlugin, "WebBlockerPlugin", ...) */
+export interface AppSelectionState {
+  hasSelection: boolean;
+  appCount: number;
+  categoryCount: number;
+}
+
+/** iOS plugin — must match WebBlockerPlugin.swift's CAPBridgedPlugin declaration */
 interface IOSWebBlockerPlugin {
   requestAuthorization(): Promise<{ status: string; error?: string }>;
   checkAuthorization(): Promise<{ status: string; familyControls?: boolean }>;
   activateShield(): Promise<{ active: boolean; reason?: string }>;
   deactivateShield(): Promise<{ active: boolean }>;
   openSettings(): Promise<{ opened?: boolean }>;
+  showAppPicker(): Promise<{ selected: boolean; appCount: number; categoryCount: number }>;
+  activateAppShield(): Promise<{ active: boolean; reason?: string }>;
+  deactivateAppShield(): Promise<{ active: boolean }>;
+  checkAppSelection(): Promise<AppSelectionState>;
 }
 
 
@@ -132,6 +142,40 @@ async function openSystemSettingsImpl() {
   return { opened: false };
 }
 
+// --- App blocking (iOS only for now — Android app blocking not yet implemented) ---
+
+async function showAppPickerImpl(): Promise<{ selected: boolean; appCount: number; categoryCount: number }> {
+  if (iosWebBlocker) {
+    try {
+      return await iosWebBlocker.showAppPicker();
+    } catch (e: any) {
+      return { selected: false, appCount: 0, categoryCount: 0 };
+    }
+  }
+  return { selected: false, appCount: 0, categoryCount: 0 };
+}
+
+async function activateAppShieldImpl() {
+  if (iosWebBlocker) return iosWebBlocker.activateAppShield();
+  return { active: false, reason: 'unsupported' };
+}
+
+async function deactivateAppShieldImpl() {
+  if (iosWebBlocker) return iosWebBlocker.deactivateAppShield();
+  return { active: false };
+}
+
+async function checkAppSelectionImpl(): Promise<AppSelectionState> {
+  if (iosWebBlocker) {
+    try {
+      return await iosWebBlocker.checkAppSelection();
+    } catch (e: any) {
+      return { hasSelection: false, appCount: 0, categoryCount: 0 };
+    }
+  }
+  return { hasSelection: false, appCount: 0, categoryCount: 0 };
+}
+
 export async function ensureBlockerPermissions(): Promise<PermissionState> {
   const result = await requestAuthorizationImpl();
   if (platform === 'android' && result.status !== 'authorized') {
@@ -153,6 +197,11 @@ export function useScreenTimeBlocker() {
   const activate = useCallback(() => activateImpl(), []);
   const deactivate = useCallback(() => deactivateImpl(), []);
 
+  const showAppPicker = useCallback(() => showAppPickerImpl(), []);
+  const activateAppShield = useCallback(() => activateAppShieldImpl(), []);
+  const deactivateAppShield = useCallback(() => deactivateAppShieldImpl(), []);
+  const checkAppSelection = useCallback(() => checkAppSelectionImpl(), []);
+
   return {
     isNative: Capacitor.isNativePlatform(),
     platform,
@@ -163,6 +212,9 @@ export function useScreenTimeBlocker() {
     openSystemSettings,
     activate,
     deactivate,
+    showAppPicker,
+    activateAppShield,
+    deactivateAppShield,
+    checkAppSelection,
   };
 }
-

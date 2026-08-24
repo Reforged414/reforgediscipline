@@ -78,6 +78,7 @@ const InsightsScreen = ({ onGoToShield }: { onGoToShield?: () => void }) => {
     .slice(0, 3)
     .map(([label, count]) => ({
       label,
+      count,
       pct: totalTriggers > 0 ? Math.round((count / totalTriggers) * 100) : 0,
     }));
 

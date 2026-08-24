@@ -532,7 +532,103 @@ const ReforgedShield = () => {
           onToggle={(v) => update({ enforceSafeSearch: v })}
           disabled={config.active && (isLocked || inCooldown)}
         />
+        <div>
+          <SubToggle
+            icon={<LayoutGrid size={18} />}
+            label="Block Distracting Apps"
+            desc="Shields the apps you select"
+            enabled={config.blockApps}
+            onToggle={handleAppBlockToggle}
+            disabled={appBusy}
+            trailing={
+              config.blockApps ? (
+                <button
+                  onClick={editAppSelection}
+                  className="text-[10px] tracking-widest uppercase text-primary shrink-0"
+                >
+                  Edit Selection
+                </button>
+              ) : undefined
+            }
+          />
+          <AnimatePresence>
+            {config.blockApps && (
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="text-[11px] text-primary/80 mt-1.5 ml-4"
+              >
+                {appCount} apps blocked
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.div>
+
+      {/* Private browsing info */}
+      <motion.div
+        variants={fadeUp}
+        className="flex items-center gap-3 rounded-xl border border-border bg-secondary/50 px-4 py-3 mb-6"
+      >
+        <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+          <EyeOff size={16} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm text-foreground">Private Browsing Disabled</p>
+          <p className="text-xs text-muted-foreground">
+            Safari's private mode is automatically disabled while Shield is active, closing an easy bypass.
+          </p>
+        </div>
+      </motion.div>
+
+      {/* Schedule */}
+      <motion.p variants={fadeUp} className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
+        Schedule
+      </motion.p>
+      <motion.div variants={fadeUp} className="bg-secondary rounded-xl p-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center text-primary shrink-0">
+            <Clock size={18} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-foreground">Auto-activate Shield</p>
+            <button
+              onClick={() => setTimePickerOpen(true)}
+              className="text-xs text-primary tracking-wide"
+            >
+              {formatClock(config.scheduleStart)} – {formatClock(config.scheduleEnd)}
+            </button>
+          </div>
+          <button
+            onClick={() => update({ scheduleEnabled: !config.scheduleEnabled })}
+            className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
+              config.scheduleEnabled ? 'bg-primary' : 'bg-background border border-border'
+            }`}
+            aria-pressed={config.scheduleEnabled}
+          >
+            <motion.span
+              layout
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              className={`absolute top-0.5 ${config.scheduleEnabled ? 'right-0.5' : 'left-0.5'} w-5 h-5 rounded-full bg-foreground`}
+            />
+          </button>
+        </div>
+        <AnimatePresence>
+          {config.scheduleEnabled && nextScheduled && (
+            <motion.p
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="text-[11px] text-muted-foreground mt-3 pl-12"
+            >
+              Next activation in <TickingRemaining ms={nextScheduled - now} /> ·{' '}
+              {formatClock(config.scheduleStart)}
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
 
       <motion.p variants={fadeUp} className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase mb-3">
         Iron Lock

@@ -1,7 +1,16 @@
-import { Moon, Sun, Cloud } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
-import AICoachPanel from './AICoachPanel';
+import AICoachPanel, { type RiskWindow } from './AICoachPanel';
+import UrgeHourChart from './insights/UrgeHourChart';
+import TriggerLeaderboard from './insights/TriggerLeaderboard';
+import {
+  applyShieldSuggestion,
+  formatHourRange,
+  hourToClock,
+  type ShieldLayer,
+} from '@/lib/shieldSuggestion';
+import { toast } from 'sonner';
 
 const stagger = {
   hidden: {},
@@ -16,8 +25,9 @@ const EmptyHint = ({ children }: { children: React.ReactNode }) => (
   <p className="text-xs text-muted-foreground italic leading-relaxed">{children}</p>
 );
 
-const InsightsScreen = () => {
+const InsightsScreen = ({ onGoToShield }: { onGoToShield?: () => void }) => {
   const { streak, urgeLogs, relapseLogs, resistedTimestamps, onboardingData, journalLogs } = useAppStore();
+
 
   const WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const journalSnippets = [...journalLogs]

@@ -32,23 +32,48 @@ interface ShieldConfig {
   active: boolean;
   blockWebsites: boolean;
   enforceSafeSearch: boolean;
+  blockApps: boolean;
   strictLockHours: number; // legacy quick-pick (informational only)
   lockUntil: number | null; // epoch ms — shield cannot be disarmed before this
   cooldownUntil: number | null; // epoch ms — shield will auto-deactivate at this time
+  scheduleEnabled: boolean;
+  scheduleStart: string; // "22:00"
+  scheduleEnd: string; // "06:00"
 }
 
 const DEFAULT_CONFIG: ShieldConfig = {
   active: false,
   blockWebsites: true,
   enforceSafeSearch: true,
+  blockApps: false,
   strictLockHours: 0,
   lockUntil: null,
   cooldownUntil: null,
+  scheduleEnabled: false,
+  scheduleStart: '22:00',
+  scheduleEnd: '06:00',
 };
 
 const ACCOUNTABILITY_PHRASE =
   'I am actively choosing to lower my defenses. I accept full responsibility for letting down my guard and delaying my recovery.';
 const COOLDOWN_MS = 12 * 60 * 60 * 1000;
+
+function formatClock(hhmm: string) {
+  const [h, m] = hhmm.split(':').map(Number);
+  const suffix = h >= 12 ? 'PM' : 'AM';
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}:${String(m).padStart(2, '0')} ${suffix}`;
+}
+
+/** Next epoch ms at which the given HH:MM occurs (today or tomorrow). */
+function nextOccurrence(hhmm: string, from = Date.now()) {
+  const [h, m] = hhmm.split(':').map(Number);
+  const d = new Date(from);
+  d.setHours(h, m, 0, 0);
+  if (d.getTime() <= from) d.setDate(d.getDate() + 1);
+  return d.getTime();
+}
+
 
 // Hook points for the future native integration.
 async function activateShield(_cfg: ShieldConfig): Promise<boolean> {

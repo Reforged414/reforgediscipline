@@ -124,12 +124,24 @@ const ReforgedShield = () => {
   const [ironLockOpen, setIronLockOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [permError, setPermError] = useState<PermissionState | null>(null);
+  const [appCount, setAppCount] = useState(0);
+  const [appBusy, setAppBusy] = useState(false);
+  const [timePickerOpen, setTimePickerOpen] = useState(false);
 
-  // tick clock once per second so countdown UI updates
+  // tick clock so countdown UI updates smoothly
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
+    const id = setInterval(() => setNow(Date.now()), 200);
     return () => clearInterval(id);
   }, []);
+
+  // hydrate current native app selection
+  useEffect(() => {
+    blocker
+      .checkAppSelection()
+      .then((s) => setAppCount(s.appCount + s.categoryCount))
+      .catch(() => undefined);
+  }, []);
+
 
   // auto-deactivate when cooldown elapses
   useEffect(() => {

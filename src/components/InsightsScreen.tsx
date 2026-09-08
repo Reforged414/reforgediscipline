@@ -73,7 +73,7 @@ const InsightsScreen = ({ onGoToShield }: { onGoToShield?: () => void }) => {
     });
   });
   const totalTriggers = Object.values(triggerCounts).reduce((a, b) => a + b, 0);
-  const topTriggers = Object.entries(triggerCounts)
+  const loggedTopTriggers = Object.entries(triggerCounts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
     .map(([label, count]) => ({
@@ -81,6 +81,15 @@ const InsightsScreen = ({ onGoToShield }: { onGoToShield?: () => void }) => {
       count,
       pct: totalTriggers > 0 ? Math.round((count / totalTriggers) * 100) : 0,
     }));
+
+  // Before 7 days of logged data, fall back to onboarding-selected triggers
+  const hasSevenDaysOfUrges = daysOfData >= 7 && urgeLogs.length > 0;
+  const onboardingTriggers = (onboardingData?.triggers ?? []).slice(0, 3).map((label, i) => ({
+    label,
+    pct: [80, 60, 45][i] ?? 40,
+  }));
+  const useOnboardingTriggers = !hasSevenDaysOfUrges && onboardingTriggers.length > 0;
+  const topTriggers = useOnboardingTriggers ? onboardingTriggers : loggedTopTriggers;
 
   // Peak insight only after 5+ urges
   const hasEnoughForPeak = urgeLogs.length >= 5;

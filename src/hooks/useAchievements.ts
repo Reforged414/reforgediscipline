@@ -53,6 +53,7 @@ export const useAchievements = () => {
     if (fresh.length === 0) return;
 
     writeSeen([...seen, ...fresh]);
+    fresh.forEach((id) => sessionUnlockedIds.add(id));
     setRecentlyUnlocked((prev) => [...prev, ...fresh]);
     const next = achievements.find((a) => a.id === fresh[0]) ?? null;
     setCelebrating(next);

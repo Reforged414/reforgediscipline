@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, ChevronRight, ExternalLink, Mail, Shield, FileText, Bell, Pencil, LogOut, Trash2, User } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
+import pkg from '../../package.json';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppStore } from '@/store/useAppStore';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import OrangeToggle from '@/components/ui/OrangeToggle';
 import {
   Dialog,
   DialogContent,
@@ -14,7 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+
 import EditAnswersScreen from './EditAnswersScreen';
 import LegalScreen from './LegalScreen';
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '@/content/legal';
@@ -71,6 +75,14 @@ const SettingsScreen = ({ onBack }: Props) => {
   const { notificationPrefs, updateNotificationPrefs, resetAllLocalData } = useAppStore();
 
   const [view, setView] = useState<Subview>('main');
+  const [appVersion, setAppVersion] = useState<string>(`Reforged v${pkg.version}`);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    App.getInfo()
+      .then((info) => setAppVersion(`Reforged v${info.version} (${info.build})`))
+      .catch(() => {});
+  }, []);
 
   // Username dialog
   const [usernameOpen, setUsernameOpen] = useState(false);
@@ -208,9 +220,10 @@ const SettingsScreen = ({ onBack }: Props) => {
                 <p className="text-sm text-foreground">Daily check-in reminder</p>
                 <p className="text-xs text-muted-foreground mt-0.5">Get a nudge to keep your streak alive</p>
               </div>
-              <Switch
-                checked={notificationPrefs.dailyCheckInEnabled}
-                onCheckedChange={(checked) => updateNotificationPrefs({ dailyCheckInEnabled: checked })}
+              <OrangeToggle
+                enabled={notificationPrefs.dailyCheckInEnabled}
+                onToggle={(checked) => updateNotificationPrefs({ dailyCheckInEnabled: checked })}
+                aria-label="Daily check-in reminder"
               />
             </div>
             {notificationPrefs.dailyCheckInEnabled && (
@@ -257,6 +270,11 @@ const SettingsScreen = ({ onBack }: Props) => {
           <Row icon={Trash2} label="Delete account" destructive onClick={() => { setDeleteConfirm(''); setDeleteOpen(true); }} />
         </div>
       </div>
+
+      {/* App version */}
+      <p className="mt-10 text-center text-[11px] tracking-wide text-muted-foreground/60">
+        {appVersion || 'Reforged'}
+      </p>
 
       {/* Username dialog */}
       <Dialog open={usernameOpen} onOpenChange={setUsernameOpen}>

@@ -250,6 +250,7 @@ const InsightsScreen = ({ onGoToShield }: { onGoToShield?: () => void }) => {
         <TriggerLeaderboard
           triggers={topTriggers}
           emptyText="Your top triggers will appear here as you log urges."
+          noteText={useOnboardingTriggers ? 'Based on your onboarding answers' : undefined}
         />
       </motion.div>
 

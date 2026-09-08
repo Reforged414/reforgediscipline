@@ -143,7 +143,40 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
           <p className="text-primary text-sm font-medium mt-0.5">
             Level {level} <span className="text-muted-foreground mx-1">•</span> {xp.toLocaleString()} XP
           </p>
-          <p className="text-muted-foreground italic text-xs mt-1">"{quote}"</p>
+          {editingMotto ? (
+            <div className="flex items-center gap-1.5 mt-1">
+              <input
+                autoFocus
+                value={mottoDraft}
+                onChange={(e) => setMottoDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') saveMotto();
+                  if (e.key === 'Escape') setEditingMotto(false);
+                }}
+                maxLength={80}
+                placeholder="Your motto…"
+                className="flex-1 min-w-0 bg-secondary/70 border border-primary/40 rounded-lg px-2 py-1 text-xs italic text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
+              />
+              <button onClick={saveMotto} aria-label="Save motto" className="text-primary p-1 shrink-0">
+                <Check size={14} />
+              </button>
+              <button onClick={() => setEditingMotto(false)} aria-label="Cancel" className="text-muted-foreground p-1 shrink-0">
+                <X size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => { setMottoDraft(motto ?? ''); setEditingMotto(true); }}
+              className="group flex items-center gap-1.5 mt-1 text-left"
+              aria-label="Edit motto"
+            >
+              <p className="text-muted-foreground italic text-xs">"{displayMotto}"</p>
+              <Pencil
+                size={11}
+                className="text-muted-foreground/60 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100 transition-opacity shrink-0"
+              />
+            </button>
+          )}
         </div>
       </motion.div>
 
@@ -158,7 +191,9 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
           {stats.map((s) => (
             <div key={s.label} className="flex flex-col items-center text-center">
               <s.icon size={22} className={s.color} />
-              <p className="text-2xl font-light text-primary mt-3">{s.value}</p>
+              <p className="text-2xl font-light text-primary mt-3">
+                <CountUpNumber value={s.value} />
+              </p>
               <p className="text-[10px] text-muted-foreground tracking-widest mt-1 leading-tight">{s.label}</p>
             </div>
           ))}

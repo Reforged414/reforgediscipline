@@ -270,6 +270,11 @@ const SettingsScreen = ({ onBack }: Props) => {
         </div>
       </div>
 
+      {/* App version */}
+      <p className="mt-10 text-center text-[11px] tracking-wide text-muted-foreground/60">
+        {appVersion || 'Reforged'}
+      </p>
+
       {/* Username dialog */}
       <Dialog open={usernameOpen} onOpenChange={setUsernameOpen}>
         <DialogContent>

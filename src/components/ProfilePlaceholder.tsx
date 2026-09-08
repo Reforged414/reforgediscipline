@@ -64,7 +64,7 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen bg-background pb-44">
       {/* Header bar */}
       <div className="flex items-center justify-between px-6 pt-6 pb-4">
         <h1 className="font-display text-lg tracking-widest text-primary">REFORGED</h1>

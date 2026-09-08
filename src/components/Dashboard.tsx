@@ -95,7 +95,7 @@ const Dashboard = ({ onRideUrge, onLogUrge, onDailyCheckIn, onJournal, onOpenSet
 
   return (
     <motion.div
-      className="min-h-screen bg-background px-5 pt-12 pb-32"
+      className="min-h-screen bg-background px-5 pt-12 pb-44"
       variants={stagger}
       initial="hidden"
       animate="show"

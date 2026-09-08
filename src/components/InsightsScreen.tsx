@@ -166,7 +166,7 @@ const InsightsScreen = ({ onGoToShield }: { onGoToShield?: () => void }) => {
 
   return (
     <motion.div
-      className="min-h-screen bg-background px-5 pt-10 pb-32 max-w-md mx-auto"
+      className="min-h-screen bg-background px-5 pt-10 pb-44 max-w-md mx-auto"
       variants={stagger}
       initial="hidden"
       animate="show"

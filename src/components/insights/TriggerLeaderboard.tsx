@@ -9,9 +9,11 @@ interface Trigger {
 const TriggerLeaderboard = ({
   triggers,
   emptyText,
+  noteText,
 }: {
   triggers: Trigger[];
   emptyText: string;
+  noteText?: string;
 }) => {
   const hasData = triggers.length > 0;
   const rows = hasData ? triggers : [{ label: '—', pct: 0 }, { label: '—', pct: 0 }, { label: '—', pct: 0 }];
@@ -63,6 +65,10 @@ const TriggerLeaderboard = ({
 
       {!hasData && (
         <p className="text-xs text-muted-foreground italic leading-relaxed mt-4">{emptyText}</p>
+      )}
+
+      {hasData && noteText && (
+        <p className="text-[11px] text-muted-foreground italic mt-4">{noteText}</p>
       )}
     </div>
   );

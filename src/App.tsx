@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { initRevenueCat } from "@/hooks/usePremium";
 import { useNavigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
+import AchievementWatcher from "@/components/achievements/AchievementWatcher";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -38,6 +39,7 @@ const App = () => {
         <div className="ambient-top-glow" aria-hidden="true" />
         <Toaster />
         <Sonner />
+        <AchievementWatcher />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />

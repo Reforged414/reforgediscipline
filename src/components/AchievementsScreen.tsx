@@ -1,13 +1,8 @@
-import { ArrowLeft, Lock } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-interface Achievement {
-  id: string;
-  label: string;
-  desc: string;
-  icon: any;
-  unlocked: boolean;
-}
+import AchievementIcon from './achievements/AchievementIcon';
+import { sessionUnlockedIds } from '@/hooks/useAchievements';
+import type { Achievement } from '@/lib/achievements';
 
 const AchievementsScreen = ({
   achievements,
@@ -26,47 +21,55 @@ const AchievementsScreen = ({
       </div>
 
       <div className="px-6 space-y-3">
-        {achievements.map((a, i) => {
-          const Icon = a.icon;
-          return (
-            <motion.div
-              key={a.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, delay: i * 0.04 }}
-              className={`flex items-center gap-4 p-4 rounded-xl border ${
-                a.unlocked
-                  ? 'bg-primary/10 border-primary/40'
-                  : 'bg-card border-border'
-              }`}
-            >
-              <div
-                className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 ${
-                  a.unlocked ? 'bg-primary' : 'bg-secondary'
+        {achievements.map((a, i) => (
+          <motion.div
+            key={a.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: i * 0.04 }}
+            className={`flex items-center gap-4 p-4 rounded-xl border ${
+              a.unlocked ? 'bg-primary/10 border-primary/40' : 'bg-card border-border'
+            }`}
+          >
+            <AchievementIcon
+              icon={a.icon}
+              unlocked={a.unlocked}
+              celebrate={a.unlocked && sessionUnlockedIds.has(a.id)}
+            />
+            <div className="flex-1 min-w-0">
+              <p
+                className={`text-sm font-bold tracking-wide ${
+                  a.unlocked ? 'text-foreground' : 'text-muted-foreground'
                 }`}
               >
-                {a.unlocked ? (
-                  <Icon size={22} className="text-primary-foreground" />
-                ) : (
-                  <Lock size={18} className="text-muted-foreground" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p
-                  className={`text-sm font-bold tracking-wide ${
-                    a.unlocked ? 'text-foreground' : 'text-muted-foreground'
-                  }`}
-                >
-                  {a.label}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">{a.desc}</p>
-              </div>
-              {a.unlocked && (
-                <span className="text-[10px] text-primary font-bold tracking-widest">UNLOCKED</span>
+                {a.label}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">{a.desc}</p>
+
+              {!a.unlocked && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-muted-foreground tracking-wide">
+                      {a.progress}/{a.target} {a.unit}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground/70">{a.progressPct}%</span>
+                  </div>
+                  <div className="h-1 w-full rounded-full bg-border/60 overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full bg-primary/70"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${a.progressPct}%` }}
+                      transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 + i * 0.04 }}
+                    />
+                  </div>
+                </div>
               )}
-            </motion.div>
-          );
-        })}
+            </div>
+            {a.unlocked && (
+              <span className="text-[10px] text-primary font-bold tracking-widest">UNLOCKED</span>
+            )}
+          </motion.div>
+        ))}
       </div>
     </div>
   );

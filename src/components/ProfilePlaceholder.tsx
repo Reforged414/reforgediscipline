@@ -1,12 +1,16 @@
-import { useMemo, useState } from 'react';
-import { Settings, Flame, Shield, BookOpen, RotateCcw } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Settings, Flame, Shield, BookOpen, RotateCcw, Pencil, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import CountUpNumber from '@/components/dashboard/CountUpNumber';
 import AchievementsScreen from './AchievementsScreen';
 import AchievementIcon from './achievements/AchievementIcon';
 import { computeAchievements, type Achievement } from '@/lib/achievements';
 import { sessionUnlockedIds } from '@/hooks/useAchievements';
+
+const MOTTO_KEY = 'reforged-motto';
 
 interface ProfileProps {
   onOpenSettings?: () => void;
@@ -49,6 +53,39 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
     return 'One day at a time';
   }, [onboardingData]);
 
+  const [motto, setMotto] = useState<string | null>(null);
+  const [editingMotto, setEditingMotto] = useState(false);
+  const [mottoDraft, setMottoDraft] = useState('');
+
+  useEffect(() => {
+    if (isGuest) {
+      setMotto(localStorage.getItem(MOTTO_KEY));
+      return;
+    }
+    if (!user) return;
+    // 'bio' was added after the generated types were last refreshed — cast until they regenerate.
+    (supabase.from('profiles') as any)
+      .select('bio')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }: any) => setMotto(data?.bio ?? null));
+  }, [user, isGuest]);
+
+  const saveMotto = async () => {
+    const value = mottoDraft.trim();
+    setEditingMotto(false);
+    setMotto(value || null);
+    if (isGuest) {
+      if (value) localStorage.setItem(MOTTO_KEY, value);
+      else localStorage.removeItem(MOTTO_KEY);
+      return;
+    }
+    if (!user) return;
+    await (supabase.from('profiles') as any).update({ bio: value || null }).eq('user_id', user.id);
+  };
+
+  const displayMotto = motto ?? quote;
+
   const unlocked = useMemo(() => computeAchievements(store), [store]);
 
   const top4 = unlocked.slice(0, 4);
@@ -81,7 +118,17 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
         className="flex items-center gap-4 px-6 mb-6"
       >
         <div className="relative shrink-0">
-          <div className="w-20 h-20 rounded-full bg-secondary border-2 border-primary flex items-center justify-center">
+          {/* Level-scaled glow ring (same treatment as the Shield activation circle) */}
+          <motion.div
+            aria-hidden
+            className="absolute inset-0 rounded-full"
+            animate={{ opacity: [0.75, 1, 0.75] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+            style={{
+              boxShadow: `0 0 ${Math.min(28 + level * 6, 60)}px -8px hsl(25 95% 53% / ${Math.min(0.18 + (level - 1) * 0.12, 0.7)}), inset 0 0 18px hsl(25 95% 53% / ${Math.min(0.05 + (level - 1) * 0.03, 0.2)})`,
+            }}
+          />
+          <div className="relative w-20 h-20 rounded-full bg-secondary border-2 border-primary flex items-center justify-center">
             <span className="font-display text-3xl text-foreground">{initial}</span>
           </div>
           <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background">
@@ -96,7 +143,40 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
           <p className="text-primary text-sm font-medium mt-0.5">
             Level {level} <span className="text-muted-foreground mx-1">•</span> {xp.toLocaleString()} XP
           </p>
-          <p className="text-muted-foreground italic text-xs mt-1">"{quote}"</p>
+          {editingMotto ? (
+            <div className="flex items-center gap-1.5 mt-1">
+              <input
+                autoFocus
+                value={mottoDraft}
+                onChange={(e) => setMottoDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') saveMotto();
+                  if (e.key === 'Escape') setEditingMotto(false);
+                }}
+                maxLength={80}
+                placeholder="Your motto…"
+                className="flex-1 min-w-0 bg-secondary/70 border border-primary/40 rounded-lg px-2 py-1 text-xs italic text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
+              />
+              <button onClick={saveMotto} aria-label="Save motto" className="text-primary p-1 shrink-0">
+                <Check size={14} />
+              </button>
+              <button onClick={() => setEditingMotto(false)} aria-label="Cancel" className="text-muted-foreground p-1 shrink-0">
+                <X size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => { setMottoDraft(motto ?? ''); setEditingMotto(true); }}
+              className="group flex items-center gap-1.5 mt-1 text-left"
+              aria-label="Edit motto"
+            >
+              <p className="text-muted-foreground italic text-xs">"{displayMotto}"</p>
+              <Pencil
+                size={11}
+                className="text-muted-foreground/60 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 group-active:opacity-100 transition-opacity shrink-0"
+              />
+            </button>
+          )}
         </div>
       </motion.div>
 
@@ -111,7 +191,9 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
           {stats.map((s) => (
             <div key={s.label} className="flex flex-col items-center text-center">
               <s.icon size={22} className={s.color} />
-              <p className="text-2xl font-light text-primary mt-3">{s.value}</p>
+              <p className="text-2xl font-light text-primary mt-3">
+                <CountUpNumber value={s.value} />
+              </p>
               <p className="text-[10px] text-muted-foreground tracking-widest mt-1 leading-tight">{s.label}</p>
             </div>
           ))}

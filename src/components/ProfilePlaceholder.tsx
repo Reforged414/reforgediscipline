@@ -49,10 +49,7 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
     return 'One day at a time';
   }, [onboardingData]);
 
-  const unlocked = useMemo(
-    () => ACHIEVEMENTS.map((a) => ({ ...a, unlocked: a.condition(store) })),
-    [store]
-  );
+  const unlocked = useMemo(() => computeAchievements(store), [store]);
 
   const top4 = unlocked.slice(0, 4);
 
@@ -154,25 +151,18 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
   );
 };
 
-const BadgeTile = ({ achievement }: { achievement: any }) => {
-  const Icon = achievement.icon;
+const BadgeTile = ({ achievement }: { achievement: Achievement }) => {
   return (
     <div
       className={`relative aspect-square rounded-xl flex flex-col items-center justify-center p-3 ${
         achievement.unlocked ? 'bg-primary/15 border border-primary/40' : 'bg-secondary/50 border border-border'
       }`}
     >
-      <div
-        className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-          achievement.unlocked ? 'bg-primary' : 'bg-secondary'
-        }`}
-      >
-        {achievement.unlocked ? (
-          <Icon size={22} className="text-primary-foreground" />
-        ) : (
-          <Lock size={20} className="text-muted-foreground" />
-        )}
-      </div>
+      <AchievementIcon
+        icon={achievement.icon}
+        unlocked={achievement.unlocked}
+        celebrate={achievement.unlocked && sessionUnlockedIds.has(achievement.id)}
+      />
       <p
         className={`text-[10px] tracking-widest text-center mt-3 leading-tight ${
           achievement.unlocked ? 'text-foreground' : 'text-muted-foreground'
@@ -180,6 +170,21 @@ const BadgeTile = ({ achievement }: { achievement: any }) => {
       >
         {achievement.label}
       </p>
+      {!achievement.unlocked && (
+        <>
+          <p className="text-[9px] text-muted-foreground/70 mt-1">
+            {achievement.progress}/{achievement.target} {achievement.unit}
+          </p>
+          <div className="mt-1.5 h-1 w-14 rounded-full bg-border/60 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-primary/70"
+              initial={{ width: 0 }}
+              animate={{ width: `${achievement.progressPct}%` }}
+              transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 };

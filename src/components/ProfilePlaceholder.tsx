@@ -53,6 +53,39 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
     return 'One day at a time';
   }, [onboardingData]);
 
+  const [motto, setMotto] = useState<string | null>(null);
+  const [editingMotto, setEditingMotto] = useState(false);
+  const [mottoDraft, setMottoDraft] = useState('');
+
+  useEffect(() => {
+    if (isGuest) {
+      setMotto(localStorage.getItem(MOTTO_KEY));
+      return;
+    }
+    if (!user) return;
+    supabase
+      .from('profiles')
+      .select('bio')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => setMotto(data?.bio ?? null));
+  }, [user, isGuest]);
+
+  const saveMotto = async () => {
+    const value = mottoDraft.trim();
+    setEditingMotto(false);
+    setMotto(value || null);
+    if (isGuest) {
+      if (value) localStorage.setItem(MOTTO_KEY, value);
+      else localStorage.removeItem(MOTTO_KEY);
+      return;
+    }
+    if (!user) return;
+    await supabase.from('profiles').update({ bio: value || null }).eq('user_id', user.id);
+  };
+
+  const displayMotto = motto ?? quote;
+
   const unlocked = useMemo(() => computeAchievements(store), [store]);
 
   const top4 = unlocked.slice(0, 4);

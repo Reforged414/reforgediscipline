@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, ChevronRight, ExternalLink, Mail, Shield, FileText, Bell, Pencil, LogOut, Trash2, User } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
+import pkg from '../../package.json';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppStore } from '@/store/useAppStore';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,7 +75,7 @@ const SettingsScreen = ({ onBack }: Props) => {
   const { notificationPrefs, updateNotificationPrefs, resetAllLocalData } = useAppStore();
 
   const [view, setView] = useState<Subview>('main');
-  const [appVersion, setAppVersion] = useState<string>('');
+  const [appVersion, setAppVersion] = useState<string>(`Reforged v${pkg.version}`);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;

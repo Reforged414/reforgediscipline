@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, ChevronRight, ExternalLink, Mail, Shield, FileText, Bell, Pencil, LogOut, Trash2, User } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppStore } from '@/store/useAppStore';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import OrangeToggle from '@/components/ui/OrangeToggle';
 import {
   Dialog,
   DialogContent,
@@ -71,6 +74,14 @@ const SettingsScreen = ({ onBack }: Props) => {
   const { notificationPrefs, updateNotificationPrefs, resetAllLocalData } = useAppStore();
 
   const [view, setView] = useState<Subview>('main');
+  const [appVersion, setAppVersion] = useState<string>('');
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    App.getInfo()
+      .then((info) => setAppVersion(`Reforged v${info.version} (${info.build})`))
+      .catch(() => {});
+  }, []);
 
   // Username dialog
   const [usernameOpen, setUsernameOpen] = useState(false);

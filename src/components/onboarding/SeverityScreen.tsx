@@ -45,7 +45,7 @@ const SeverityScreen = ({ step, total, selected: init, onBack, onNext, editMode 
                 transition={{ duration: 0.25, ease: 'easeOut' }}
                 className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl border ${
                   isSelected
-                    ? 'border-primary bg-primary/5'
+                    ? 'border-primary bg-primary/10'
                     : 'border-border bg-secondary'
                 }`}
               >
@@ -56,7 +56,7 @@ const SeverityScreen = ({ step, total, selected: init, onBack, onNext, editMode 
                 >
                   {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
                 </div>
-                <span className={`text-sm ${isSelected ? 'text-primary font-medium' : 'text-foreground'}`}>
+                <span className="text-sm text-foreground">
                   {opt}
                 </span>
               </motion.button>

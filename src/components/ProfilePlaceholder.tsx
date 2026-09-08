@@ -1,20 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Settings, Flame, Shield, BookOpen, RotateCcw, Award, Lock, BadgeCheck } from 'lucide-react';
+import { Settings, Flame, Shield, BookOpen, RotateCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/contexts/AuthContext';
 import AchievementsScreen from './AchievementsScreen';
-
-const ACHIEVEMENTS = [
-  { id: '3day', label: '3 DAY STREAK', condition: (s: any) => s.streak >= 3, icon: Award, desc: 'Reach a 3-day streak' },
-  { id: 'firstweek', label: 'FIRST WEEK COMPLETED', condition: (s: any) => s.streak >= 7, icon: BadgeCheck, desc: 'Reach a 7-day streak' },
-  { id: '30day', label: '30 DAY TITAN', condition: (s: any) => s.streak >= 30, icon: Award, desc: 'Reach a 30-day streak' },
-  { id: 'journalist', label: 'JOURNALIST MASTER', condition: (s: any) => (s.journalLogs?.length ?? 0) >= 10, icon: BookOpen, desc: 'Write 10 journal entries' },
-  { id: '60day', label: '60 DAY WARRIOR', condition: (s: any) => s.streak >= 60, icon: Award, desc: 'Reach a 60-day streak' },
-  { id: '90day', label: '90 DAY LEGEND', condition: (s: any) => s.streak >= 90, icon: Award, desc: 'Reach a 90-day streak' },
-  { id: 'urge25', label: 'URGE CRUSHER', condition: (s: any) => (s.resistedTimestamps?.length ?? 0) >= 25, icon: Shield, desc: 'Resist 25 urges' },
-  { id: 'urge100', label: 'IRON WILL', condition: (s: any) => (s.resistedTimestamps?.length ?? 0) >= 100, icon: Shield, desc: 'Resist 100 urges' },
-];
+import AchievementIcon from './achievements/AchievementIcon';
+import { computeAchievements, type Achievement } from '@/lib/achievements';
+import { sessionUnlockedIds } from '@/hooks/useAchievements';
 
 interface ProfileProps {
   onOpenSettings?: () => void;

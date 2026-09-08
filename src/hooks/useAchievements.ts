@@ -4,6 +4,9 @@ import { computeAchievements, type Achievement } from '@/lib/achievements';
 
 const SEEN_KEY = 'reforged-seen-achievements';
 
+/** Ids unlocked during this app session — used to play the unlock animation on cards. */
+export const sessionUnlockedIds = new Set<string>();
+
 const readSeen = (): string[] => {
   try {
     const raw = localStorage.getItem(SEEN_KEY);

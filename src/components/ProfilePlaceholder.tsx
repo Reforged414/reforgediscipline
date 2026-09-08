@@ -118,7 +118,17 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
         className="flex items-center gap-4 px-6 mb-6"
       >
         <div className="relative shrink-0">
-          <div className="w-20 h-20 rounded-full bg-secondary border-2 border-primary flex items-center justify-center">
+          {/* Level-scaled glow ring (same treatment as the Shield activation circle) */}
+          <motion.div
+            aria-hidden
+            className="absolute inset-0 rounded-full"
+            animate={{ opacity: [0.75, 1, 0.75] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+            style={{
+              boxShadow: `0 0 ${Math.min(28 + level * 6, 60)}px -8px hsl(25 95% 53% / ${Math.min(0.18 + (level - 1) * 0.12, 0.7)}), inset 0 0 18px hsl(25 95% 53% / ${Math.min(0.05 + (level - 1) * 0.03, 0.2)})`,
+            }}
+          />
+          <div className="relative w-20 h-20 rounded-full bg-secondary border-2 border-primary flex items-center justify-center">
             <span className="font-display text-3xl text-foreground">{initial}</span>
           </div>
           <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background">

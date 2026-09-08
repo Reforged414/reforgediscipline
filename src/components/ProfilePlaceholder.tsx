@@ -63,12 +63,12 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
       return;
     }
     if (!user) return;
-    supabase
-      .from('profiles')
+    // 'bio' was added after the generated types were last refreshed — cast until they regenerate.
+    (supabase.from('profiles') as any)
       .select('bio')
       .eq('user_id', user.id)
       .maybeSingle()
-      .then(({ data }) => setMotto(data?.bio ?? null));
+      .then(({ data }: any) => setMotto(data?.bio ?? null));
   }, [user, isGuest]);
 
   const saveMotto = async () => {
@@ -81,7 +81,7 @@ const ProfilePlaceholder = ({ onOpenSettings }: ProfileProps) => {
       return;
     }
     if (!user) return;
-    await supabase.from('profiles').update({ bio: value || null }).eq('user_id', user.id);
+    await (supabase.from('profiles') as any).update({ bio: value || null }).eq('user_id', user.id);
   };
 
   const displayMotto = motto ?? quote;

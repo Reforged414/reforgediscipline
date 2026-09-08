@@ -2,8 +2,14 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import OnboardingHeader from './OnboardingHeader';
 import ContinueButton from './ContinueButton';
+import { Calendar, Repeat, Clock, AlertTriangle } from 'lucide-react';
 
-const OPTIONS = ['Occasional', 'Frequent', 'Habitual', 'Severe'];
+const OPTIONS = [
+  { id: 'Occasional', label: 'Occasional', icon: Calendar },
+  { id: 'Frequent', label: 'Frequent', icon: Repeat },
+  { id: 'Habitual', label: 'Habitual', icon: Clock },
+  { id: 'Severe', label: 'Severe', icon: AlertTriangle },
+];
 
 interface Props {
   step: number;
@@ -31,34 +37,28 @@ const SeverityScreen = ({ step, total, selected: init, onBack, onNext, editMode 
           <h1 className="text-3xl font-bold text-foreground mb-2">
             How Often Does This<br />Happen?
           </h1>
+          <p className="text-muted-foreground text-sm">Be honest — this shapes your plan.</p>
         </motion.div>
 
-        <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
           {OPTIONS.map((opt) => {
-            const isSelected = selected === opt;
+            const isSelected = selected === opt.id;
+            const Icon = opt.icon;
             return (
               <motion.button
-                key={opt}
-                onClick={() => setSelected(opt)}
-                whileTap={{ scale: 0.97 }}
-                animate={isSelected ? { scale: [1, 1.03, 1] } : { scale: 1 }}
+                key={opt.id}
+                onClick={() => setSelected(opt.id)}
+                whileTap={{ scale: 0.96 }}
+                animate={isSelected ? { scale: [1, 1.04, 1] } : { scale: 1 }}
                 transition={{ duration: 0.25, ease: 'easeOut' }}
-                className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl border ${
+                className={`flex flex-col items-center gap-3 px-4 py-5 rounded-xl border ${
                   isSelected
                     ? 'border-primary bg-primary/10'
                     : 'border-border bg-secondary'
                 }`}
               >
-                <div
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                    isSelected ? 'border-primary' : 'border-muted-foreground/40'
-                  }`}
-                >
-                  {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                </div>
-                <span className="text-sm text-foreground">
-                  {opt}
-                </span>
+                <Icon size={24} className="text-primary" />
+                <span className="text-foreground text-sm">{opt.label}</span>
               </motion.button>
             );
           })}

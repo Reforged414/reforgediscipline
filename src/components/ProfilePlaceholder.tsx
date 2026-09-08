@@ -1,12 +1,16 @@
-import { useMemo, useState } from 'react';
-import { Settings, Flame, Shield, BookOpen, RotateCcw } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Settings, Flame, Shield, BookOpen, RotateCcw, Pencil, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import CountUpNumber from '@/components/dashboard/CountUpNumber';
 import AchievementsScreen from './AchievementsScreen';
 import AchievementIcon from './achievements/AchievementIcon';
 import { computeAchievements, type Achievement } from '@/lib/achievements';
 import { sessionUnlockedIds } from '@/hooks/useAchievements';
+
+const MOTTO_KEY = 'reforged-motto';
 
 interface ProfileProps {
   onOpenSettings?: () => void;

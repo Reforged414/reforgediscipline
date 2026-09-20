@@ -4,10 +4,6 @@ const config: CapacitorConfig = {
   appId: 'com.reforged.discipline',
   appName: 'Reforged Discipline',
   webDir: 'dist',
-  server: {
-    url: 'https://reforgediscipline.lovable.app?forceHideBadge=true',
-    cleartext: true,
-  },
   plugins: {
     GoogleSignIn: {
       providers: ['google.com'],

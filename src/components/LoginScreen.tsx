@@ -5,6 +5,7 @@ import { lovable } from '@/integrations/lovable';
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 
 interface LoginScreenProps {
   onBack?: () => void;

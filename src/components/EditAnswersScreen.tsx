@@ -17,7 +17,14 @@ const EditAnswersScreen = ({ onBack }: Props) => {
   const { onboardingData, updateOnboardingData } = useAppStore();
   const [section, setSection] = useState<Section>('menu');
 
-  const data = onboardingData ?? { goals: [], identity: [], lastRelapse: '', triggers: [], severity: '' };
+  const data = {
+    goals: [],
+    identity: [],
+    lastRelapse: '',
+    triggers: [],
+    severity: '',
+    ...onboardingData,
+  };
 
   const saveAndReturn = (label: string) => {
     toast({ title: 'Saved', description: `${label} updated.` });

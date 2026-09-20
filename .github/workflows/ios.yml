@@ -33,7 +33,7 @@ jobs:
           echo "Injecting URL Schemes into Info.plist..."
           
           # Use macOS native plutil to safely inject the custom URL types array
-          plutil -insert CFBundleURLTypes -json '[{"CFBundleURLSchemes":["com.googleusercontent.apps.901513190581-kebnm9ij83851i249b10mk286gi2r0ov"]}]' "$INFOPLIST"
+                    plutil -insert CFBundleURLTypes -json '[{"CFBundleURLSchemes":["com.googleusercontent.apps.901513190581-kebnm9ij83851i249b10mk286gi2r0ov"]},{"CFBundleURLSchemes":["com.reforged.discipline"]}]' "$INFOPLIST"
 
       - name: Install Apple Certificate
         uses: apple-actions/import-codesign-certs@v2

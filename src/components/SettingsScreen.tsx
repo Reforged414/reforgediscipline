@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 import EditAnswersScreen from './EditAnswersScreen';
+import { DebugErrorBoundary } from './DebugErrorBoundary';
 import LegalScreen from './LegalScreen';
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '@/content/legal';
 
@@ -159,7 +160,7 @@ const SettingsScreen = ({ onBack }: Props) => {
   };
 
   if (view === 'editAnswers') {
-    return <EditAnswersScreen onBack={() => setView('main')} />;
+    return <DebugErrorBoundary><EditAnswersScreen onBack={() => setView('main')} /></DebugErrorBoundary>;
   }
 
   if (view === 'privacy') {

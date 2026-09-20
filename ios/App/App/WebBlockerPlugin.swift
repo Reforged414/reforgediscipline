@@ -138,18 +138,29 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
             call.reject("No view controller available")
             return
         }
+        let shieldIsActive = store.webContent.blockedByFilter != nil
+        let previousSelection = WebBlockerPlugin.loadAppSelection()
         DispatchQueue.main.async {
             let model = AppSelectionModel()
-            if let saved = WebBlockerPlugin.loadAppSelection() {
+            if let saved = previousSelection {
                 model.selection = saved
             }
             let pickerView = AppActivityPickerView(model: model) { selection in
-                WebBlockerPlugin.saveAppSelection(selection)
+                var finalSelection = selection
+                if shieldIsActive, let previous = previousSelection {
+                    // Commitment lock: while Shield is active, apps can only
+                    // be ADDED, never removed. Any app the user unchecks in
+                    // the picker is silently re-added on save.
+                    finalSelection.applicationTokens = previous.applicationTokens.union(selection.applicationTokens)
+                    finalSelection.categoryTokens = previous.categoryTokens.union(selection.categoryTokens)
+                }
+                WebBlockerPlugin.saveAppSelection(finalSelection)
                 vc.dismiss(animated: true) {
                     call.resolve([
                         "selected": true,
-                        "appCount": selection.applicationTokens.count,
-                        "categoryCount": selection.categoryTokens.count
+                        "appCount": finalSelection.applicationTokens.count,
+                        "categoryCount": finalSelection.categoryTokens.count,
+                        "locked": shieldIsActive
                     ])
                 }
             }

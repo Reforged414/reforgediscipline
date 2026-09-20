@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable';
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
+import { Capacitor } from '@capacitor/core';
 
 interface LoginScreenProps {
   onBack?: () => void;
@@ -106,7 +107,9 @@ export default function LoginScreen({ onBack, onSignedIn }: LoginScreenProps = {
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: window.location.origin,
+        redirect_uri: Capacitor.isNativePlatform()
+          ? 'com.reforged.discipline://auth/callback'
+          : window.location.origin,
       });
       if (result.error) throw result.error;
       if (!result.redirected) {
@@ -160,7 +163,7 @@ export default function LoginScreen({ onBack, onSignedIn }: LoginScreenProps = {
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); if (error) setError(null); }}
                 placeholder="you@example.com"
-                className="flex h-11 w-full rounded-xl border border-border/60 bg-secondary/60 pl-10 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground shadow-sm transition-all focus-visible:border-primary/50 focus-visible:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="flex h-11 w-full rounded-xl border border-border/60 bg-secondary/60 pl-10 pr-3 py-2 text-base text-foreground placeholder:text-muted-foreground shadow-sm transition-all focus-visible:border-primary/50 focus-visible:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 disabled={loading}
                 required
               />
@@ -180,7 +183,7 @@ export default function LoginScreen({ onBack, onSignedIn }: LoginScreenProps = {
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); if (error) setError(null); }}
                 placeholder="••••••••"
-                className="flex h-11 w-full rounded-xl border border-border/60 bg-secondary/60 pl-10 pr-10 py-2 text-sm text-foreground placeholder:text-muted-foreground shadow-sm transition-all focus-visible:border-primary/50 focus-visible:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="flex h-11 w-full rounded-xl border border-border/60 bg-secondary/60 pl-10 pr-10 py-2 text-base text-foreground placeholder:text-muted-foreground shadow-sm transition-all focus-visible:border-primary/50 focus-visible:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 disabled={loading}
                 required
                 minLength={6}

@@ -71,7 +71,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     CapacitorApp.addListener('appUrlOpen', async (event: URLOpenListenerEvent) => {
       try {
         const url = event.url;
-        if (!url || !url.includes('auth/callback')) return;
+        // TEMP DEBUG — remove once OAuth callback is confirmed working
+        window.alert('appUrlOpen fired with URL: ' + url);
+        if (!url || !url.includes('auth/callback')) {
+          window.alert('URL did not match auth/callback, ignoring');
+          return;
+        }
 
         // Parse params from either query string or fragment (Supabase uses both depending on flow).
         const parsed = new URL(url);

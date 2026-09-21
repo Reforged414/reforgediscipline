@@ -3,7 +3,13 @@
 import { createLovableAuth } from "@lovable.dev/cloud-auth-js";
 import type { OAuthProvider } from "@lovable.dev/cloud-auth-js";
 import { supabase } from "../supabase/client";
-const lovableAuth = createLovableAuth();
+import { Capacitor } from "@capacitor/core";
+
+const lovableAuth = createLovableAuth(
+  Capacitor.isNativePlatform()
+    ? { oauthBrokerUrl: "https://reforgediscipline.lovable.app/~oauth/initiate" }
+    : undefined
+);
 
 type SignInOptions = {
   redirect_uri?: string;

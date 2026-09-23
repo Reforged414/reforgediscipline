@@ -94,11 +94,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         const accessToken = params.get('access_token');
         const refreshToken = params.get('refresh_token');
+        window.alert('accessToken present: ' + !!accessToken + ', refreshToken present: ' + !!refreshToken);
         if (accessToken && refreshToken) {
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
           });
+          window.alert('setSession result — error: ' + JSON.stringify(error) + ', session present: ' + !!data?.session);
           if (error) throw error;
           if (data.session) setSession(data.session);
           return;

@@ -113,7 +113,7 @@ const Index = () => {
   // Keep the explicit entry state aligned only for app bootstrap/sign-out cases.
   useEffect(() => {
     if (loading) return;
-    if (session && currentScreen === 'welcome') {
+    if (session && (currentScreen === 'welcome' || currentScreen === 'login')) {
       setCurrentScreen('dashboard');
     }
     // Guests legitimately live on the dashboard without a session — don't bounce them.

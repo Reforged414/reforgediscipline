@@ -69,50 +69,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let handle: { remove: () => Promise<void> } | undefined;
 
     CapacitorApp.addListener('appUrlOpen', async (event: URLOpenListenerEvent) => {
-      try {
-        const url = event.url;
-        // TEMP DEBUG — remove once OAuth callback is confirmed working
-        window.alert('appUrlOpen fired with URL: ' + url);
-        if (!url || !url.includes('auth/callback')) {
-          window.alert('URL did not match auth/callback, ignoring');
-          return;
-        }
+  try {
+    const url = event.url;
+    if (!url || !url.includes('auth/callback')) return;
 
-        // Parse params from either query string or fragment (Supabase uses both depending on flow).
-        const parsed = new URL(url);
-        const search = parsed.search.startsWith('?') ? parsed.search.slice(1) : parsed.search;
-        const hash = parsed.hash.startsWith('#') ? parsed.hash.slice(1) : parsed.hash;
-        const params = new URLSearchParams(search || hash);
+    // Parse params from either query string or fragment (Supabase uses both depending on flow).
+    const parsed = new URL(url);
+    const search = parsed.search.startsWith('?') ? parsed.search.slice(1) : parsed.search;
+    const hash = parsed.hash.startsWith('#') ? parsed.hash.slice(1) : parsed.hash;
+    const params = new URLSearchParams(search || hash);
 
-        const code = params.get('code');
-        if (code) {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-          if (data.session) setSession(data.session);
-          return;
-        }
+    const code = params.get('code');
+    if (code) {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+      if (error) throw error;
+      if (data.session) setSession(data.session);
+      return;
+    }
 
-        const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
-        window.alert('accessToken present: ' + !!accessToken + ', refreshToken present: ' + !!refreshToken);
-        if (accessToken && refreshToken) {
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-          window.alert('setSession result — error: ' + JSON.stringify(error) + ', session present: ' + !!data?.session);
-          if (error) throw error;
-          if (data.session) setSession(data.session);
-          return;
-        }
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    if (accessToken && refreshToken) {
+      const { data, error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+      if (error) throw error;
+      if (data.session) setSession(data.session);
+      return;
+    }
 
-        // Fallback: pick up whatever session is now available.
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) setSession(session);
-      } catch (err) {
-        console.error('OAuth deep-link handling failed', err);
-      }
-    }).then((h) => { handle = h; });
+    // Fallback: pick up whatever session is now available.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) setSession(session);
+  } catch (err) {
+    console.error('OAuth deep-link handling failed', err);
+  }
+}).then((h) => { handle = h; });
 
     return () => {
       handle?.remove();

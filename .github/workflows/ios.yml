@@ -92,6 +92,7 @@ jobs:
           mkdir -p /tmp/ipa_inspect
           cd /tmp/ipa_inspect
           unzip -q $RUNNER_TEMP/export/App.ipa
+          echo "=== Actual CFBundleVersion in built .ipa ===" && /usr/libexec/PlistBuddy -c "Print CFBundleVersion" Payload/App.app/Info.plist && /usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" Payload/App.app/Info.plist
           echo "=== Entitlements in exported app ==="
           codesign -d --entitlements :- Payload/App.app
           echo "=== Checking for WebBlockerPlugin symbol in binary ==="

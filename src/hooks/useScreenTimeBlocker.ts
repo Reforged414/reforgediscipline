@@ -34,10 +34,11 @@ interface IOSWebBlockerPlugin {
   activateShield(): Promise<{ active: boolean; reason?: string }>;
   deactivateShield(): Promise<{ active: boolean }>;
   openSettings(): Promise<{ opened?: boolean }>;
-  showAppPicker(): Promise<{ selected: boolean; appCount: number; categoryCount: number }>;
-  activateAppShield(): Promise<{ active: boolean; reason?: string }>;
+  showAppPicker(options: { userId?: string }): Promise<{ selected: boolean; appCount: number; categoryCount: number }>;
+  activateAppShield(options: { userId?: string }): Promise<{ active: boolean; reason?: string }>;
   deactivateAppShield(): Promise<{ active: boolean }>;
-  checkAppSelection(): Promise<AppSelectionState>;
+  checkAppSelection(options: { userId?: string }): Promise<AppSelectionState>;
+  isShieldActive(): Promise<{ active: boolean }>;
 }
 
 
@@ -144,10 +145,10 @@ async function openSystemSettingsImpl() {
 
 // --- App blocking (iOS only for now — Android app blocking not yet implemented) ---
 
-async function showAppPickerImpl(): Promise<{ selected: boolean; appCount: number; categoryCount: number }> {
+async function showAppPickerImpl(userId?: string): Promise<{ selected: boolean; appCount: number; categoryCount: number }> {
   if (iosWebBlocker) {
     try {
-      return await iosWebBlocker.showAppPicker();
+      return await iosWebBlocker.showAppPicker({ userId });
     } catch (e: any) {
       return { selected: false, appCount: 0, categoryCount: 0 };
     }
@@ -155,8 +156,8 @@ async function showAppPickerImpl(): Promise<{ selected: boolean; appCount: numbe
   return { selected: false, appCount: 0, categoryCount: 0 };
 }
 
-async function activateAppShieldImpl() {
-  if (iosWebBlocker) return iosWebBlocker.activateAppShield();
+async function activateAppShieldImpl(userId?: string) {
+  if (iosWebBlocker) return iosWebBlocker.activateAppShield({ userId });
   return { active: false, reason: 'unsupported' };
 }
 
@@ -165,15 +166,27 @@ async function deactivateAppShieldImpl() {
   return { active: false };
 }
 
-async function checkAppSelectionImpl(): Promise<AppSelectionState> {
+async function checkAppSelectionImpl(userId?: string): Promise<AppSelectionState> {
   if (iosWebBlocker) {
     try {
-      return await iosWebBlocker.checkAppSelection();
+      return await iosWebBlocker.checkAppSelection({ userId });
     } catch (e: any) {
       return { hasSelection: false, appCount: 0, categoryCount: 0 };
     }
   }
   return { hasSelection: false, appCount: 0, categoryCount: 0 };
+}
+
+async function isShieldActiveImpl(): Promise<boolean> {
+  if (iosWebBlocker) {
+    try {
+      const res = await iosWebBlocker.isShieldActive();
+      return !!res?.active;
+    } catch {
+      return false;
+    }
+  }
+  return false;
 }
 
 export async function ensureBlockerPermissions(): Promise<PermissionState> {
@@ -188,6 +201,13 @@ export async function ensureBlockerPermissions(): Promise<PermissionState> {
   return result;
 }
 
+/**
+ * Standalone check usable outside React components (e.g. in AuthContext before sign-out).
+ */
+export async function checkShieldActive(): Promise<boolean> {
+  return isShieldActiveImpl();
+}
+
 export function useScreenTimeBlocker() {
   const requestAuthorization = useCallback(() => ensureBlockerPermissions(), []);
   const checkPermissions = useCallback(() => checkPermissionsImpl(), []);
@@ -197,10 +217,11 @@ export function useScreenTimeBlocker() {
   const activate = useCallback(() => activateImpl(), []);
   const deactivate = useCallback(() => deactivateImpl(), []);
 
-  const showAppPicker = useCallback(() => showAppPickerImpl(), []);
-  const activateAppShield = useCallback(() => activateAppShieldImpl(), []);
+  const showAppPicker = useCallback((userId?: string) => showAppPickerImpl(userId), []);
+  const activateAppShield = useCallback((userId?: string) => activateAppShieldImpl(userId), []);
   const deactivateAppShield = useCallback(() => deactivateAppShieldImpl(), []);
-  const checkAppSelection = useCallback(() => checkAppSelectionImpl(), []);
+  const checkAppSelection = useCallback((userId?: string) => checkAppSelectionImpl(userId), []);
+  const isShieldActive = useCallback(() => isShieldActiveImpl(), []);
 
   return {
     isNative: Capacitor.isNativePlatform(),
@@ -216,5 +237,6 @@ export function useScreenTimeBlocker() {
     activateAppShield,
     deactivateAppShield,
     checkAppSelection,
+    isShieldActive,
   };
 }

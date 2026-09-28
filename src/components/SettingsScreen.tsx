@@ -155,8 +155,12 @@ const SettingsScreen = ({ onBack }: Props) => {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    toast({ title: 'Signed out' });
+    try {
+      await signOut();
+      toast({ title: 'Signed out' });
+    } catch (err: any) {
+      toast({ title: 'Sign out failed', description: err.message ?? 'Try again later.', variant: 'destructive' });
+    }
   };
 
   if (view === 'editAnswers') {

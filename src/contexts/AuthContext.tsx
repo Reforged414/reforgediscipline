@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     const shieldActive = await checkShieldActive();
     if (shieldActive) {
-      throw new Error('SHIELD_ACTIVE');
+      throw new Error('Turn off Shield before signing out or deleting your account.');
     }
     await supabase.auth.signOut();
     setSession(null);

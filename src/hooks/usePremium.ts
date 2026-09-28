@@ -105,6 +105,26 @@ export async function restorePurchases(): Promise<boolean> {
   return active;
 }
 
+export async function loginRevenueCat(userId: string) {
+  await initRevenueCat();
+  try {
+    await Purchases.logIn({ appUserID: userId });
+    notifyPremiumChanged();
+  } catch (err) {
+    console.error('[RevenueCat] logIn failed', err);
+  }
+}
+
+export async function logoutRevenueCat() {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    await Purchases.logOut();
+    notifyPremiumChanged();
+  } catch (err) {
+    console.error('[RevenueCat] logOut failed', err);
+  }
+}
+
 export function usePremium() {
   const [isPremium, setIsPremium] = useState(false);
   const [loading, setLoading] = useState(true);

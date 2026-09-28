@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAppStore } from '@/store/useAppStore';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp, type URLOpenListenerEvent } from '@capacitor/app';
+import { checkShieldActive } from '@/hooks/useScreenTimeBlocker';
 
 interface AuthContextType {
   session: Session | null;
@@ -113,6 +114,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signOut = async () => {
+    const shieldActive = await checkShieldActive();
+    if (shieldActive) {
+      throw new Error('SHIELD_ACTIVE');
+    }
     await supabase.auth.signOut();
     setSession(null);
     setIsGuest(false);

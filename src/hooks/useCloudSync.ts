@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppStore } from '@/store/useAppStore';
+import { loginRevenueCat, logoutRevenueCat } from '@/hooks/usePremium';
 /**
  * Fetches the user's cloud row and applies it to the local store.
  * Returns true when cloud data existed and was applied.
@@ -54,9 +55,11 @@ export function useCloudSync() {
     if (!user || isGuest) {
       hasLoaded.current = false;
       setLoading(false);
+      logoutRevenueCat();
       return;
     }
     setLoading(true);
+    loginRevenueCat(user.id);
 
     const loadFromCloud = async () => {
       // If a guest-to-account transfer is pending, skip overwriting local state.

@@ -87,11 +87,16 @@ async function deactivateShield(): Promise<boolean> {
   return true;
 }
 
-const STORAGE_KEY = 'reforged-shield-config';
+const STORAGE_KEY_PREFIX = 'reforged-shield-config_';
+const GUEST_STORAGE_KEY = 'reforged-shield-config_guest';
 
-function readConfig(): ShieldConfig {
+function getStorageKey(userId?: string | null): string {
+  return userId ? STORAGE_KEY_PREFIX + userId : GUEST_STORAGE_KEY;
+}
+
+function readConfig(userId?: string | null): ShieldConfig {
   try {
-    return { ...DEFAULT_CONFIG, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') };
+    return { ...DEFAULT_CONFIG, ...JSON.parse(localStorage.getItem(getStorageKey(userId)) || '{}') };
   } catch {
     return DEFAULT_CONFIG;
   }
@@ -120,7 +125,7 @@ const ReforgedShield = () => {
   const { isPremium } = usePremium();
   const { user } = useAuth();
   const blocker = useScreenTimeBlocker();
-  const [config, setConfig] = useState<ShieldConfig>(() => readConfig());
+  const [config, setConfig] = useState<ShieldConfig>(() => readConfig(user?.id));
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [durationPickerOpen, setDurationPickerOpen] = useState(false);
@@ -139,10 +144,16 @@ const ReforgedShield = () => {
 
   // re-read config when another screen deep-links a schedule suggestion
   useEffect(() => {
-    const sync = () => setConfig(readConfig());
+    const sync = () => setConfig(readConfig(user?.id));
     window.addEventListener(SHIELD_CONFIG_EVENT, sync);
     return () => window.removeEventListener(SHIELD_CONFIG_EVENT, sync);
   }, []);
+
+  // reload config when the signed-in account changes, so Shield state
+  // (including the cooldown) is scoped per-account rather than per-device
+  useEffect(() => {
+    setConfig(readConfig(user?.id));
+  }, [user?.id]);
 
   // hydrate current native app selection
   useEffect(() => {
@@ -168,7 +179,7 @@ const ReforgedShield = () => {
   const update = (patch: Partial<ShieldConfig>) => {
     setConfig((prev) => {
       const next = { ...prev, ...patch };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      localStorage.setItem(getStorageKey(user?.id), JSON.stringify(next));
       return next;
     });
   };

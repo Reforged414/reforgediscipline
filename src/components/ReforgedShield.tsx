@@ -242,6 +242,10 @@ const ReforgedShield = () => {
   // ── App blocking ─────────────────────────────────────────────────────────
   const handleAppBlockToggle = async (v: boolean) => {
     if (appBusy) return;
+    if (!isPremium) {
+      setPaywallOpen(true);
+      return;
+    }
     setAppBusy(true);
     try {
       if (!v) {
@@ -273,6 +277,10 @@ const ReforgedShield = () => {
 
   const editAppSelection = async () => {
     if (appBusy) return;
+    if (!isPremium) {
+      setPaywallOpen(true);
+      return;
+    }
     setAppBusy(true);
     try {
       const picked = await blocker.showAppPicker(user?.id);
@@ -300,6 +308,7 @@ const ReforgedShield = () => {
     if (now - due >= 0 && now - due < 60_000 && scheduleFiredRef.current !== due) {
       scheduleFiredRef.current = due;
       (async () => {
+        if (!isPremium) return;
         if (config.blockWebsites) await blocker.activate().catch(() => undefined);
         if (config.blockApps) await blocker.activateAppShield(user?.id).catch(() => undefined);
         if (!config.active) {

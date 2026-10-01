@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, ShieldCheck, Globe, Search, Lock, Sparkles, AlertTriangle, X, Settings as SettingsIcon, LayoutGrid, EyeOff, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePremium } from '@/hooks/usePremium';
+import { useAuth } from '@/contexts/AuthContext';
 import { useScreenTimeBlocker, type PermissionState } from '@/hooks/useScreenTimeBlocker';
 import PaywallModal from '@/components/PaywallModal';
 
@@ -117,6 +118,7 @@ function formatRemaining(ms: number) {
 
 const ReforgedShield = () => {
   const { isPremium } = usePremium();
+  const { user } = useAuth();
   const blocker = useScreenTimeBlocker();
   const [config, setConfig] = useState<ShieldConfig>(() => readConfig());
   const [paywallOpen, setPaywallOpen] = useState(false);
@@ -145,7 +147,7 @@ const ReforgedShield = () => {
   // hydrate current native app selection
   useEffect(() => {
     blocker
-      .checkAppSelection()
+      .checkAppSelection(user?.id)
       .then((s) => setAppCount(s.appCount + s.categoryCount))
       .catch(() => undefined);
   }, []);
@@ -246,16 +248,16 @@ const ReforgedShield = () => {
         await blocker.deactivateAppShield();
         update({ blockApps: false });
       } else {
-        let selection = await blocker.checkAppSelection();
+        let selection = await blocker.checkAppSelection(user?.id);
         if (!selection.hasSelection) {
-          const picked = await blocker.showAppPicker();
+          const picked = await blocker.showAppPicker(user?.id);
           if (!picked.selected) {
             toast('No apps selected.');
             return;
           }
-          selection = await blocker.checkAppSelection();
+          selection = await blocker.checkAppSelection(user?.id);
         }
-        const res = await blocker.activateAppShield();
+        const res = await blocker.activateAppShield(user?.id);
         if (!res.active) {
           toast.error('Could not activate app blocking.');
           return;
@@ -273,11 +275,11 @@ const ReforgedShield = () => {
     if (appBusy) return;
     setAppBusy(true);
     try {
-      const picked = await blocker.showAppPicker();
+      const picked = await blocker.showAppPicker(user?.id);
       if (!picked.selected) return;
-      const selection = await blocker.checkAppSelection();
+      const selection = await blocker.checkAppSelection(user?.id);
       setAppCount(selection.appCount + selection.categoryCount);
-      await blocker.activateAppShield();
+      await blocker.activateAppShield(user?.id);
       toast.success('Selection updated.');
     } finally {
       setAppBusy(false);
@@ -299,7 +301,7 @@ const ReforgedShield = () => {
       scheduleFiredRef.current = due;
       (async () => {
         if (config.blockWebsites) await blocker.activate().catch(() => undefined);
-        if (config.blockApps) await blocker.activateAppShield().catch(() => undefined);
+        if (config.blockApps) await blocker.activateAppShield(user?.id).catch(() => undefined);
         if (!config.active) {
           await activateShield({ ...config, active: true });
           update({ active: true });

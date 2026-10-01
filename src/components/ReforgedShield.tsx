@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { SHIELD_CONFIG_EVENT } from '@/lib/shieldSuggestion';
+import { SHIELD_CONFIG_EVENT, getShieldConfigStorageKey } from '@/lib/shieldSuggestion';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, ShieldCheck, Globe, Search, Lock, Sparkles, AlertTriangle, X, Settings as SettingsIcon, LayoutGrid, EyeOff, Clock } from 'lucide-react';
 import { toast } from 'sonner';
@@ -87,16 +87,9 @@ async function deactivateShield(): Promise<boolean> {
   return true;
 }
 
-const STORAGE_KEY_PREFIX = 'reforged-shield-config_';
-const GUEST_STORAGE_KEY = 'reforged-shield-config_guest';
-
-function getStorageKey(userId?: string | null): string {
-  return userId ? STORAGE_KEY_PREFIX + userId : GUEST_STORAGE_KEY;
-}
-
 function readConfig(userId?: string | null): ShieldConfig {
   try {
-    return { ...DEFAULT_CONFIG, ...JSON.parse(localStorage.getItem(getStorageKey(userId)) || '{}') };
+    return { ...DEFAULT_CONFIG, ...JSON.parse(localStorage.getItem(getShieldConfigStorageKey(userId)) || '{}') };
   } catch {
     return DEFAULT_CONFIG;
   }
@@ -179,7 +172,7 @@ const ReforgedShield = () => {
   const update = (patch: Partial<ShieldConfig>) => {
     setConfig((prev) => {
       const next = { ...prev, ...patch };
-      localStorage.setItem(getStorageKey(user?.id), JSON.stringify(next));
+      localStorage.setItem(getShieldConfigStorageKey(user?.id), JSON.stringify(next));
       return next;
     });
   };

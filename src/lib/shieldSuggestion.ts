@@ -3,8 +3,13 @@
  * schedule (time range + protection layer) before navigating to that screen.
  */
 
-const STORAGE_KEY = 'reforged-shield-config';
+const STORAGE_KEY_PREFIX = 'reforged-shield-config_';
+const GUEST_STORAGE_KEY = 'reforged-shield-config_guest';
 export const SHIELD_CONFIG_EVENT = 'reforged-shield-config-changed';
+
+export function getShieldConfigStorageKey(userId?: string | null): string {
+  return userId ? STORAGE_KEY_PREFIX + userId : GUEST_STORAGE_KEY;
+}
 
 export type ShieldLayer = 'websites' | 'apps';
 
@@ -15,10 +20,11 @@ export interface ShieldSuggestion {
 }
 
 /** Patch the persisted shield config and notify a mounted Shield screen. */
-export function applyShieldSuggestion({ start, end, layer }: ShieldSuggestion) {
+export function applyShieldSuggestion({ start, end, layer }: ShieldSuggestion, userId?: string | null) {
+  const key = getShieldConfigStorageKey(userId);
   let existing: Record<string, unknown> = {};
   try {
-    existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    existing = JSON.parse(localStorage.getItem(key) || '{}');
   } catch {
     existing = {};
   }
@@ -29,7 +35,7 @@ export function applyShieldSuggestion({ start, end, layer }: ShieldSuggestion) {
     scheduleEnd: end,
     ...(layer === 'websites' ? { blockWebsites: true } : { blockApps: true }),
   };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  localStorage.setItem(key, JSON.stringify(next));
   window.dispatchEvent(new CustomEvent(SHIELD_CONFIG_EVENT));
 }
 

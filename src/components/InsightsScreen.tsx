@@ -1,6 +1,7 @@
 import { Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/useAppStore';
+import { useAuth } from '@/contexts/AuthContext';
 import AICoachPanel, { type RiskWindow } from './AICoachPanel';
 import UrgeHourChart from './insights/UrgeHourChart';
 import TriggerLeaderboard from './insights/TriggerLeaderboard';
@@ -26,6 +27,7 @@ const EmptyHint = ({ children }: { children: React.ReactNode }) => (
 );
 
 const InsightsScreen = ({ onGoToShield }: { onGoToShield?: () => void }) => {
+  const { user } = useAuth();
   const { streak, urgeLogs, relapseLogs, resistedTimestamps, onboardingData, journalLogs } = useAppStore();
 
 
@@ -148,7 +150,7 @@ const InsightsScreen = ({ onGoToShield }: { onGoToShield?: () => void }) => {
       start: hourToClock(rw.startHour),
       end: hourToClock(rw.endHour + 1),
       layer,
-    });
+    }, user?.id);
     toast.success(
       `${layer === 'websites' ? 'Website' : 'App'} blocking scheduled for ${rw.rangeLabel}.`
     );

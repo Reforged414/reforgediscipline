@@ -38,11 +38,18 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "showAppPicker", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "activateAppShield", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "deactivateAppShield", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "checkAppSelection", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "checkAppSelection", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "isShieldActive", returnType: CAPPluginReturnPromise)
     ]
 
     private let store = ManagedSettingsStore()
-    private static let appSelectionKey = "webblocker_app_selection"
+    private static let appSelectionKeyPrefix = "webblocker_app_selection_"
+    private static let fallbackKey = "webblocker_app_selection_guest"
+
+    private static func selectionKey(for userId: String?) -> String {
+        guard let userId = userId, !userId.isEmpty else { return fallbackKey }
+        return appSelectionKeyPrefix + userId
+    }
 
     @objc func requestAuthorization(_ call: CAPPluginCall) {
         if #available(iOS 16.0, *) {
@@ -87,10 +94,6 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
     private func applyShield(enabled: Bool, call: CAPPluginCall) {
         if #available(iOS 16.0, *) {
             if enabled {
-                // .auto() uses Apple's own built-in adult content classifier —
-                // the same intelligence behind Settings > Screen Time > "Limit Adult Websites".
-                // No manual domain list needed. You can optionally add extra domains to
-                // block or exempt on top of it via the two parameters below.
                 store.webContent.blockedByFilter = .auto([], except: [])
                 call.resolve(["active": true, "status": "blocked"])
             } else {
@@ -138,8 +141,10 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
             call.reject("No view controller available")
             return
         }
-        let shieldIsActive = store.webContent.blockedByFilter != nil
-        let previousSelection = WebBlockerPlugin.loadAppSelection()
+        let userId = call.getString("userId")
+        let key = WebBlockerPlugin.selectionKey(for: userId)
+        let shieldIsActive = store.shield.applications != nil || store.shield.applicationCategories != nil
+        let previousSelection = WebBlockerPlugin.loadAppSelection(key: key)
         DispatchQueue.main.async {
             let model = AppSelectionModel()
             if let saved = previousSelection {
@@ -148,13 +153,10 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
             let pickerView = AppActivityPickerView(model: model) { selection in
                 var finalSelection = selection
                 if shieldIsActive, let previous = previousSelection {
-                    // Commitment lock: while Shield is active, apps can only
-                    // be ADDED, never removed. Any app the user unchecks in
-                    // the picker is silently re-added on save.
                     finalSelection.applicationTokens = previous.applicationTokens.union(selection.applicationTokens)
                     finalSelection.categoryTokens = previous.categoryTokens.union(selection.categoryTokens)
                 }
-                WebBlockerPlugin.saveAppSelection(finalSelection)
+                WebBlockerPlugin.saveAppSelection(finalSelection, key: key)
                 vc.dismiss(animated: true) {
                     call.resolve([
                         "selected": true,
@@ -174,7 +176,9 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
             call.reject("Screen Time APIs require iOS 16.0 or later")
             return
         }
-        guard let selection = WebBlockerPlugin.loadAppSelection(),
+        let userId = call.getString("userId")
+        let key = WebBlockerPlugin.selectionKey(for: userId)
+        guard let selection = WebBlockerPlugin.loadAppSelection(key: key),
               !selection.applicationTokens.isEmpty || !selection.categoryTokens.isEmpty else {
             call.resolve(["active": false, "reason": "no_selection"])
             return
@@ -193,7 +197,9 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func checkAppSelection(_ call: CAPPluginCall) {
-        guard let selection = WebBlockerPlugin.loadAppSelection() else {
+        let userId = call.getString("userId")
+        let key = WebBlockerPlugin.selectionKey(for: userId)
+        guard let selection = WebBlockerPlugin.loadAppSelection(key: key) else {
             call.resolve(["hasSelection": false, "appCount": 0, "categoryCount": 0])
             return
         }
@@ -204,24 +210,29 @@ public class WebBlockerPlugin: CAPPlugin, CAPBridgedPlugin {
         ])
     }
 
+    /// Device-level fact: is the OS-level app Shield currently blocking anything right now,
+    /// regardless of which account is signed in. Used to prevent switching accounts while
+    /// a block is active (closing the "switch account to bypass" loophole).
+    @objc func isShieldActive(_ call: CAPPluginCall) {
+        let webActive = store.webContent.blockedByFilter != nil
+        let appActive = store.shield.applications != nil || store.shield.applicationCategories != nil
+        call.resolve(["active": webActive || appActive])
+    }
+
     @available(iOS 16.0, *)
-    private static func saveAppSelection(_ selection: FamilyActivitySelection) {
+    private static func saveAppSelection(_ selection: FamilyActivitySelection, key: String) {
         if let data = try? PropertyListEncoder().encode(selection) {
-            UserDefaults.standard.set(data, forKey: appSelectionKey)
+            UserDefaults.standard.set(data, forKey: key)
         }
     }
 
     @available(iOS 16.0, *)
-    private static func loadAppSelection() -> FamilyActivitySelection? {
-        guard let data = UserDefaults.standard.data(forKey: appSelectionKey) else { return nil }
+    private static func loadAppSelection(key: String) -> FamilyActivitySelection? {
+        guard let data = UserDefaults.standard.data(forKey: key) else { return nil }
         return try? PropertyListDecoder().decode(FamilyActivitySelection.self, from: data)
     }
 }
 
-// Since Capacitor 5, plugins that live inside the app target (rather than an
-// npm package listed in packageClassList) are only loaded if they are handed
-// to the bridge explicitly from a CAPBridgeViewController subclass.
-// Main.storyboard instantiates this class instead of CAPBridgeViewController.
 class MainViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(WebBlockerPlugin())

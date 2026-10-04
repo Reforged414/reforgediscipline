@@ -181,14 +181,11 @@ async function isShieldActiveImpl(): Promise<boolean> {
   if (iosWebBlocker) {
     try {
       const res = await iosWebBlocker.isShieldActive();
-      window.alert('DEBUG isShieldActive raw result: ' + JSON.stringify(res));
       return !!res?.active;
-    } catch (e: any) {
-      window.alert('DEBUG isShieldActive THREW: ' + (e?.message || String(e)));
+    } catch {
       return false;
     }
   }
-  window.alert('DEBUG isShieldActive: iosWebBlocker is null/undefined');
   return false;
 }
 

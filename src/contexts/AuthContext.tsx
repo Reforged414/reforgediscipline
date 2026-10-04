@@ -115,7 +115,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     const shieldActive = await checkShieldActive();
-    window.alert('DEBUG: shieldActive = ' + shieldActive);
     if (shieldActive) {
       throw new Error('Turn off Shield before signing out or deleting your account.');
     }

@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Check, Infinity as InfinityIcon, Brain, BarChart3, Flame, Sparkles, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import type { PurchasesPackage } from '@revenuecat/purchases-capacitor';
 import {
@@ -28,6 +28,18 @@ const BASE_FEATURES = [
   { icon: BarChart3, label: 'Weekly Recovery Insights', desc: 'See your progress, week after week.' },
 ];
 
+const PRIVACY_POLICY_URL = 'https://sites.google.com/view/reforgedprivacypolicy/home';
+const TERMS_OF_USE_URL = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
+
+// Fallback display strings, used on web preview (no native packages) or if
+// RevenueCat packages haven't loaded yet.
+const FALLBACK = {
+  annualPrice: '$29.99/yr',
+  annualPerMonth: '$2.50/mo',
+  monthlyPrice: '$4.99/mo',
+  savingsPct: 50,
+};
+
 const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModalProps) => {
   const [plan, setPlan] = useState<Plan>('annual');
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
@@ -44,18 +56,37 @@ const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModa
     fetchOfferingPackages().then(setPackages);
   }, [open, isNative]);
 
+  const findPackage = (type: 'ANNUAL' | 'MONTHLY'): PurchasesPackage | undefined => {
+    return (
+      packages.find((p) => p.packageType === type) ??
+      packages.find((p) =>
+        type === 'ANNUAL' ? /annual|year/i.test(p.identifier) : /month/i.test(p.identifier),
+      )
+    );
+  };
+
+  const annualPkg = useMemo(() => findPackage('ANNUAL'), [packages]);
+  const monthlyPkg = useMemo(() => findPackage('MONTHLY'), [packages]);
+
+  // Real pricing, pulled from the actual RevenueCat/App Store products —
+  // falls back to static text only when packages aren't available (web preview).
+  const pricing = useMemo(() => {
+    const annualPrice = annualPkg?.product.priceString ?? FALLBACK.annualPrice;
+    const annualPerMonth = annualPkg?.product.pricePerMonthString ?? FALLBACK.annualPerMonth;
+    const monthlyPrice = monthlyPkg?.product.priceString ?? FALLBACK.monthlyPrice;
+
+    let savingsPct = FALLBACK.savingsPct;
+    if (annualPkg?.product.pricePerMonth != null && monthlyPkg?.product.price != null && monthlyPkg.product.price > 0) {
+      const pct = (1 - annualPkg.product.pricePerMonth / monthlyPkg.product.price) * 100;
+      if (pct > 0) savingsPct = Math.round(pct);
+    }
+
+    return { annualPrice, annualPerMonth, monthlyPrice, savingsPct };
+  }, [annualPkg, monthlyPkg]);
+
   const pickPackage = (): PurchasesPackage | undefined => {
     if (!packages.length) return undefined;
-    const want = plan === 'annual' ? 'ANNUAL' : 'MONTHLY';
-    return (
-      packages.find((p) => p.packageType === want) ??
-      packages.find((p) =>
-        plan === 'annual'
-          ? /annual|year/i.test(p.identifier)
-          : /month/i.test(p.identifier),
-      ) ??
-      packages[0]
-    );
+    return plan === 'annual' ? annualPkg ?? packages[0] : monthlyPkg ?? packages[0];
   };
 
   const handlePurchase = async () => {
@@ -193,10 +224,12 @@ const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModa
                       <div className="flex items-center gap-2">
                         <p className="font-display text-sm tracking-wider text-foreground">ANNUAL</p>
                         <span className="px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px] tracking-wider uppercase">
-                          Save 50%
+                          Save {pricing.savingsPct}%
                         </span>
                       </div>
-                      <p className="text-muted-foreground text-xs mt-1">$29.99/yr · $2.50/mo</p>
+                      <p className="text-muted-foreground text-xs mt-1">
+                        {pricing.annualPrice} · {pricing.annualPerMonth}
+                      </p>
                     </div>
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
@@ -219,7 +252,7 @@ const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModa
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-display text-sm tracking-wider text-foreground">MONTHLY</p>
-                      <p className="text-muted-foreground text-xs mt-1">$4.99/mo</p>
+                      <p className="text-muted-foreground text-xs mt-1">{pricing.monthlyPrice}</p>
                     </div>
                     <div
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
@@ -246,12 +279,15 @@ const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModa
                 {busy
                   ? 'PROCESSING…'
                   : plan === 'annual'
-                  ? 'START — $29.99/yr'
-                  : 'START — $4.99/mo'}
+                  ? `START — ${pricing.annualPrice}`
+                  : `START — ${pricing.monthlyPrice}`}
               </motion.button>
 
-              <p className="text-center text-[10px] tracking-wider uppercase text-muted-foreground mt-3">
-                Cancel anytime · Secure payment
+              <p className="text-center text-[10px] tracking-wider leading-relaxed text-muted-foreground mt-3 px-2">
+                {plan === 'annual' ? 'Billed annually' : 'Billed monthly'}. Subscriptions
+                automatically renew unless auto-renew is turned off at least 24 hours before
+                the end of the current period. Manage or cancel anytime in your App Store
+                account settings.
               </p>
 
               <button
@@ -261,6 +297,26 @@ const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModa
               >
                 Already subscribed? Restore Purchases
               </button>
+
+              <div className="flex items-center justify-center gap-3 mt-4">
+                <a
+                  href={PRIVACY_POLICY_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-muted-foreground underline-offset-4 hover:underline hover:text-foreground"
+                >
+                  Privacy Policy
+                </a>
+                <span className="text-muted-foreground/40 text-[10px]">·</span>
+                <a
+                  href={TERMS_OF_USE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-muted-foreground underline-offset-4 hover:underline hover:text-foreground"
+                >
+                  Terms of Use
+                </a>
+              </div>
 
             </div>
           </motion.div>

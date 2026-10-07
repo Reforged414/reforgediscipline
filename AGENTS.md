@@ -1,0 +1,2 @@
+- Community reads go through SECURITY DEFINER `community_*` RPCs that return handles only; writes of posts/comments go through the `community-submit` edge function (AI moderation). Why: authors' user_ids must never reach other clients.
+- Admin access is the `admin_users` table checked via `is_admin()` in RLS. Why: server-enforced moderation queue access.

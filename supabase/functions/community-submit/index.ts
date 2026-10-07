@@ -9,23 +9,55 @@ const cors = {
 const json = (b: unknown, status = 200) =>
   new Response(JSON.stringify(b), { status, headers: { ...cors, "Content-Type": "application/json" } });
 
-const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const AI_URL = "https://ai.gateway.lovable.dev/v1/responses";
 
-async function classify(content: unknown[], key: string, schema: Record<string, unknown>, system: string) {
+type Part = { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } };
+
+async function classify(content: Part[], key: string, schema: Record<string, unknown>, system: string) {
+  const input = content.map((p) =>
+    p.type === "text" ? { type: "input_text", text: p.text } : { type: "input_image", image_url: p.image_url.url },
+  );
   const res = await fetch(AI_URL, {
     method: "POST",
-    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "X-Lovable-AIG-SDK": "fetch" },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
-      messages: [{ role: "system", content: system }, { role: "user", content }],
-      tools: [{ type: "function", function: { name: "result", parameters: { type: "object", properties: schema, required: Object.keys(schema) } } }],
-      tool_choice: { type: "function", function: { name: "result" } },
+      model: "openai/gpt-6-astra",
+      stream: true,
+      store: false,
+      reasoning: { effort: "low" },
+      input: [
+        { role: "system", content: system + " Respond with JSON only." },
+        { role: "user", content: input },
+      ],
+      text: {
+        format: {
+          type: "json_schema", name: "result", strict: true,
+          schema: { type: "object", properties: schema, required: Object.keys(schema), additionalProperties: false },
+        },
+      },
     }),
   });
-  if (!res.ok) throw new Error(`moderation ${res.status}`);
-  const data = await res.json();
-  const args = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-  return JSON.parse(args ?? "{}");
+  if (!res.ok || !res.body) throw new Error(`moderation ${res.status}`);
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = "", out = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split("\n");
+    buf = lines.pop() ?? "";
+    for (const l of lines) {
+      if (!l.startsWith("data:")) continue;
+      const d = l.slice(5).trim();
+      if (!d || d === "[DONE]") continue;
+      try {
+        const ev = JSON.parse(d);
+        if (ev.type === "response.output_text.delta") out += ev.delta ?? "";
+      } catch { /* ignore */ }
+    }
+  }
+  return JSON.parse(out || "{}");
 }
 
 Deno.serve(async (req) => {

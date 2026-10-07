@@ -9,7 +9,7 @@ import LogUrge from '@/components/LogUrge';
 import LogRelapse from '@/components/LogRelapse';
 import RecoveryScreen from '@/components/RecoveryScreen';
 import ProfilePlaceholder from '@/components/ProfilePlaceholder';
-import ComingSoonPlaceholder from '@/components/ComingSoonPlaceholder';
+import CommunityScreen from '@/components/community/CommunityScreen';
 import InsightsScreen from '@/components/InsightsScreen';
 import DailyCheckIn from '@/components/DailyCheckIn';
 import EmergencyHelp from '@/components/EmergencyHelp';
@@ -364,7 +364,7 @@ const Index = () => {
               )}
               {activeTab === 'insights' && <InsightsScreen onGoToShield={() => setActiveTab('shield')} />}
               {activeTab === 'shield' && <ReforgedShield />}
-              {activeTab === 'community' && <ComingSoonPlaceholder title="Community" />}
+              {activeTab === 'community' && <CommunityScreen />}
               {activeTab === 'profile' && <ProfilePlaceholder onOpenSettings={() => navigateTo('settings')} />}
             </div>
           </PageWrap>

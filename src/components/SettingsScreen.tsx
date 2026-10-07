@@ -22,6 +22,8 @@ import { Button } from '@/components/ui/button';
 import EditAnswersScreen from './EditAnswersScreen';
 import { DebugErrorBoundary } from './DebugErrorBoundary';
 import LegalScreen from './LegalScreen';
+import ModerationQueue from './community/ModerationQueue';
+import { api as communityApi } from '@/lib/community';
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '@/content/legal';
 
 const SUPPORT_EMAIL = 'reforged.support@gmail.com';
@@ -30,7 +32,7 @@ interface Props {
   onBack: () => void;
 }
 
-type Subview = 'main' | 'editAnswers' | 'privacy' | 'terms';
+type Subview = 'main' | 'editAnswers' | 'privacy' | 'terms' | 'moderation';
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <p className="text-[10px] tracking-[0.3em] uppercase text-primary font-semibold mb-3 px-1">{children}</p>
@@ -84,6 +86,9 @@ const SettingsScreen = ({ onBack }: Props) => {
       .then((info) => setAppVersion(`Reforged v${info.version} (${info.build})`))
       .catch(() => {});
   }, []);
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => { if (user) communityApi.isAdmin().then(setIsAdmin); else setIsAdmin(false); }, [user]);
 
   // Username dialog
   const [usernameOpen, setUsernameOpen] = useState(false);
@@ -165,6 +170,10 @@ const SettingsScreen = ({ onBack }: Props) => {
 
   if (view === 'editAnswers') {
     return <DebugErrorBoundary><EditAnswersScreen onBack={() => setView('main')} /></DebugErrorBoundary>;
+  }
+
+  if (view === 'moderation' && isAdmin) {
+    return <ModerationQueue onBack={() => setView('main')} />;
   }
 
   if (view === 'privacy') {
@@ -252,6 +261,7 @@ const SettingsScreen = ({ onBack }: Props) => {
       <div className="px-5">
         <SectionLabel>Support</SectionLabel>
         <div className="space-y-2">
+          {isAdmin && <Row icon={Shield} label="Flagged Content" value="Moderation queue" onClick={() => setView('moderation')} />}
           <Row icon={Shield} label="Privacy Policy" onClick={() => setView('privacy')} />
           <Row icon={FileText} label="Terms of Service" onClick={() => setView('terms')} />
           <Row

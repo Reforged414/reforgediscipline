@@ -1,0 +1,1 @@
+CREATE POLICY "Signed-in users read community images" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'community-images');

@@ -308,6 +308,24 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriber_status: {
+        Row: {
+          is_premium: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          is_premium?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          is_premium?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_data: {
         Row: {
           created_at: string
@@ -441,6 +459,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _uid: string }; Returns: boolean }
+      is_premium: { Args: { _uid: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

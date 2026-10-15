@@ -78,6 +78,10 @@ Deno.serve(async (req) => {
 
     const { data: prof } = await admin.from("community_profiles").select("handle").eq("user_id", user.id).maybeSingle();
     if (!prof) return json({ error: "Choose a handle first." }, 400);
+    if (kind === "comment") {
+      const { data: sub } = await admin.from("subscriber_status").select("is_premium").eq("user_id", user.id).maybeSingle();
+      if (!sub?.is_premium) return json({ premium_required: true, error: "Commenting is a Premium feature." }, 403);
+    }
 
     const key = Deno.env.get("LOVABLE_API_KEY")!;
 

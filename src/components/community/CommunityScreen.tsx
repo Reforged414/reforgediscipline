@@ -91,7 +91,10 @@ const CommunityScreen = () => {
   const [crisis, setCrisis] = useState(false);
 
   useEffect(() => { if (user) api.myProfile(user.id).then(setProfile); }, [user]);
-  useEffect(() => { if (profile && view.name === 'hub') api.forums().then(setForums); }, [profile, view.name]);
+  // Fetch forums in parallel with the profile (not gated behind it) so the hub
+  // doesn't do two sequential round-trips before rendering anything — this was
+  // contributing to a choppy entrance when switching into the Community tab.
+  useEffect(() => { if (user) api.forums().then(setForums); }, [user]);
   useEffect(() => { window.scrollTo(0, 0); }, [view]);
 
   if (!user) {
@@ -138,10 +141,10 @@ const CommunityScreen = () => {
             <ChevronRight size={18} className="text-muted-foreground" />
           </button>
           <p className="text-[10px] tracking-[0.3em] uppercase text-primary font-semibold pt-3 px-1">Forums</p>
-          {forums.map((f, i) => {
+          {forums.map((f) => {
             const Icon = FORUM_ICONS[f.icon] ?? Users;
             return (
-              <motion.button key={f.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
+              <button key={f.id}
                 onClick={() => setView({ name: 'forum', forumId: f.id })}
                 className="w-full flex items-center gap-3 bg-card border border-border rounded-2xl px-4 py-4 text-left active:scale-[0.99] transition-transform">
                 <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center"><Icon size={18} className="text-primary" /></div>
@@ -151,7 +154,7 @@ const CommunityScreen = () => {
                 </div>
                 <span className="text-xs text-primary shrink-0">{f.post_count} {Number(f.post_count) === 1 ? 'post' : 'posts'}</span>
                 <ChevronRight size={16} className="text-muted-foreground" />
-              </motion.button>
+              </button>
             );
           })}
         </div>

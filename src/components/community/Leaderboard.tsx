@@ -35,10 +35,14 @@ export const Leaderboard = ({ userId, optedIn, onOptChange, onBack }: {
           <OrangeToggle enabled={optedIn} onToggle={toggle} aria-label="Opted in to leaderboard" />
         </div>
 
-        <div className="grid grid-cols-2 bg-secondary rounded-xl p-1">
+        <div className="relative grid grid-cols-2 bg-secondary rounded-xl p-1">
           {(['streak', 'resisted'] as const).map((m) => (
             <button key={m} onClick={() => setMetric(m)}
-              className={`py-2 rounded-lg text-xs font-semibold tracking-wider uppercase ${metric === m ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>
+              className={`relative z-10 py-2 rounded-lg text-xs font-semibold tracking-wider uppercase transition-colors ${metric === m ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
+              {metric === m && (
+                <motion.div layoutId="leaderboard-metric-pill" className="absolute inset-0 -z-10 bg-primary rounded-lg"
+                  transition={{ type: 'spring', stiffness: 400, damping: 32 }} />
+              )}
               {m === 'streak' ? 'Longest Streak' : 'Most Resisted'}
             </button>
           ))}

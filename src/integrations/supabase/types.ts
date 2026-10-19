@@ -331,6 +331,7 @@ export type Database = {
           created_at: string
           daily_discipline: Json | null
           has_completed_tutorial: boolean
+          has_seen_premium_tutorial: boolean
           id: string
           journal_logs: Json | null
           last_check_date: string | null
@@ -354,6 +355,7 @@ export type Database = {
           created_at?: string
           daily_discipline?: Json | null
           has_completed_tutorial?: boolean
+          has_seen_premium_tutorial?: boolean
           id?: string
           journal_logs?: Json | null
           last_check_date?: string | null
@@ -377,6 +379,7 @@ export type Database = {
           created_at?: string
           daily_discipline?: Json | null
           has_completed_tutorial?: boolean
+          has_seen_premium_tutorial?: boolean
           id?: string
           journal_logs?: Json | null
           last_check_date?: string | null

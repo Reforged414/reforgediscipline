@@ -68,6 +68,8 @@ interface AppState {
   pendingMilestone: number | null;
   hasSeenTutorial: boolean;
   hasCompletedTutorial: boolean;
+  hasSeenPremiumTutorial: boolean;
+  premiumTutorialPending: boolean;
   lastStreakIncrementDate: string | null;
   notificationPrefs: NotificationPrefs;
   completeOnboarding: (lastRelapse: string, data?: Partial<OnboardingData>) => void;
@@ -80,6 +82,9 @@ interface AppState {
   saveJournalEntry: (entry: Omit<JournalLog, 'timestamp'>) => void;
   dismissMilestone: () => void;
   markTutorialSeen: () => void;
+  markPremiumTutorialSeen: () => void;
+  triggerPremiumTutorialPrompt: () => void;
+  dismissPremiumTutorialPrompt: () => void;
   updateOnboardingData: (data: Partial<OnboardingData>) => void;
   updateNotificationPrefs: (prefs: Partial<NotificationPrefs>) => void;
   resetAllLocalData: () => void;
@@ -170,10 +175,15 @@ export const useAppStore = create<AppState>()(
       pendingMilestone: null,
       hasSeenTutorial: false,
       hasCompletedTutorial: false,
+      hasSeenPremiumTutorial: false,
+      premiumTutorialPending: false,
       lastStreakIncrementDate: null,
       notificationPrefs: { dailyCheckInEnabled: false, dailyCheckInTime: '09:00' },
 
       markTutorialSeen: () => set({ hasSeenTutorial: true, hasCompletedTutorial: true }),
+      markPremiumTutorialSeen: () => set({ hasSeenPremiumTutorial: true }),
+      triggerPremiumTutorialPrompt: () => set({ premiumTutorialPending: true }),
+      dismissPremiumTutorialPrompt: () => set({ premiumTutorialPending: false }),
 
       updateOnboardingData: (data) =>
         set((state) => ({
@@ -202,6 +212,8 @@ export const useAppStore = create<AppState>()(
           pendingMilestone: null,
           hasSeenTutorial: false,
           hasCompletedTutorial: false,
+          hasSeenPremiumTutorial: false,
+          premiumTutorialPending: false,
           lastStreakIncrementDate: null,
           notificationPrefs: { dailyCheckInEnabled: false, dailyCheckInTime: '09:00' },
         }),

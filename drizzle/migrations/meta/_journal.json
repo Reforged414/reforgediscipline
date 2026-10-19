@@ -29,6 +29,13 @@
       "when": 1792099169841,
       "tag": "0003_comments_premium_trigger",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792445454500,
+      "tag": "0004_add_has_seen_premium_tutorial",
+      "breakpoints": true
     }
   ]
 }

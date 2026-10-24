@@ -34,6 +34,7 @@ export async function loadCloudDataIntoStore(userId: string): Promise<boolean> {
     pendingMilestone: data.pending_milestone,
     hasCompletedTutorial: (data as any).has_completed_tutorial ?? false,
     hasSeenTutorial: (data as any).has_completed_tutorial ?? false,
+    hasSeenPremiumTutorial: (data as any).has_seen_premium_tutorial ?? false,
   });
   return true;
 }
@@ -115,6 +116,7 @@ export function useCloudSync() {
               shown_milestones: state.shownMilestones as any,
               pending_milestone: state.pendingMilestone,
               has_completed_tutorial: state.hasCompletedTutorial,
+              has_seen_premium_tutorial: state.hasSeenPremiumTutorial,
             } as any)
             .eq('user_id', user.id);
         } catch (err) {

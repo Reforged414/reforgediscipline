@@ -19,6 +19,7 @@ import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import LoginScreen from '@/components/LoginScreen';
 import WelcomeGate from '@/components/WelcomeGate';
 import TutorialOverlay from '@/components/TutorialOverlay';
+import PremiumTutorialOverlay from '@/components/PremiumTutorialOverlay';
 import SettingsScreen from '@/components/SettingsScreen';
 import GuestTransferPrompt from '@/components/GuestTransferPrompt';
 import ReforgedShield from '@/components/ReforgedShield';
@@ -379,6 +380,7 @@ const Index = () => {
       </AnimatePresence>
 
       <GuestTransferPrompt />
+      <PremiumTutorialOverlay />
 
       {screen === 'dashboard' && (
         <>

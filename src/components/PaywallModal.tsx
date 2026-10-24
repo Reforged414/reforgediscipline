@@ -10,6 +10,7 @@ import {
   restorePurchases,
 } from '@/hooks/usePremium';
 import { toast } from 'sonner';
+import { useAppStore } from '@/store/useAppStore';
 
 interface PaywallModalProps {
   open: boolean;
@@ -107,6 +108,9 @@ const PaywallModal = ({ open, onClose, reason, extraFeatures = [] }: PaywallModa
       const active = await purchasePackage(pkg);
       if (active) {
         toast.success('Premium unlocked — welcome to the inner circle.');
+        if (!useAppStore.getState().hasSeenPremiumTutorial) {
+          useAppStore.getState().triggerPremiumTutorialPrompt();
+        }
         onClose();
       } else {
         toast.error('Purchase completed but premium is not active yet.');

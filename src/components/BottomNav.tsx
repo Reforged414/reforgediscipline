@@ -11,8 +11,8 @@ interface BottomNavProps {
 const TABS = [
   { id: 'dashboard', label: 'Home', icon: LayoutDashboard, tutorial: undefined },
   { id: 'insights', label: 'Insights', icon: BarChart3, tutorial: 'insights-tab' },
-  { id: 'shield', label: 'Shield', icon: ShieldCheck, tutorial: undefined },
-  { id: 'community', label: 'Community', icon: Users, tutorial: undefined },
+  { id: 'shield', label: 'Shield', icon: ShieldCheck, tutorial: 'shield-tab' },
+  { id: 'community', label: 'Community', icon: Users, tutorial: 'community-tab' },
   { id: 'profile', label: 'Profile', icon: User, tutorial: 'profile-tab' },
 ] as const;
 

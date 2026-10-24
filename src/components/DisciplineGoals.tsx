@@ -61,7 +61,7 @@ const DisciplineGoals = () => {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-4">
+      <div data-tutorial="discipline-goals" className="flex items-center justify-between mb-4">
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] uppercase">
           Personalized Goals
         </p>

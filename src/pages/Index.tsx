@@ -123,6 +123,17 @@ const Index = () => {
     }
   }, [loading, session, isGuest, currentScreen]);
 
+  // Lets the guided tour switch tabs (e.g. back to Home) while it runs.
+  useEffect(() => {
+    const onGoto = (e: Event) => {
+      const tab = (e as CustomEvent<string>).detail || 'dashboard';
+      setScreen('dashboard');
+      setActiveTab(tab);
+    };
+    window.addEventListener('reforged-tour-goto-tab', onGoto);
+    return () => window.removeEventListener('reforged-tour-goto-tab', onGoto);
+  }, []);
+
   // 1. Auth bootstrap or cloud hydration in progress — show splash to avoid onboarding flash
   if (loading || (session && currentScreen === 'welcome') || (currentScreen === 'dashboard' && session && cloudLoading)) {
     return (

@@ -28,8 +28,12 @@ const PREMIUM_STEPS: TourStep[] = [
     title: 'Unlimited Goals',
     body: 'Add as many personal goals as you want. The 3-goal limit is gone.',
     placement: 'bottom',
+    tab: 'dashboard',
   },
 ];
+
+const gotoTab = (tab: string) =>
+  window.dispatchEvent(new CustomEvent('reforged-tour-goto-tab', { detail: tab }));
 
 const PremiumTutorialOverlay = () => {
   const {
@@ -44,8 +48,10 @@ const PremiumTutorialOverlay = () => {
 
   const handleYes = () => {
     dismissPremiumTutorialPrompt();
-    // Small delay so the paywall finishes closing before we measure the layout.
-    setTimeout(() => setTouring(true), 400);
+    // Start from Home so every step has something to point at.
+    gotoTab('dashboard');
+    // Small delay so the paywall closes and the tab settles before we measure.
+    setTimeout(() => setTouring(true), 500);
   };
 
   const handleSkip = () => {
@@ -58,7 +64,7 @@ const PremiumTutorialOverlay = () => {
     setTouring(false);
   };
 
-  if (touring) return <GuidedTourOverlay steps={PREMIUM_STEPS} onDone={handleDone} />;
+  if (touring) return <GuidedTourOverlay steps={PREMIUM_STEPS} onDone={handleDone} onEnterStep={(s) => s.tab && gotoTab(s.tab)} />;
 
   if (!asking) return null;
 

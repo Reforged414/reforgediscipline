@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect } from 'react';
+import { useState, useLayoutEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export interface TourStep {
@@ -6,6 +6,8 @@ export interface TourStep {
   title: string;
   body: string;
   placement?: 'top' | 'bottom';
+  /** Main tab that must be showing for this step's target to exist. */
+  tab?: string;
 }
 
 interface Rect {
@@ -13,24 +15,39 @@ interface Rect {
 }
 
 const PADDING = 8;
+const TIP_GAP = 12;
+const SAFE_TOP = 56;
+const SAFE_BOTTOM = 16;
 
 interface GuidedTourOverlayProps {
   steps: TourStep[];
   onDone: () => void;
+  onEnterStep?: (step: TourStep) => void;
 }
 
-const GuidedTourOverlay = ({ steps, onDone }: GuidedTourOverlayProps) => {
+const GuidedTourOverlay = ({ steps, onDone, onEnterStep }: GuidedTourOverlayProps) => {
   const [stepIdx, setStepIdx] = useState(0);
   const [rect, setRect] = useState<Rect | null>(null);
+  const [tipH, setTipH] = useState(170);
+  const tipRef = useRef<HTMLDivElement>(null);
+  const onEnterRef = useRef(onEnterStep);
+  onEnterRef.current = onEnterStep;
 
   useLayoutEffect(() => {
     const step = steps[stepIdx];
     if (!step) return;
-    const measure = () => {
+    onEnterRef.current?.(step);
+
+    let scrolled = false;
+    const locate = () => {
       const el = document.querySelector(step.selector) as HTMLElement | null;
       if (!el) {
         setRect(null);
         return;
+      }
+      if (!scrolled) {
+        scrolled = true;
+        el.scrollIntoView({ block: 'center', behavior: 'auto' });
       }
       const r = el.getBoundingClientRect();
       setRect({
@@ -40,17 +57,24 @@ const GuidedTourOverlay = ({ steps, onDone }: GuidedTourOverlayProps) => {
         height: r.height + PADDING * 2,
       });
     };
-    // The target may be below the fold, so bring it into view first.
-    const target = document.querySelector(step.selector) as HTMLElement | null;
-    if (target) target.scrollIntoView({ block: 'center', behavior: 'auto' });
-    measure();
-    window.addEventListener('resize', measure);
-    window.addEventListener('scroll', measure, true);
+
+    locate();
+    // Re-measure while tab/page transitions settle.
+    const timers = [150, 400, 800, 1200].map((ms) => window.setTimeout(locate, ms));
+    window.addEventListener('resize', locate);
+    window.addEventListener('scroll', locate, true);
     return () => {
-      window.removeEventListener('resize', measure);
-      window.removeEventListener('scroll', measure, true);
+      timers.forEach((t) => window.clearTimeout(t));
+      window.removeEventListener('resize', locate);
+      window.removeEventListener('scroll', locate, true);
     };
   }, [steps, stepIdx]);
+
+  // Measure the real tooltip height so it can be kept fully on screen.
+  useLayoutEffect(() => {
+    const h = tipRef.current?.offsetHeight;
+    if (h && Math.abs(h - tipH) > 1) setTipH(h);
+  }, [stepIdx, rect, tipH]);
 
   const step = steps[stepIdx];
   if (!step) return null;
@@ -61,22 +85,24 @@ const GuidedTourOverlay = ({ steps, onDone }: GuidedTourOverlayProps) => {
     else setStepIdx((i) => i + 1);
   };
 
-  const tooltipStyle: React.CSSProperties = (() => {
-    if (!rect) return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
-    const placeAbove = step.placement === 'top' || rect.top > window.innerHeight / 2;
-    if (placeAbove) {
-      return {
-        top: Math.max(16, rect.top - 12),
-        left: '50%',
-        transform: 'translate(-50%, -100%)',
-      };
-    }
-    return {
-      top: rect.top + rect.height + 12,
-      left: '50%',
-      transform: 'translateX(-50%)',
-    };
-  })();
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const tipW = Math.min(280, vw - 32);
+  const tipLeft = (vw - tipW) / 2;
+
+  let tipTop: number;
+  if (!rect) {
+    tipTop = (vh - tipH) / 2;
+  } else {
+    const above = rect.top - TIP_GAP - tipH;
+    const below = rect.top + rect.height + TIP_GAP;
+    const fitsAbove = above >= SAFE_TOP;
+    const fitsBelow = below + tipH <= vh - SAFE_BOTTOM;
+    const preferAbove = step.placement === 'top' || (step.placement !== 'bottom' && rect.top > vh / 2);
+    if (preferAbove) tipTop = fitsAbove ? above : fitsBelow ? below : above;
+    else tipTop = fitsBelow ? below : fitsAbove ? above : below;
+  }
+  tipTop = Math.min(Math.max(tipTop, SAFE_TOP), vh - tipH - SAFE_BOTTOM);
 
   return (
     <AnimatePresence>
@@ -129,12 +155,13 @@ const GuidedTourOverlay = ({ steps, onDone }: GuidedTourOverlayProps) => {
         </svg>
 
         <motion.div
+          ref={tipRef}
           key={stepIdx}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
-          className="absolute w-[280px] max-w-[calc(100vw-32px)] rounded-xl bg-card border border-primary/30 p-4 shadow-2xl"
-          style={tooltipStyle}
+          className="absolute rounded-xl bg-card border border-primary/30 p-4 shadow-2xl"
+          style={{ top: tipTop, left: tipLeft, width: tipW }}
         >
           <p className="font-display text-sm tracking-wider text-primary mb-1 uppercase">
             {step.title}

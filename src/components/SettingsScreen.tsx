@@ -327,9 +327,13 @@ const SettingsScreen = ({ onBack }: Props) => {
           <DialogHeader>
             <DialogTitle className="text-destructive">Delete account permanently</DialogTitle>
             <DialogDescription>
-              This wipes your streak, journal, urge logs, and all stored data. This action cannot be undone.
+              Your account and community data will be permanently deleted. This action cannot be undone.
               Type <span className="font-bold text-foreground">DELETE</span> to confirm.
             </DialogDescription>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Note: Deleting your account does not cancel your active App Store subscription.
+              You must manage or cancel it in your Apple ID settings.
+            </p>
           </DialogHeader>
           <Input value={deleteConfirm} onChange={(e) => setDeleteConfirm(e.target.value)} placeholder="DELETE" />
           <DialogFooter>

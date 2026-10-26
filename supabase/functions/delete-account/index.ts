@@ -24,9 +24,10 @@ Deno.serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!;
 
     // Verify the user from their JWT
-    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!, {
+    const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: userData, error: userError } = await userClient.auth.getUser();
@@ -40,10 +41,30 @@ Deno.serve(async (req) => {
     const userId = userData.user.id;
     const admin = createClient(supabaseUrl, serviceKey);
 
-    // Delete user-owned rows
-    await admin.from("user_data").delete().eq("user_id", userId);
-    await admin.from("discipline_goals").delete().eq("user_id", userId);
-    await admin.from("profiles").delete().eq("user_id", userId);
+    // Delete every row tied to this user, in dependency order.
+    // Comments/reactions on the user's own posts cascade via FK when posts go.
+    const deletions: [string, string][] = [
+      ["comments", "user_id"],
+      ["reactions", "user_id"],
+      ["reports", "reporter_user_id"],
+      ["posts", "user_id"],
+      ["community_profiles", "user_id"],
+      ["moderation_flags", "user_id"],
+      ["subscriber_status", "user_id"],
+      ["admin_users", "user_id"],
+      ["discipline_goals", "user_id"],
+      ["user_data", "user_id"],
+      ["profiles", "user_id"],
+    ];
+
+    for (const [table, column] of deletions) {
+      const { error } = await admin.from(table).delete().eq(column, userId);
+      // Ignore "table/column not found" style errors so one missing table
+      // never blocks the rest of the cleanup.
+      if (error) {
+        console.warn(`delete-account: skipping ${table}: ${error.message}`);
+      }
+    }
 
     // Delete the auth user itself
     const { error: deleteError } = await admin.auth.admin.deleteUser(userId);
